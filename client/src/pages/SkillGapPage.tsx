@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { skillGapApi, SkillGap, SkillDevelopmentProgress, CourseRecommendation, ProjectSuggestion } from '../services/api';
+import { skillGapApi, SkillGap, SkillDevelopmentProgress, CourseRecommendation, ProjectSuggestion, CertificationRecommendation } from '../services/api';
 
 // Icons
 const BookIcon = () => (
@@ -72,7 +72,9 @@ export default function SkillGapPage() {
     const [showDetailModal, setShowDetailModal] = useState(false);
     const [courses, setCourses] = useState<CourseRecommendation[]>([]);
     const [projects, setProjects] = useState<ProjectSuggestion[]>([]);
+    const [certifications, setCertifications] = useState<CertificationRecommendation[]>([]);
     const [loadingResources, setLoadingResources] = useState(false);
+    const [activeTab, setActiveTab] = useState<'courses' | 'projects' | 'certifications'>('courses');
 
     useEffect(() => {
         loadData();
@@ -116,15 +118,19 @@ export default function SkillGapPage() {
         setShowDetailModal(true);
         setCourses([]);
         setProjects([]);
+        setCertifications([]);
         setLoadingResources(true);
+        setActiveTab('courses');
 
         try {
-            const [coursesRes, projectsRes] = await Promise.all([
+            const [coursesRes, projectsRes, certsRes] = await Promise.all([
                 skillGapApi.getCourseRecommendations(gap.skillName, gap.category),
-                skillGapApi.getProjectSuggestions(gap.skillName, gap.category)
+                skillGapApi.getProjectSuggestions(gap.skillName, gap.category),
+                skillGapApi.getCertificationRecommendations(gap.skillName, gap.category)
             ]);
             setCourses(coursesRes.courses || []);
             setProjects(projectsRes.projects || []);
+            setCertifications(certsRes.certifications || []);
         } catch (error) {
             console.error('Error loading resources:', error);
         } finally {
@@ -215,6 +221,128 @@ export default function SkillGapPage() {
                                 </div>
                                 <span className="text-white font-bold">{Math.round(progress.overallProgress)}%</span>
                             </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Learning Roadmap */}
+                {progress && (progress.currentlyLearning.length > 0 || progress.recentlyCompleted.length > 0) && (
+                    <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6 mb-6">
+                        <h2 className="text-lg font-bold text-white mb-4 flex items-center gap-2">
+                            🗺️ Öğrenme Yolculuğunuz
+                        </h2>
+                        <div className="relative">
+                            {/* Timeline line */}
+                            <div className="absolute left-4 top-0 bottom-0 w-0.5 bg-gradient-to-b from-emerald-500 via-blue-500 to-slate-600"></div>
+                            
+                            {/* Completed Skills */}
+                            {progress.recentlyCompleted.length > 0 && (
+                                <div className="mb-6">
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <div className="w-8 h-8 bg-emerald-500 rounded-full flex items-center justify-center z-10">
+                                            <CheckCircleIcon />
+                                        </div>
+                                        <span className="text-emerald-400 font-medium">Tamamlanan</span>
+                                    </div>
+                                    <div className="ml-12 space-y-2">
+                                        {progress.recentlyCompleted.slice(0, 3).map((skill) => (
+                                            <div key={skill.id} className="bg-emerald-500/10 border border-emerald-500/20 rounded-lg px-3 py-2 text-sm">
+                                                <span className="text-emerald-300">{skill.skillName}</span>
+                                                <span className="text-slate-500 text-xs ml-2">
+                                                    {skill.completedAt && new Date(skill.completedAt).toLocaleDateString('tr-TR')}
+                                                </span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* In Progress Skills */}
+                            {progress.currentlyLearning.length > 0 && (
+                                <div className="mb-6">
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <div className="w-8 h-8 bg-blue-500 rounded-full flex items-center justify-center z-10 animate-pulse">
+                                            <PlayIcon />
+                                        </div>
+                                        <span className="text-blue-400 font-medium">Şu an öğreniyorsunuz</span>
+                                    </div>
+                                    <div className="ml-12 space-y-2">
+                                        {progress.currentlyLearning.slice(0, 3).map((skill) => (
+                                            <div key={skill.id} className="bg-blue-500/10 border border-blue-500/20 rounded-lg px-3 py-2">
+                                                <div className="flex items-center justify-between">
+                                                    <span className="text-blue-300 text-sm">{skill.skillName}</span>
+                                                    <span className="text-blue-400 text-xs font-medium">{skill.progressPercentage}%</span>
+                                                </div>
+                                                <div className="h-1.5 bg-slate-700 rounded-full mt-2 overflow-hidden">
+                                                    <div 
+                                                        className="h-full bg-blue-500 rounded-full"
+                                                        style={{ width: `${skill.progressPercentage}%` }}
+                                                    />
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* Upcoming Skills */}
+                            {skillGaps.filter(g => g.status === 'NotStarted').length > 0 && (
+                                <div>
+                                    <div className="flex items-center gap-2 mb-3">
+                                        <div className="w-8 h-8 bg-slate-600 rounded-full flex items-center justify-center z-10">
+                                            <span className="text-slate-400">📋</span>
+                                        </div>
+                                        <span className="text-slate-400 font-medium">Sıradaki beceriler</span>
+                                    </div>
+                                    <div className="ml-12 space-y-2">
+                                        {skillGaps.filter(g => g.status === 'NotStarted').slice(0, 3).map((skill) => (
+                                            <div key={skill.id} className="bg-slate-700/30 border border-slate-600 rounded-lg px-3 py-2 text-sm">
+                                                <span className="text-slate-400">{skill.skillName}</span>
+                                                <span className="text-amber-400 text-xs ml-2">{getImportanceStars(skill.importanceLevel)}</span>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+                    </div>
+                )}
+
+                {/* Category Distribution */}
+                {progress && progress.gapsByCategory && Object.keys(progress.gapsByCategory).length > 0 && (
+                    <div className="bg-slate-800/50 border border-slate-700 rounded-xl p-6 mb-6">
+                        <h2 className="text-lg font-bold text-white mb-4">📊 Kategori Dağılımı</h2>
+                        <div className="space-y-3">
+                            {Object.entries(progress.gapsByCategory).map(([category, count]) => {
+                                const completed = progress.completedByCategory?.[category] || 0;
+                                const percentage = count > 0 ? (completed / count) * 100 : 0;
+                                return (
+                                    <div key={category}>
+                                        <div className="flex justify-between text-sm mb-1">
+                                            <span className={`${
+                                                category === 'Technical' ? 'text-blue-400' :
+                                                category === 'Certification' ? 'text-purple-400' :
+                                                category === 'Experience' ? 'text-amber-400' : 'text-emerald-400'
+                                            }`}>
+                                                {category === 'Technical' ? '💻 Teknik' :
+                                                 category === 'Certification' ? '🏆 Sertifika' :
+                                                 category === 'Experience' ? '📈 Deneyim' : '🤝 Soft Skill'}
+                                            </span>
+                                            <span className="text-slate-400">{completed}/{count}</span>
+                                        </div>
+                                        <div className="h-2 bg-slate-700 rounded-full overflow-hidden">
+                                            <div 
+                                                className={`h-full rounded-full transition-all ${
+                                                    category === 'Technical' ? 'bg-blue-500' :
+                                                    category === 'Certification' ? 'bg-purple-500' :
+                                                    category === 'Experience' ? 'bg-amber-500' : 'bg-emerald-500'
+                                                }`}
+                                                style={{ width: `${percentage}%` }}
+                                            />
+                                        </div>
+                                    </div>
+                                );
+                            })}
                         </div>
                     </div>
                 )}
@@ -369,8 +497,8 @@ export default function SkillGapPage() {
                         <div className="p-6 max-h-[60vh] overflow-y-auto space-y-6">
                             {/* Progress Update */}
                             {selectedGap.status === 'InProgress' && (
-                                <div>
-                                    <h3 className="text-white font-semibold mb-3">İlerleme Güncelle</h3>
+                                <div className="bg-slate-700/30 rounded-lg p-4">
+                                    <h3 className="text-white font-semibold mb-3">📊 İlerleme Güncelle</h3>
                                     <div className="flex items-center gap-4">
                                         <input
                                             type="range"
@@ -378,85 +506,228 @@ export default function SkillGapPage() {
                                             max="100"
                                             value={selectedGap.progressPercentage}
                                             onChange={(e) => handleUpdateProgress(selectedGap, parseInt(e.target.value))}
-                                            className="flex-1"
+                                            className="flex-1 h-2 bg-slate-600 rounded-lg appearance-none cursor-pointer accent-blue-500"
                                         />
-                                        <span className="text-white font-bold w-12">{selectedGap.progressPercentage}%</span>
+                                        <span className="text-white font-bold w-16 text-right">{selectedGap.progressPercentage}%</span>
+                                    </div>
+                                    <div className="h-3 bg-slate-700 rounded-full overflow-hidden mt-3">
+                                        <div 
+                                            className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full transition-all duration-300"
+                                            style={{ width: `${selectedGap.progressPercentage}%` }}
+                                        />
                                     </div>
                                 </div>
                             )}
 
-                            {/* Courses */}
-                            <div>
-                                <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
-                                    <BookIcon /> Önerilen Kurslar
-                                </h3>
-                                {loadingResources ? (
-                                    <p className="text-slate-400">Yükleniyor...</p>
-                                ) : courses.length > 0 ? (
-                                    <div className="space-y-3">
-                                        {courses.map((course, idx) => (
-                                            <div key={idx} className="bg-slate-700/50 rounded-lg p-3">
-                                                <div className="flex items-start justify-between">
-                                                    <div>
-                                                        <h4 className="text-white font-medium">{course.title}</h4>
-                                                        <p className="text-slate-400 text-sm">{course.provider}</p>
-                                                    </div>
-                                                    {course.url && (
-                                                        <a
-                                                            href={course.url}
-                                                            target="_blank"
-                                                            rel="noopener noreferrer"
-                                                            className="text-blue-400 hover:text-blue-300"
-                                                        >
-                                                            <ExternalLinkIcon />
-                                                        </a>
-                                                    )}
-                                                </div>
-                                                <div className="flex items-center gap-4 mt-2 text-xs text-slate-500">
-                                                    <span>{course.level}</span>
-                                                    <span>⏱ {course.estimatedHours}h</span>
-                                                    {course.rating && <span>⭐ {course.rating}</span>}
-                                                    {course.price && <span>💰 ${course.price}</span>}
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <p className="text-slate-500 text-sm">Kurs önerisi bulunamadı</p>
-                                )}
+                            {/* Learning Stats */}
+                            <div className="grid grid-cols-3 gap-3">
+                                <div className="bg-blue-500/10 border border-blue-500/20 rounded-lg p-3 text-center">
+                                    <p className="text-2xl font-bold text-blue-400">{courses.length}</p>
+                                    <p className="text-xs text-slate-400">Kurs</p>
+                                </div>
+                                <div className="bg-purple-500/10 border border-purple-500/20 rounded-lg p-3 text-center">
+                                    <p className="text-2xl font-bold text-purple-400">{projects.length}</p>
+                                    <p className="text-xs text-slate-400">Proje</p>
+                                </div>
+                                <div className="bg-amber-500/10 border border-amber-500/20 rounded-lg p-3 text-center">
+                                    <p className="text-2xl font-bold text-amber-400">{certifications.length}</p>
+                                    <p className="text-xs text-slate-400">Sertifika</p>
+                                </div>
                             </div>
 
-                            {/* Projects */}
-                            <div>
-                                <h3 className="text-white font-semibold mb-3 flex items-center gap-2">
-                                    <CodeIcon /> Proje Önerileri
-                                </h3>
-                                {loadingResources ? (
-                                    <p className="text-slate-400">Yükleniyor...</p>
-                                ) : projects.length > 0 ? (
-                                    <div className="space-y-3">
-                                        {projects.map((project, idx) => (
-                                            <div key={idx} className="bg-slate-700/50 rounded-lg p-3">
-                                                <h4 className="text-white font-medium">{project.title}</h4>
-                                                <p className="text-slate-400 text-sm mt-1">{project.description}</p>
-                                                <div className="flex flex-wrap gap-2 mt-2">
-                                                    {project.technologies.map((tech, i) => (
-                                                        <span key={i} className="px-2 py-0.5 bg-slate-600 text-slate-300 rounded text-xs">
-                                                            {tech}
-                                                        </span>
-                                                    ))}
-                                                </div>
-                                                <div className="flex items-center gap-4 mt-2 text-xs text-slate-500">
-                                                    <span>{project.difficulty}</span>
-                                                    <span>⏱ {project.estimatedHours}h</span>
-                                                </div>
-                                            </div>
-                                        ))}
-                                    </div>
-                                ) : (
-                                    <p className="text-slate-500 text-sm">Proje önerisi bulunamadı</p>
-                                )}
+                            {/* Tabs */}
+                            <div className="border-b border-slate-700">
+                                <div className="flex gap-1">
+                                    <button
+                                        onClick={() => setActiveTab('courses')}
+                                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                                            activeTab === 'courses' 
+                                                ? 'border-blue-500 text-blue-400' 
+                                                : 'border-transparent text-slate-400 hover:text-white'
+                                        }`}
+                                    >
+                                        📚 Kurslar ({courses.length})
+                                    </button>
+                                    <button
+                                        onClick={() => setActiveTab('projects')}
+                                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                                            activeTab === 'projects' 
+                                                ? 'border-purple-500 text-purple-400' 
+                                                : 'border-transparent text-slate-400 hover:text-white'
+                                        }`}
+                                    >
+                                        💻 Projeler ({projects.length})
+                                    </button>
+                                    <button
+                                        onClick={() => setActiveTab('certifications')}
+                                        className={`px-4 py-2 text-sm font-medium border-b-2 transition-colors ${
+                                            activeTab === 'certifications' 
+                                                ? 'border-amber-500 text-amber-400' 
+                                                : 'border-transparent text-slate-400 hover:text-white'
+                                        }`}
+                                    >
+                                        🏆 Sertifikalar ({certifications.length})
+                                    </button>
+                                </div>
                             </div>
+
+                            {/* Tab Content */}
+                            {loadingResources ? (
+                                <div className="text-center py-8">
+                                    <div className="animate-spin w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full mx-auto"></div>
+                                    <p className="text-slate-400 mt-2">Öneriler yükleniyor...</p>
+                                </div>
+                            ) : (
+                                <>
+                                    {/* Courses Tab */}
+                                    {activeTab === 'courses' && (
+                                        <div className="space-y-3">
+                                            {courses.length > 0 ? courses.map((course, idx) => (
+                                                <div key={idx} className="bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700/70 transition-colors">
+                                                    <div className="flex items-start justify-between">
+                                                        <div className="flex-1">
+                                                            <h4 className="text-white font-medium">{course.title}</h4>
+                                                            <p className="text-blue-400 text-sm">{course.provider}</p>
+                                                            {course.description && (
+                                                                <p className="text-slate-400 text-sm mt-2">{course.description}</p>
+                                                            )}
+                                                        </div>
+                                                        {course.url && (
+                                                            <a
+                                                                href={course.url}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="ml-3 px-3 py-1.5 bg-blue-600 hover:bg-blue-700 text-white text-sm rounded-lg flex items-center gap-1 transition-colors"
+                                                            >
+                                                                Kursa Git <ExternalLinkIcon />
+                                                            </a>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex items-center gap-4 mt-3 text-xs">
+                                                        <span className="px-2 py-1 bg-slate-600 text-slate-300 rounded">{course.level}</span>
+                                                        <span className="text-slate-400">⏱ {course.estimatedHours} saat</span>
+                                                        {course.rating && <span className="text-amber-400">⭐ {course.rating}</span>}
+                                                        {course.price !== undefined && (
+                                                            <span className="text-emerald-400">
+                                                                {course.price === 0 ? '🆓 Ücretsiz' : `💰 $${course.price}`}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                </div>
+                                            )) : (
+                                                <div className="text-center py-8 text-slate-500">
+                                                    <p>Kurs önerisi bulunamadı</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {/* Projects Tab */}
+                                    {activeTab === 'projects' && (
+                                        <div className="space-y-3">
+                                            {projects.length > 0 ? projects.map((project, idx) => (
+                                                <div key={idx} className="bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700/70 transition-colors">
+                                                    <div className="flex items-start justify-between">
+                                                        <div>
+                                                            <h4 className="text-white font-medium">{project.title}</h4>
+                                                            <span className={`inline-block mt-1 px-2 py-0.5 rounded text-xs ${
+                                                                project.difficulty === 'Beginner' ? 'bg-emerald-500/20 text-emerald-400' :
+                                                                project.difficulty === 'Intermediate' ? 'bg-amber-500/20 text-amber-400' :
+                                                                'bg-red-500/20 text-red-400'
+                                                            }`}>
+                                                                {project.difficulty === 'Beginner' ? '🌱 Başlangıç' :
+                                                                 project.difficulty === 'Intermediate' ? '📈 Orta' : '🚀 İleri'}
+                                                            </span>
+                                                        </div>
+                                                        {project.gitHubTemplate && (
+                                                            <a
+                                                                href={project.gitHubTemplate}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="ml-3 px-3 py-1.5 bg-slate-600 hover:bg-slate-500 text-white text-sm rounded-lg flex items-center gap-1"
+                                                            >
+                                                                GitHub <ExternalLinkIcon />
+                                                            </a>
+                                                        )}
+                                                    </div>
+                                                    <p className="text-slate-400 text-sm mt-2">{project.description}</p>
+                                                    {project.learningOutcomes && (
+                                                        <p className="text-purple-400 text-sm mt-2">✨ {project.learningOutcomes}</p>
+                                                    )}
+                                                    <div className="flex flex-wrap gap-2 mt-3">
+                                                        {project.technologies.map((tech, i) => (
+                                                            <span key={i} className="px-2 py-1 bg-purple-500/20 text-purple-300 rounded text-xs">
+                                                                {tech}
+                                                            </span>
+                                                        ))}
+                                                    </div>
+                                                    <div className="mt-3 text-xs text-slate-400">
+                                                        ⏱ Tahmini süre: {project.estimatedHours} saat
+                                                    </div>
+                                                </div>
+                                            )) : (
+                                                <div className="text-center py-8 text-slate-500">
+                                                    <p>Proje önerisi bulunamadı</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+
+                                    {/* Certifications Tab */}
+                                    {activeTab === 'certifications' && (
+                                        <div className="space-y-3">
+                                            {certifications.length > 0 ? certifications.map((cert, idx) => (
+                                                <div key={idx} className="bg-slate-700/50 rounded-lg p-4 hover:bg-slate-700/70 transition-colors">
+                                                    <div className="flex items-start justify-between">
+                                                        <div className="flex-1">
+                                                            <h4 className="text-white font-medium">{cert.name}</h4>
+                                                            <p className="text-amber-400 text-sm">{cert.provider}</p>
+                                                            {cert.description && (
+                                                                <p className="text-slate-400 text-sm mt-2">{cert.description}</p>
+                                                            )}
+                                                        </div>
+                                                        {cert.url && (
+                                                            <a
+                                                                href={cert.url}
+                                                                target="_blank"
+                                                                rel="noopener noreferrer"
+                                                                className="ml-3 px-3 py-1.5 bg-amber-600 hover:bg-amber-700 text-white text-sm rounded-lg flex items-center gap-1 transition-colors"
+                                                            >
+                                                                Başvur <ExternalLinkIcon />
+                                                            </a>
+                                                        )}
+                                                    </div>
+                                                    <div className="flex items-center gap-4 mt-3 text-xs">
+                                                        <span className="px-2 py-1 bg-amber-500/20 text-amber-300 rounded">{cert.level}</span>
+                                                        {cert.cost !== undefined && (
+                                                            <span className="text-slate-400">💰 ${cert.cost}</span>
+                                                        )}
+                                                        {cert.validityYears && (
+                                                            <span className="text-slate-400">📅 {cert.validityYears} yıl geçerli</span>
+                                                        )}
+                                                    </div>
+                                                    {cert.prerequisites && cert.prerequisites.length > 0 && (
+                                                        <div className="mt-3">
+                                                            <p className="text-xs text-slate-500 mb-1">Ön koşullar:</p>
+                                                            <div className="flex flex-wrap gap-2">
+                                                                {cert.prerequisites.map((prereq, i) => (
+                                                                    <span key={i} className="px-2 py-0.5 bg-slate-600 text-slate-300 rounded text-xs">
+                                                                        {prereq}
+                                                                    </span>
+                                                                ))}
+                                                            </div>
+                                                        </div>
+                                                    )}
+                                                </div>
+                                            )) : (
+                                                <div className="text-center py-8 text-slate-500">
+                                                    <p>Sertifika önerisi bulunamadı</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    )}
+                                </>
+                            )}
                         </div>
 
                         <div className="p-6 border-t border-slate-700 flex justify-end gap-3">

@@ -1,6 +1,6 @@
-import { useState } from 'react'
-import { useParams } from 'react-router-dom'
-import { motion } from 'framer-motion'
+import { useState, useEffect, useRef } from 'react'
+import { useParams, useNavigate } from 'react-router-dom'
+import { motion, AnimatePresence } from 'framer-motion'
 import {
     FileText,
     Sparkles,
@@ -8,71 +8,300 @@ import {
     Eye,
     Check,
     RefreshCw,
-    Sliders
+    Sliders,
+    Edit3,
+    Save,
+    X,
+    AlertCircle,
+    Loader2,
+    ArrowLeft,
+    Send
 } from 'lucide-react'
+import { api } from '../services/api'
 
-const originalResume = `
-# Eren Atasoy
-Senior Frontend Developer
+// Types
+interface Application {
+    id: string
+    jobPostingId: string
+    jobPosting: {
+        id: string
+        title: string
+        companyName: string
+        location: string
+        description: string
+    }
+    tailoredResumeUrl?: string
+    coverLetter?: string
+    customMessage?: string
+    status: string
+}
 
-## İletişim
-- Email: eren@email.com
-- Telefon: +90 555 123 4567
-- LinkedIn: linkedin.com/in/erenatasoy
+interface TailoredResumeResult {
+    htmlContent: string
+    plainTextContent: string
+    optimizedKeywords: string[]
+    addedSkills: string[]
+    highlightedExperiences: string[]
+    atsScore: number
+}
 
-## Deneyim
+interface ResumeChange {
+    section: string
+    changeType: string
+    originalText: string
+    newText: string
+    reason: string
+}
 
-### Frontend Developer - ABC Tech (2021-Günümüz)
-- Web uygulamaları geliştirdim
-- React ve TypeScript kullandım
-- Takım ile çalıştım
-
-### Junior Developer - XYZ Startup (2019-2021)
-- Web siteleri yaptım
-- JavaScript öğrendim
-- Projelere katkıda bulundum
-
-## Beceriler
-React, JavaScript, TypeScript, HTML, CSS, Node.js
-`
-
-const tailoredResume = `
-# Eren Atasoy
-Senior Frontend Developer | E-ticaret & Ölçeklenebilir Web Uygulamaları Uzmanı
-
-## İletişim
-- Email: eren@email.com
-- Telefon: +90 555 123 4567
-- LinkedIn: linkedin.com/in/erenatasoy
-
-## Profesyonel Özet
-5+ yıllık deneyime sahip, yüksek trafikli e-ticaret platformlarında uzmanlaşmış Frontend Developer. React, TypeScript ve Next.js ile milyon kullanıcılı uygulamalar geliştirme konusunda kanıtlanmış başarı.
-
-## Deneyim
-
-### Senior Frontend Developer - ABC Tech (2021-Günümüz)
-- **React ve TypeScript** ile mikro-frontend mimarisi kullanarak **%40 performans artışı** sağladım
-- E-ticaret checkout akışını optimize ederek **dönüşüm oranını %25 artırdım**
-- 5 kişilik frontend ekibine teknik liderlik yaparak **Agile metodolojileri** uyguladım
-- **Next.js SSR** implementasyonu ile SEO skorlarını %60 iyileştirdim
-
-### Frontend Developer - XYZ Startup (2019-2021)
-- **Sıfırdan ölçeklenebilir** web uygulaması geliştirerek 100K+ aktif kullanıcıya ulaştım
-- **REST API entegrasyonları** ve state management (Redux) implementasyonları yaptım
-- **CI/CD pipeline** kurulumuna katkıda bulunarak deployment süresini %50 azalttım
-
-## Teknik Beceriler
-**Frontend:** React, TypeScript, Next.js, TailwindCSS, Redux
-**Backend:** Node.js, Express, PostgreSQL
-**DevOps:** Docker, AWS, GitHub Actions
-**Test:** Jest, React Testing Library, Cypress
-`
+interface ResumeComparison {
+    originalContent: string
+    tailoredContent: string
+    changes: ResumeChange[]
+    similarityScore: number
+}
 
 export default function ResumeEditor() {
-    const { id: _applicationId } = useParams()
+    const { id: applicationId } = useParams()
+    const navigate = useNavigate()
+
+    // State
+    const [application, setApplication] = useState<Application | null>(null)
+    const [originalResume, setOriginalResume] = useState('')
+    const [tailoredResume, setTailoredResume] = useState('')
+    const [editedResume, setEditedResume] = useState('')
+    const [coverLetter, setCoverLetter] = useState('')
+    const [customMessage, setCustomMessage] = useState('')
+
     const [viewMode, setViewMode] = useState<'split' | 'tailored'>('split')
+    const [isEditing, setIsEditing] = useState(false)
     const [tone, setTone] = useState(50)
+
+    const [isLoading, setIsLoading] = useState(true)
     const [isGenerating, setIsGenerating] = useState(false)
+    const [isSaving, setIsSaving] = useState(false)
+    const [isExporting, setIsExporting] = useState(false)
+    const [isSending, setIsSending] = useState(false)
+
+    const [resumeResult, setResumeResult] = useState<TailoredResumeResult | null>(null)
+    const [comparison, setComparison] = useState<ResumeComparison | null>(null)
+    const [showPreview, setShowPreview] = useState(false)
+    const [error, setError] = useState<string | null>(null)
+
+    const editorRef = useRef<HTMLTextAreaElement>(null)
+
+
+    // Load application and resume data
+    useEffect(() => {
+        if (!applicationId) {
+            setError('Application ID not found')
+            setIsLoading(false)
+            return
+        }
+
+        loadApplicationData()
+    }, [applicationId])
+
+    const loadApplicationData = async () => {
+        try {
+            setIsLoading(true)
+            setError(null)
+
+            // Get application details
+            const app = await api.get<Application>(`/applications/${applicationId}`)
+            setApplication(app)
+
+            // Get user's digital twin for original resume
+            const digitalTwin = await api.get<any>('/profile/digital-twin')
+            setOriginalResume(digitalTwin.parsedResumeJson || '')
+
+            // If tailored resume exists, load it
+            if (app.tailoredResumeUrl) {
+                // In real app, fetch from S3 URL
+                // For now, generate it
+                await generateTailoredResume(app.jobPostingId)
+            }
+
+            // Load cover letter and custom message
+            setCoverLetter(app.coverLetter || '')
+            setCustomMessage(app.customMessage || '')
+
+        } catch (err) {
+            console.error('Error loading application:', err)
+            setError('Failed to load application data')
+        } finally {
+            setIsLoading(false)
+        }
+    }
+
+    const generateTailoredResume = async (jobPostingId?: string) => {
+        if (!applicationId) return
+
+        try {
+            setIsGenerating(true)
+            setError(null)
+
+            const userId = 'current-user-id' // Get from auth context
+            const jobId = jobPostingId || application?.jobPostingId
+
+            if (!jobId) {
+                throw new Error('Job posting ID not found')
+            }
+
+            // Generate tailored resume
+            const result = await api.post<TailoredResumeResult>(
+                '/resume-tailoring/generate',
+                { userId, jobPostingId: jobId }
+            )
+
+            setResumeResult(result)
+            setTailoredResume(result.plainTextContent)
+            setEditedResume(result.plainTextContent)
+
+            // Get comparison
+            const comparisonResult = await api.post<ResumeComparison>(
+                '/resume-tailoring/compare',
+                {
+                    originalContent: originalResume,
+                    tailoredContent: result.plainTextContent
+                }
+            )
+
+            setComparison(comparisonResult)
+
+        } catch (err) {
+            console.error('Error generating resume:', err)
+            setError('Failed to generate tailored resume')
+        } finally {
+            setIsGenerating(false)
+        }
+    }
+
+    const handleRegenerate = async () => {
+        await generateTailoredResume()
+    }
+
+    const handleToneChange = async (newTone: number) => {
+        setTone(newTone)
+        // Optionally regenerate with new tone
+        // await generateTailoredResume()
+    }
+
+    const handleEdit = () => {
+        setIsEditing(true)
+        setEditedResume(tailoredResume)
+    }
+
+    const handleCancelEdit = () => {
+        setIsEditing(false)
+        setEditedResume(tailoredResume)
+    }
+
+    const handleSave = async () => {
+        if (!applicationId) return
+
+        try {
+            setIsSaving(true)
+            setError(null)
+
+            // Save edited content
+            await api.put(`/applications/${applicationId}/edit`, {
+                customMessage: editedResume,
+                coverLetter: coverLetter
+            })
+
+            setTailoredResume(editedResume)
+            setIsEditing(false)
+
+        } catch (err) {
+            console.error('Error saving changes:', err)
+            setError('Failed to save changes')
+        } finally {
+            setIsSaving(false)
+        }
+    }
+
+    const handleExportPDF = async () => {
+        if (!applicationId) return
+
+        try {
+            setIsExporting(true)
+            setError(null)
+
+            // Export to PDF
+            const response = await fetch(`${api['baseUrl']}/resume-tailoring/export-pdf`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ htmlContent: resumeResult?.htmlContent || tailoredResume })
+            })
+
+            if (!response.ok) throw new Error('Export failed')
+
+            const blob = await response.blob()
+            const url = window.URL.createObjectURL(blob)
+            const a = document.createElement('a')
+            a.href = url
+            a.download = `resume-${application?.jobPosting.companyName || 'tailored'}.pdf`
+            document.body.appendChild(a)
+            a.click()
+            window.URL.revokeObjectURL(url)
+            document.body.removeChild(a)
+
+        } catch (err) {
+            console.error('Error exporting PDF:', err)
+            setError('Failed to export PDF')
+        } finally {
+            setIsExporting(false)
+        }
+    }
+
+    const handlePreview = () => {
+        setShowPreview(true)
+    }
+
+    const handleSendApplication = async () => {
+        if (!applicationId) return
+
+        try {
+            setIsSending(true)
+            setError(null)
+
+            // Send application
+            await api.post(`/applications/${applicationId}/send`, {
+                confirmSend: true
+            })
+
+            // Navigate to applications page
+            navigate('/applications')
+
+        } catch (err) {
+            console.error('Error sending application:', err)
+            setError('Failed to send application')
+        } finally {
+            setIsSending(false)
+        }
+    }
+
+    if (isLoading) {
+        return (
+            <div className="flex items-center justify-center min-h-[400px]">
+                <Loader2 className="w-8 h-8 text-primary-500 animate-spin" />
+            </div>
+        )
+    }
+
+    if (error && !application) {
+        return (
+            <div className="glass-card p-6">
+                <div className="flex items-center gap-3 text-red-400">
+                    <AlertCircle size={24} />
+                    <div>
+                        <h3 className="font-semibold">Error</h3>
+                        <p className="text-sm">{error}</p>
+                    </div>
+                </div>
+            </div>
+        )
+    }
 
     const handleRegenerate = () => {
         setIsGenerating(true)

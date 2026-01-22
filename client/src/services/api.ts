@@ -15,10 +15,14 @@ class ApiClient {
     ): Promise<T> {
         const url = `${this.baseUrl}${endpoint}`;
 
+        // Get token from storage if available
+        const token = localStorage.getItem('token');
+
         const config: RequestInit = {
             ...options,
             headers: {
                 'Content-Type': 'application/json',
+                'Authorization': token ? `Bearer ${token}` : '',
                 ...options.headers,
             },
         };
@@ -30,6 +34,12 @@ class ApiClient {
                 const error = await response.json().catch(() => ({
                     message: response.statusText,
                 }));
+
+                if (response.status === 401) {
+                    // Handle unauthorized
+                    // event bus or redirect could go here
+                }
+
                 throw new Error(error.message || 'API request failed');
             }
 
@@ -87,6 +97,9 @@ export interface JobPosting {
     salary?: string;
     postedDate: string;
     externalUrl?: string;
+    sourcePlatform?: string;
+    sourceUrl?: string;
+    scrapedAt?: string;
 }
 
 export interface FeedbackRequest {
@@ -214,7 +227,7 @@ export const adminApi = {
         if (filter.isVerified !== undefined) params.set('isVerified', String(filter.isVerified));
         if (filter.skip !== undefined) params.set('skip', String(filter.skip));
         if (filter.take !== undefined) params.set('take', String(filter.take));
-        
+
         return api.get(`/admin/companies?${params.toString()}`);
     },
 
@@ -382,7 +395,7 @@ export const skillGapApi = {
         if (filter?.jobMatchId) params.set('jobMatchId', filter.jobMatchId);
         if (filter?.skip !== undefined) params.set('skip', String(filter.skip));
         if (filter?.take !== undefined) params.set('take', String(filter.take));
-        
+
         return api.get(`/skill-gaps?${params.toString()}`);
     },
 
@@ -433,4 +446,87 @@ export const skillGapApi = {
     recalculateMatchScore: async (jobMatchId: string): Promise<{ message: string; newScore: number }> => {
         return api.post(`/skill-gaps/recalculate-match/${jobMatchId}`);
     },
+};
+
+// Dashboard Types
+export interface DashboardStats {
+    totalApplications: number;
+    pendingApplications: number;
+    sentApplications: number;
+    viewedApplications: number;
+    respondedApplications: number;
+    rejectedApplications: number;
+    responseRate: number;
+    interviewInvitations: number;
+    matchingJobs: number;
+}
+
+export interface DashboardTrends {
+    weeklyApplications: TrendDataPoint[];
+    monthlyApplications: TrendDataPoint[];
+    statusBreakdown: StatusBreakdown[];
+}
+
+export interface TrendDataPoint {
+    date: string;
+    count: number;
+}
+
+export interface StatusBreakdown {
+    status: string;
+    count: number;
+    percentage: number;
+}
+
+export const dashboardApi = {
+    getStats: async (): Promise<DashboardStats> => {
+        return api.get<DashboardStats>('/dashboard/stats');
+    },
+    getTrends: async (): Promise<DashboardTrends> => {
+        return api.get<DashboardTrends>('/dashboard/trends');
+    }
+};
+
+// Application Types (Corrected)
+export interface ApplicationDto {
+    id: string;
+    jobPostingId: string;
+    jobPosting: JobPostingDto;
+    tailoredResumeUrl?: string;
+    coverLetter?: string;
+    customMessage?: string;
+    distributionMethod: string;
+    status: string;
+    createdAt: string;
+    sentAt?: string;
+    viewedAt?: string;
+    respondedAt?: string;
+}
+
+export interface JobPostingDto {
+    id: string;
+    title: string;
+    description: string;
+    companyName: string;
+    location?: string;
+    sector?: string;
+    salaryRange?: string;
+    sourcePlatform: string;
+    sourceUrl?: string;
+    scrapedAt: string;
+    isActive: boolean;
+}
+
+export const applicationsApi = {
+    list: async (status?: string, skip: number = 0, take: number = 20): Promise<{ applications: ApplicationDto[], total: number }> => {
+        const params = new URLSearchParams();
+        if (status) params.append('status', status);
+        params.append('skip', skip.toString());
+        params.append('take', take.toString());
+        return api.get<{ applications: ApplicationDto[], total: number }>(`/applications?${params.toString()}`);
+    },
+
+    get: async (id: string): Promise<ApplicationDto> => {
+        return api.get<ApplicationDto>(`/applications/${id}`);
+    }
 };
