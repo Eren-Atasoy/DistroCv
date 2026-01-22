@@ -15,15 +15,18 @@ public class ProfileService : IProfileService
 {
     private readonly DistroCvDbContext _context;
     private readonly IS3Service _s3Service;
+    private readonly IGeminiService _geminiService;
     private readonly ILogger<ProfileService> _logger;
 
     public ProfileService(
         DistroCvDbContext context,
         IS3Service s3Service,
+        IGeminiService geminiService,
         ILogger<ProfileService> logger)
     {
         _context = context;
         _s3Service = s3Service;
+        _geminiService = geminiService;
         _logger = logger;
     }
 
@@ -68,9 +71,18 @@ public class ProfileService : IProfileService
             _logger.LogInformation("Parsing resume for user {UserId}", userId);
             var parsedData = await ParseResumeAsync(resumeStream, fileName);
 
+            // Analyze resume with Gemini to extract structured information
+            _logger.LogInformation("Analyzing resume with Gemini for user {UserId}", userId);
+            var analysisResult = await _geminiService.AnalyzeResumeAsync(parsedData);
+
             // Generate embedding vector for the parsed resume text
             _logger.LogInformation("Generating embedding vector for user {UserId}", userId);
             var embeddingVector = await GenerateEmbeddingAsync(parsedData);
+
+            // Serialize structured data to JSON
+            var skillsJson = System.Text.Json.JsonSerializer.Serialize(analysisResult.Skills);
+            var experienceJson = System.Text.Json.JsonSerializer.Serialize(analysisResult.Experience);
+            var educationJson = System.Text.Json.JsonSerializer.Serialize(analysisResult.Education);
 
             // Check if digital twin already exists
             var existingTwin = await _context.DigitalTwins
@@ -83,6 +95,10 @@ public class ProfileService : IProfileService
                 existingTwin.OriginalResumeUrl = resumeUrl;
                 existingTwin.ParsedResumeJson = parsedData;
                 existingTwin.EmbeddingVector = embeddingVector;
+                existingTwin.Skills = skillsJson;
+                existingTwin.Experience = experienceJson;
+                existingTwin.Education = educationJson;
+                existingTwin.CareerGoals = analysisResult.CareerGoals;
                 existingTwin.UpdatedAt = DateTime.UtcNow;
 
                 await _context.SaveChangesAsync();
@@ -97,10 +113,10 @@ public class ProfileService : IProfileService
                 OriginalResumeUrl = resumeUrl,
                 ParsedResumeJson = parsedData,
                 EmbeddingVector = embeddingVector,
-                Skills = "[]", // Will be populated by Gemini analysis
-                Experience = "[]",
-                Education = "[]",
-                CareerGoals = string.Empty,
+                Skills = skillsJson,
+                Experience = experienceJson,
+                Education = educationJson,
+                CareerGoals = analysisResult.CareerGoals,
                 Preferences = "{}",
                 CreatedAt = DateTime.UtcNow,
                 UpdatedAt = DateTime.UtcNow
@@ -158,23 +174,33 @@ public class ProfileService : IProfileService
     /// </summary>
     public async Task<Vector> GenerateEmbeddingAsync(string text)
     {
-        // TODO: Integrate with Gemini API for actual embeddings
-        // For now, return a placeholder vector
-        _logger.LogWarning("Using placeholder embedding vector. Gemini integration pending.");
-        
-        // Create a simple placeholder vector (768 dimensions is common for embeddings)
-        var dimensions = 768;
-        var values = new float[dimensions];
-        
-        // Generate a simple hash-based vector for now
-        var hash = text.GetHashCode();
-        var random = new Random(hash);
-        for (int i = 0; i < dimensions; i++)
+        try
         {
-            values[i] = (float)(random.NextDouble() * 2 - 1); // Values between -1 and 1
+            _logger.LogInformation("Generating embedding vector with Gemini");
+            
+            // Use Gemini service to generate embeddings
+            var embeddingArray = await _geminiService.GenerateEmbeddingAsync(text);
+            
+            // Convert to pgvector Vector
+            return new Vector(embeddingArray);
         }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error generating embedding with Gemini, falling back to placeholder");
+            
+            // Fallback to placeholder vector if Gemini fails
+            var dimensions = 768;
+            var values = new float[dimensions];
+            
+            var hash = text.GetHashCode();
+            var random = new Random(hash);
+            for (int i = 0; i < dimensions; i++)
+            {
+                values[i] = (float)(random.NextDouble() * 2 - 1);
+            }
 
-        return new Vector(values);
+            return new Vector(values);
+        }
     }
 
     /// <summary>

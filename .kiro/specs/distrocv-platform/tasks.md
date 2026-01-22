@@ -33,12 +33,12 @@
 
 ### 4. Profile Service
 - [x] 4.1 Implement resume upload endpoint
-- [ ] 4.2 Create PDF parser
-- [ ] 4.3 Create DOCX parser
-- [ ] 4.4 Create TXT parser
-- [ ] 4.5 Integrate Gemini for resume analysis
-- [ ] 4.6 Implement Digital Twin creation
-- [ ] 4.7 Generate pgvector embeddings
+- [x] 4.2 Create PDF parser
+- [x] 4.3 Create DOCX parser
+- [x] 4.4 Create TXT parser
+- [x] 4.5 Integrate Gemini for resume analysis
+- [x] 4.6 Implement Digital Twin creation
+- [x] 4.7 Generate pgvector embeddings
 - [ ] 4.8 Implement preference management
 - [ ] 4.9 Create profile update endpoint
 

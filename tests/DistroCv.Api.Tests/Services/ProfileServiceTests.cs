@@ -1,4 +1,5 @@
 using DistroCv.Core.Entities;
+using DistroCv.Core.Interfaces;
 using DistroCv.Infrastructure.AWS;
 using DistroCv.Infrastructure.Data;
 using DistroCv.Infrastructure.Services;
@@ -25,9 +26,23 @@ public class ProfileServiceTests
         _context = new DistroCvDbContext(options);
 
         _mockS3Service = new Mock<IS3Service>();
+        var mockGeminiService = new Mock<IGeminiService>();
         _mockLogger = new Mock<ILogger<ProfileService>>();
 
-        _profileService = new ProfileService(_context, _mockS3Service.Object, _mockLogger.Object);
+        // Setup mock Gemini service to return valid analysis results
+        mockGeminiService.Setup(x => x.AnalyzeResumeAsync(It.IsAny<string>()))
+            .ReturnsAsync(new ResumeAnalysisResult
+            {
+                Skills = new List<string> { "C#", ".NET", "SQL" },
+                Experience = new List<ExperienceEntry>(),
+                Education = new List<EducationEntry>(),
+                CareerGoals = "Test career goals"
+            });
+
+        mockGeminiService.Setup(x => x.GenerateEmbeddingAsync(It.IsAny<string>()))
+            .ReturnsAsync(new float[768]); // Return a 768-dimensional vector
+
+        _profileService = new ProfileService(_context, _mockS3Service.Object, mockGeminiService.Object, _mockLogger.Object);
     }
 
     [Fact]

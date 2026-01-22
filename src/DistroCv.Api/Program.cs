@@ -1,5 +1,6 @@
 using DistroCv.Infrastructure.Data;
 using DistroCv.Infrastructure.AWS;
+using DistroCv.Infrastructure.Gemini;
 using DistroCv.Api.Middleware;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -26,6 +27,9 @@ builder.Services.AddDbContext<DistroCvDbContext>(options =>
 
 // Configure AWS Services (Cognito, S3, Lambda)
 builder.Services.AddAwsServices(builder.Configuration);
+
+// Configure Gemini Services
+builder.Services.AddGeminiServices(builder.Configuration);
 
 // Register application services
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IUserService, DistroCv.Infrastructure.Services.UserService>();
