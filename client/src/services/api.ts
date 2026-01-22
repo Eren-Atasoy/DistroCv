@@ -448,6 +448,131 @@ export const skillGapApi = {
     },
 };
 
+// LinkedIn Profile Types
+export interface LinkedInExperience {
+    title: string;
+    company: string;
+    duration?: string;
+    location?: string;
+    description?: string;
+    isCurrent: boolean;
+}
+
+export interface LinkedInEducation {
+    school: string;
+    degree?: string;
+    fieldOfStudy?: string;
+    duration?: string;
+}
+
+export interface ProfileScoreBreakdown {
+    headlineScore: number;
+    aboutScore: number;
+    experienceScore: number;
+    skillsScore: number;
+    educationScore: number;
+    overallScore: number;
+}
+
+export interface OptimizedExperience {
+    originalDescription: string;
+    optimizedDescription: string;
+    addedKeywords: string[];
+    improvementNotes: string[];
+}
+
+export interface SEOAnalysis {
+    searchability: number;
+    keywordDensity: number;
+    profileCompleteness: number;
+    missingKeywords: string[];
+    strongKeywords: string[];
+}
+
+export interface OriginalProfile {
+    headline?: string;
+    about?: string;
+    experience: LinkedInExperience[];
+    skills: string[];
+    education: LinkedInEducation[];
+}
+
+export interface OptimizedProfile {
+    headline?: string;
+    about?: string;
+    experience: OptimizedExperience[];
+    suggestedSkills: string[];
+}
+
+export interface LinkedInOptimizationResult {
+    id: string;
+    linkedInUrl: string;
+    profileScore: number;
+    scoreBreakdown: ProfileScoreBreakdown;
+    originalProfile: OriginalProfile;
+    optimizedProfile: OptimizedProfile;
+    improvementAreas: string[];
+    atsKeywords: string[];
+    seoAnalysis: SEOAnalysis;
+    analyzedAt: string;
+}
+
+export interface ProfileComparison {
+    sectionName: string;
+    originalContent: string;
+    optimizedContent: string;
+    changes: string[];
+    improvementScore: number;
+}
+
+export interface ProfileOptimizationHistory {
+    id: string;
+    linkedInUrl: string;
+    profileScore: number;
+    status: string;
+    createdAt: string;
+    analyzedAt?: string;
+}
+
+export interface LinkedInProfileAnalysisRequest {
+    linkedInUrl: string;
+    targetJobTitles?: string[];
+    targetIndustries?: string[];
+}
+
+// LinkedIn Profile API Methods
+export const linkedInProfileApi = {
+    // Analyze profile
+    analyzeProfile: async (request: LinkedInProfileAnalysisRequest): Promise<{ message: string; result: LinkedInOptimizationResult }> => {
+        return api.post('/linkedin-profile/analyze', request);
+    },
+
+    // Get comparison view
+    getComparisonView: async (optimizationId: string): Promise<{ optimizationId: string; sections: ProfileComparison[] }> => {
+        return api.get(`/linkedin-profile/${optimizationId}/comparison`);
+    },
+
+    // Calculate score
+    calculateScore: async (linkedInUrl: string, targetJobTitles?: string[]): Promise<{ profileUrl: string; score: number; breakdown: ProfileScoreBreakdown; profileName: string }> => {
+        return api.post('/linkedin-profile/score', { linkedInUrl, targetJobTitles });
+    },
+
+    // Get optimization by ID
+    getOptimization: async (optimizationId: string): Promise<LinkedInOptimizationResult> => {
+        return api.get(`/linkedin-profile/${optimizationId}`);
+    },
+
+    // Get history
+    getHistory: async (): Promise<{ total: number; optimizations: ProfileOptimizationHistory[] }> => {
+        return api.get('/linkedin-profile/history');
+    },
+
+    // Delete optimization
+    deleteOptimization: async (optimizationId: string): Promise<void> => {
+        return api.delete(`/linkedin-profile/${optimizationId}`);
+    },
+};
+
 // Dashboard Types
 export interface DashboardStats {
     totalApplications: number;

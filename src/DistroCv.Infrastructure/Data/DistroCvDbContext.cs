@@ -26,6 +26,7 @@ public class DistroCvDbContext : DbContext
     public DbSet<UserSession> UserSessions { get; set; }
     public DbSet<Notification> Notifications { get; set; }
     public DbSet<SkillGapAnalysis> SkillGapAnalyses { get; set; }
+    public DbSet<LinkedInProfileOptimization> LinkedInProfileOptimizations { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -242,6 +243,23 @@ public class DistroCvDbContext : DbContext
             entity.HasIndex(e => new { e.UserId, e.Category });
             entity.HasIndex(e => new { e.UserId, e.Status });
             entity.HasIndex(e => e.JobMatchId);
+        });
+
+        // LinkedInProfileOptimization Configuration
+        modelBuilder.Entity<LinkedInProfileOptimization>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.LinkedInUrl).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.Status).IsRequired().HasMaxLength(50).HasDefaultValue("Pending");
+            entity.Property(e => e.OriginalHeadline).HasMaxLength(500);
+            entity.Property(e => e.OptimizedHeadline).HasMaxLength(500);
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => e.UserId);
+            entity.HasIndex(e => new { e.UserId, e.LinkedInUrl });
+            entity.HasIndex(e => e.CreatedAt);
         });
     }
 }

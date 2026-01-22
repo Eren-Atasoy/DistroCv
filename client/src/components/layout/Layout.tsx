@@ -9,7 +9,8 @@ import {
     Menu,
     X,
     Building2,
-    GraduationCap
+    GraduationCap,
+    Linkedin
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -18,6 +19,7 @@ const navItems = [
     { path: '/discover', icon: Compass, label: 'İş Bul' },
     { path: '/applications', icon: FileText, label: 'Başvurular' },
     { path: '/skills', icon: GraduationCap, label: 'Beceriler' },
+    { path: '/linkedin-optimizer', icon: Linkedin, label: 'LinkedIn' },
     { path: '/admin/companies', icon: Building2, label: 'Şirketler' },
 ]
 

@@ -22,6 +22,7 @@ import {
     BarChart,
     Bar
 } from 'recharts'
+import { dashboardApi, applicationsApi, jobsApi, type JobMatch, type ApplicationDto, type DashboardStats, type DashboardTrends } from '../services/api'
 
 // Types
 interface Stat {
@@ -32,120 +33,94 @@ interface Stat {
     color: string
 }
 
-interface Application {
-    id: number
-    company: string
-    position: string
-    status: string
-    statusColor: string
-    date: string
-}
+// Helper to format relative time
+const timeAgo = (dateStr: string) => {
+    const date = new Date(dateStr);
+    const now = new Date();
+    const seconds = Math.floor((now.getTime() - date.getTime()) / 1000);
 
-interface MatchingJob {
-    id: number
-    title: string
-    company: string
-    score: number
-}
+    let interval = seconds / 31536000;
+    if (interval > 1) return Math.floor(interval) + " yıl önce";
+    interval = seconds / 2592000;
+    if (interval > 1) return Math.floor(interval) + " ay önce";
+    interval = seconds / 86400;
+    if (interval > 1) return Math.floor(interval) + " gün önce";
+    interval = seconds / 3600;
+    if (interval > 1) return Math.floor(interval) + " saat önce";
+    interval = seconds / 60;
+    if (interval > 1) return Math.floor(interval) + " dakika önce";
+    return "Az önce";
+};
 
-// Mock Data (Initial)
-const initialStats: Stat[] = [
-    {
-        label: 'Toplam Başvuru',
-        value: 24,
-        icon: FileText,
-        change: '+5 bu hafta',
-        color: 'from-primary-500 to-primary-600'
-    },
-    {
-        label: 'Gönderilen',
-        value: 18,
-        icon: Send,
-        change: '75%',
-        color: 'from-accent-cyan to-primary-500'
-    },
-    {
-        label: 'Görüntülenen',
-        value: 12,
-        icon: Eye,
-        change: '67%',
-        color: 'from-accent-violet to-accent-fuchsia'
-    },
-    {
-        label: 'Yanıt Alınan',
-        value: 5,
-        icon: MessageSquare,
-        change: '28%',
-        color: 'from-accent-emerald to-accent-cyan'
-    },
-]
+// Helper for status colors
+const getStatusColor = (status: string) => {
+    switch (status) {
+        case 'Viewed': return 'text-accent-violet';
+        case 'Sent': return 'text-primary-400';
+        case 'Responded': return 'text-accent-emerald';
+        case 'Queued': return 'text-amber-400';
+        case 'Rejected': return 'text-red-400';
+        default: return 'text-surface-400';
+    }
+};
 
-const recentApplicationsData: Application[] = [
-    {
-        id: 1,
-        company: 'Trendyol',
-        position: 'Senior Frontend Developer',
-        status: 'Görüntülendi',
-        statusColor: 'text-accent-cyan',
-        date: '2 saat önce'
-    },
-    {
-        id: 2,
-        company: 'Getir',
-        position: 'Full Stack Developer',
-        status: 'Gönderildi',
-        statusColor: 'text-primary-400',
-        date: '5 saat önce'
-    },
-    {
-        id: 3,
-        company: 'Insider',
-        position: 'React Developer',
-        status: 'Yanıt Alındı',
-        statusColor: 'text-accent-emerald',
-        date: '1 gün önce'
-    },
-    {
-        id: 4,
-        company: 'Peak Games',
-        position: 'Software Engineer',
-        status: 'Beklemede',
-        statusColor: 'text-amber-400',
-        date: '2 gün önce'
-    },
-]
-
-const matchingJobsData: MatchingJob[] = [
-    { id: 1, title: 'Senior React Developer', company: 'Hepsiburada', score: 94 },
-    { id: 2, title: 'Frontend Lead', company: 'N11', score: 91 },
-    { id: 3, title: 'Full Stack Engineer', company: 'Yemeksepeti', score: 88 },
-]
-
-const chartData = [
-    { name: 'Pzt', basvuru: 4 },
-    { name: 'Sal', basvuru: 3 },
-    { name: 'Çar', basvuru: 7 },
-    { name: 'Per', basvuru: 5 },
-    { name: 'Cum', basvuru: 8 },
-    { name: 'Cmt', basvuru: 2 },
-    { name: 'Paz', basvuru: 4 },
-]
+const getStatusLabel = (status: string) => {
+    switch (status) {
+        case 'Viewed': return 'Görüntülendi';
+        case 'Sent': return 'Gönderildi';
+        case 'Responded': return 'Yanıt Alındı';
+        case 'Queued': return 'Beklemede';
+        case 'Rejected': return 'Reddedildi';
+        case 'Interview': return 'Mülakat';
+        default: return status;
+    }
+};
 
 export default function Dashboard() {
-    const [stats, setStats] = useState<Stat[]>(initialStats)
-    const [recentApplications, setRecentApplications] = useState<Application[]>(recentApplicationsData)
-    const [connection, setConnection] = useState<HubConnection | null>(null)
-    const [isConnected, setIsConnected] = useState(false)
+    const [stats, setStats] = useState<DashboardStats | null>(null);
+    const [trends, setTrends] = useState<DashboardTrends | null>(null);
+    const [recentApplications, setRecentApplications] = useState<ApplicationDto[]>([]);
+    const [matchingJobs, setMatchingJobs] = useState<JobMatch[]>([]);
+    const [loading, setLoading] = useState(true);
 
+    const [connection, setConnection] = useState<HubConnection | null>(null);
+    const [isConnected, setIsConnected] = useState(false);
+
+    // Initial Data Fetch
     useEffect(() => {
-        // Initialize SignalR connection
-        const newConnection = new HubConnectionBuilder()
-            .withUrl("http://localhost:5001/hubs/notifications") // Adjust API URL as needed
-            .withAutomaticReconnect()
-            .build()
+        const fetchData = async () => {
+            try {
+                // Parallel fetching
+                const [statsData, trendsData, appsData, jobsData] = await Promise.all([
+                    dashboardApi.getStats(),
+                    dashboardApi.getTrends(),
+                    applicationsApi.list(undefined, 0, 5).then(res => res.applications),
+                    jobsApi.getMatchedJobs().then(jobs => jobs.slice(0, 5))
+                ]);
 
-        setConnection(newConnection)
-    }, [])
+                setStats(statsData);
+                setTrends(trendsData);
+                setRecentApplications(appsData);
+                setMatchingJobs(jobsData);
+            } catch (error) {
+                console.error("Failed to fetch dashboard data", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchData();
+    }, []);
+
+    // SignalR Connection
+    useEffect(() => {
+        const newConnection = new HubConnectionBuilder()
+            .withUrl("http://localhost:5001/hubs/notifications") // Monitor port or env
+            .withAutomaticReconnect()
+            .build();
+
+        setConnection(newConnection);
+    }, []);
 
     useEffect(() => {
         if (connection) {
@@ -154,18 +129,18 @@ export default function Dashboard() {
                     console.log('SignalR Connected!');
                     setIsConnected(true);
 
-                    // Subscribe to stats updates
                     connection.on("ReceiveStatsUpdate", (type: string, data: any) => {
-                        console.log('Received stats update:', type, data);
                         if (type === 'DashboardStats') {
-                            // Update stats logic here
-                            // map backend DTO to frontend Stat interface
+                            setStats(prev => ({ ...prev, ...data }));
                         }
                     });
 
                     connection.on("ReceiveNotification", (notification: any) => {
-                        console.log('New notification:', notification);
-                        // Show toast or update list
+                        // Refresh recent applications if status changed
+                        if (notification.type === 'ApplicationStatusUpdate') {
+                            applicationsApi.list(undefined, 0, 5).then(res => setRecentApplications(res.applications));
+                            dashboardApi.getStats().then(setStats);
+                        }
                     });
                 })
                 .catch(e => console.error('Connection failed: ', e));
@@ -176,8 +151,55 @@ export default function Dashboard() {
                 connection.off("ReceiveStatsUpdate");
                 connection.off("ReceiveNotification");
             }
-        }
-    }, [connection])
+        };
+    }, [connection]);
+
+    // Derived Stats for Display
+    const displayStats: Stat[] = [
+        {
+            label: 'Toplam Başvuru',
+            value: stats?.totalApplications || 0,
+            icon: FileText,
+            change: '', // TODO: Calculate change
+            color: 'from-primary-500 to-primary-600'
+        },
+        {
+            label: 'Gönderilen',
+            value: stats?.sentApplications || 0,
+            icon: Send,
+            change: `${stats?.totalApplications ? Math.round((stats.sentApplications / stats.totalApplications) * 100) : 0}%`,
+            color: 'from-accent-cyan to-primary-500'
+        },
+        {
+            label: 'Görüntülenen',
+            value: stats?.viewedApplications || 0,
+            icon: Eye,
+            change: '',
+            color: 'from-accent-violet to-accent-fuchsia'
+        },
+        {
+            label: 'Yanıt Alınan',
+            value: stats?.respondedApplications || 0,
+            icon: MessageSquare,
+            change: `${stats?.responseRate || 0}% Oran`,
+            color: 'from-accent-emerald to-accent-cyan'
+        },
+    ];
+
+    // Chart Data Transformation
+    const chartData = trends?.weeklyApplications.map(p => ({
+        name: new Date(p.date).toLocaleDateString('tr-TR', { weekday: 'short' }),
+        basvuru: p.count
+    })) || [];
+
+    const statusChartData = trends?.statusBreakdown.map(s => ({
+        name: getStatusLabel(s.status),
+        value: s.count
+    })) || [];
+
+    if (loading) {
+        return <div className="p-8 text-center text-surface-400">Yükleniyor...</div>;
+    }
 
     return (
         <div className="space-y-8">
@@ -199,7 +221,7 @@ export default function Dashboard() {
             </div>
 
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                {stats.map((stat, index) => (
+                {displayStats.map((stat, index) => (
                     <motion.div
                         key={index}
                         initial={{ opacity: 0, y: 20 }}
@@ -211,9 +233,11 @@ export default function Dashboard() {
                             <div className={`w-12 h-12 rounded-xl bg-gradient-to-br ${stat.color} flex items-center justify-center group-hover:scale-110 transition-transform duration-300`}>
                                 <stat.icon size={24} className="text-white" />
                             </div>
-                            <span className="text-xs text-accent-emerald bg-accent-emerald/10 px-2 py-1 rounded-full">
-                                {stat.change}
-                            </span>
+                            {stat.change && (
+                                <span className="text-xs text-accent-emerald bg-accent-emerald/10 px-2 py-1 rounded-full">
+                                    {stat.change}
+                                </span>
+                            )}
                         </div>
                         <div className="text-3xl font-bold text-white mb-1">{stat.value}</div>
                         <div className="text-surface-400 text-sm">{stat.label}</div>
@@ -271,12 +295,7 @@ export default function Dashboard() {
                     </div>
                     <div className="h-[250px] w-full">
                         <ResponsiveContainer width="100%" height="100%">
-                            <BarChart data={[
-                                { name: 'Bekleyen', value: 12 },
-                                { name: 'Gönderilen', value: 18 },
-                                { name: 'Görüntülenen', value: 8 },
-                                { name: 'Geri Dönüş', value: 5 },
-                            ]}>
+                            <BarChart data={statusChartData}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#334155" vertical={false} />
                                 <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
                                 <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
@@ -318,19 +337,22 @@ export default function Dashboard() {
                                     </div>
                                     <div>
                                         <h3 className="text-white font-medium group-hover:text-primary-400 transition-colors">
-                                            {app.position}
+                                            {app.jobPosting.title}
                                         </h3>
-                                        <p className="text-surface-400 text-sm">{app.company}</p>
+                                        <p className="text-surface-400 text-sm">{app.jobPosting.companyName}</p>
                                     </div>
                                 </div>
                                 <div className="text-right">
-                                    <span className={`text-sm font-medium ${app.statusColor}`}>
-                                        {app.status}
+                                    <span className={`text-sm font-medium ${getStatusColor(app.status)}`}>
+                                        {getStatusLabel(app.status)}
                                     </span>
-                                    <p className="text-surface-500 text-xs mt-1">{app.date}</p>
+                                    <p className="text-surface-500 text-xs mt-1">{timeAgo(app.createdAt)}</p>
                                 </div>
                             </div>
                         ))}
+                        {recentApplications.length === 0 && (
+                            <div className="text-center text-surface-400 py-4">Henüz başvuru yok</div>
+                        )}
                     </div>
                 </motion.div>
 
@@ -346,28 +368,31 @@ export default function Dashboard() {
                     </div>
 
                     <div className="space-y-4">
-                        {matchingJobsData.map((job) => (
+                        {matchingJobs.map((match) => (
                             <div
-                                key={job.id}
+                                key={match.id}
                                 className="p-4 rounded-xl bg-surface-800/50 hover:bg-surface-800 transition-colors group cursor-pointer"
                             >
                                 <div className="flex items-center justify-between mb-2">
                                     <h3 className="text-white font-medium text-sm group-hover:text-primary-400 transition-colors">
-                                        {job.title}
+                                        {match.jobPosting.title}
                                     </h3>
                                     <div className="flex items-center gap-1">
-                                        <span className="text-accent-emerald font-bold">{job.score}%</span>
+                                        <span className="text-accent-emerald font-bold">{match.matchScore}%</span>
                                     </div>
                                 </div>
-                                <p className="text-surface-400 text-sm">{job.company}</p>
+                                <p className="text-surface-400 text-sm">{match.jobPosting.companyName}</p>
                                 <div className="mt-3 h-1.5 bg-surface-700 rounded-full overflow-hidden">
                                     <div
                                         className="h-full bg-gradient-to-r from-accent-emerald to-accent-cyan rounded-full transition-all duration-500"
-                                        style={{ width: `${job.score}%` }}
+                                        style={{ width: `${match.matchScore}%` }}
                                     />
                                 </div>
                             </div>
                         ))}
+                        {matchingJobs.length === 0 && (
+                            <div className="text-center text-surface-400 py-4">Henüz eşleşme yok</div>
+                        )}
                     </div>
 
                     <button className="w-full mt-4 py-3 rounded-xl bg-primary-500/10 text-primary-400 font-medium hover:bg-primary-500/20 transition-colors">

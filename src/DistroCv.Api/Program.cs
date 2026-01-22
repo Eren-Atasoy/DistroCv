@@ -53,6 +53,8 @@ builder.Services.AddScoped<DistroCv.Core.Interfaces.IVerifiedCompanyRepository, 
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IVerifiedCompanyService, DistroCv.Infrastructure.Services.VerifiedCompanyService>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.ISkillGapRepository, DistroCv.Infrastructure.Data.SkillGapRepository>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.ISkillGapService, DistroCv.Infrastructure.Services.SkillGapService>();
+builder.Services.AddScoped<DistroCv.Core.Interfaces.ILinkedInProfileRepository, DistroCv.Infrastructure.Data.LinkedInProfileRepository>();
+builder.Services.AddScoped<DistroCv.Core.Interfaces.ILinkedInProfileService, DistroCv.Infrastructure.Services.LinkedInProfileService>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IFeedbackService, DistroCv.Infrastructure.Services.FeedbackService>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IApplicationRepository, DistroCv.Infrastructure.Data.ApplicationRepository>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IInterviewPreparationRepository, DistroCv.Infrastructure.Data.InterviewPreparationRepository>();
