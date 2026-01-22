@@ -123,12 +123,15 @@ public class ApplicationsController : BaseApiController
             new JobPostingDto(
                 a.JobPosting.Id,
                 a.JobPosting.Title,
+                a.JobPosting.Description,
                 a.JobPosting.CompanyName,
-                a.JobPosting.Location ?? "",
+                a.JobPosting.Location,
+                a.JobPosting.Sector,
+                a.JobPosting.SalaryRange,
                 a.JobPosting.SourcePlatform,
-                a.JobPosting.Description, // Might be large
+                a.JobPosting.SourceUrl,
                 a.JobPosting.ScrapedAt,
-                85 // Mock score if not joined with Match
+                a.JobPosting.IsActive
             ),
             a.TailoredResumeUrl,
             a.CoverLetter,

@@ -7,7 +7,8 @@ import {
     Settings,
     LogOut,
     Menu,
-    X
+    X,
+    Building2
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -15,6 +16,7 @@ const navItems = [
     { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { path: '/discover', icon: Compass, label: 'İş Bul' },
     { path: '/applications', icon: FileText, label: 'Başvurular' },
+    { path: '/admin/companies', icon: Building2, label: 'Şirketler' },
 ]
 
 export default function Layout() {

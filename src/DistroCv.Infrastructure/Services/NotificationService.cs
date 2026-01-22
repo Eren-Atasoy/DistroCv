@@ -12,13 +12,17 @@ namespace DistroCv.Infrastructure.Services;
 public class NotificationService : INotificationService
 {
     private readonly DistroCvDbContext _context;
+    private readonly INotificationPublisher _publisher;
     private readonly ILogger<NotificationService> _logger;
 
+    // Optional publisher to avoid breaking if not registered (though we did register it)
     public NotificationService(
         DistroCvDbContext context,
+        INotificationPublisher publisher,
         ILogger<NotificationService> logger)
     {
         _context = context;
+        _publisher = publisher;
         _logger = logger;
     }
 
@@ -49,6 +53,12 @@ public class NotificationService : INotificationService
 
             _context.Notifications.Add(notification);
             await _context.SaveChangesAsync(cancellationToken);
+
+            // Publish real-time notification
+            if (_publisher != null)
+            {
+                await _publisher.PublishNotificationAsync(userId, notification);
+            }
 
             _logger.LogInformation("Created notification {NotificationId} for user {UserId}", notification.Id, userId);
             return notification;
@@ -87,6 +97,12 @@ public class NotificationService : INotificationService
 
             _context.Notifications.Add(notification);
             await _context.SaveChangesAsync(cancellationToken);
+
+            // Publish real-time notification
+            if (_publisher != null)
+            {
+                await _publisher.PublishNotificationAsync(userId, notification);
+            }
 
             _logger.LogInformation("Created notification {NotificationId} for user {UserId}", notification.Id, userId);
             return notification;

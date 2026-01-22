@@ -120,3 +120,149 @@ export const feedbackApi = {
         return api.post('/feedback', feedback);
     },
 };
+
+// Company Types
+export interface VerifiedCompany {
+    id: string;
+    name: string;
+    website?: string;
+    taxNumber?: string;
+    hrEmail?: string;
+    hrPhone?: string;
+    sector?: string;
+    city?: string;
+    description?: string;
+    companyCulture?: string;
+    recentNews?: string;
+    isVerified: boolean;
+    verifiedAt?: string;
+    updatedAt: string;
+}
+
+export interface CompanyFilter {
+    searchTerm?: string;
+    sector?: string;
+    city?: string;
+    isVerified?: boolean;
+    skip?: number;
+    take?: number;
+}
+
+export interface CompanyStats {
+    totalCompanies: number;
+    verifiedCompanies: number;
+    unverifiedCompanies: number;
+    totalJobPostingsLinked: number;
+    companiesBySector: Record<string, number>;
+    companiesByCity: Record<string, number>;
+}
+
+export interface CompanyCultureAnalysis {
+    culture: string;
+    values: string;
+    workEnvironment: string;
+    benefits: string;
+    careerGrowth: string;
+    overallScore: number;
+}
+
+export interface CompanyNews {
+    title: string;
+    summary: string;
+    source: string;
+    url?: string;
+    publishedAt: string;
+}
+
+export interface CreateCompanyRequest {
+    name: string;
+    website?: string;
+    taxNumber?: string;
+    hrEmail?: string;
+    hrPhone?: string;
+    sector?: string;
+    city?: string;
+    description?: string;
+}
+
+export interface UpdateCompanyRequest {
+    name?: string;
+    website?: string;
+    taxNumber?: string;
+    hrEmail?: string;
+    hrPhone?: string;
+    sector?: string;
+    city?: string;
+    description?: string;
+    isVerified?: boolean;
+}
+
+export interface VerifyCompanyRequest {
+    taxNumber?: string;
+    hrEmail?: string;
+    website?: string;
+}
+
+// Admin API Methods
+export const adminApi = {
+    // Company Management
+    getCompanies: async (filter: CompanyFilter = {}): Promise<{ companies: VerifiedCompany[]; total: number }> => {
+        const params = new URLSearchParams();
+        if (filter.searchTerm) params.set('searchTerm', filter.searchTerm);
+        if (filter.sector) params.set('sector', filter.sector);
+        if (filter.city) params.set('city', filter.city);
+        if (filter.isVerified !== undefined) params.set('isVerified', String(filter.isVerified));
+        if (filter.skip !== undefined) params.set('skip', String(filter.skip));
+        if (filter.take !== undefined) params.set('take', String(filter.take));
+        
+        return api.get(`/admin/companies?${params.toString()}`);
+    },
+
+    getCompany: async (id: string): Promise<VerifiedCompany> => {
+        return api.get(`/admin/companies/${id}`);
+    },
+
+    createCompany: async (data: CreateCompanyRequest): Promise<VerifiedCompany> => {
+        return api.post('/admin/companies', data);
+    },
+
+    updateCompany: async (id: string, data: UpdateCompanyRequest): Promise<VerifiedCompany> => {
+        return api.put(`/admin/companies/${id}`, data);
+    },
+
+    deleteCompany: async (id: string): Promise<void> => {
+        return api.delete(`/admin/companies/${id}`);
+    },
+
+    verifyCompany: async (id: string, data: VerifyCompanyRequest): Promise<{ message: string; company: VerifiedCompany }> => {
+        return api.post(`/admin/companies/${id}/verify`, data);
+    },
+
+    analyzeCulture: async (id: string): Promise<{ message: string; analysis: CompanyCultureAnalysis }> => {
+        return api.post(`/admin/companies/${id}/analyze-culture`);
+    },
+
+    scrapeNews: async (id: string): Promise<{ message: string; news: CompanyNews[]; count: number }> => {
+        return api.post(`/admin/companies/${id}/scrape-news`);
+    },
+
+    checkVerification: async (companyName: string): Promise<{ isVerified: boolean; company?: VerifiedCompany }> => {
+        return api.get(`/admin/companies/check-verification?companyName=${encodeURIComponent(companyName)}`);
+    },
+
+    getSectors: async (): Promise<string[]> => {
+        return api.get('/admin/companies/sectors');
+    },
+
+    getCities: async (): Promise<string[]> => {
+        return api.get('/admin/companies/cities');
+    },
+
+    getStats: async (): Promise<CompanyStats> => {
+        return api.get('/admin/companies/stats');
+    },
+
+    seedCompanies: async (): Promise<{ message: string; totalCompanies: number }> => {
+        return api.post('/admin/companies/seed');
+    },
+};

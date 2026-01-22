@@ -49,10 +49,13 @@ builder.Services.AddScoped<DistroCv.Core.Interfaces.INotificationService, Distro
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IResumeTailoringService, DistroCv.Infrastructure.Services.ResumeTailoringService>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IApplicationDistributionService, DistroCv.Infrastructure.Services.ApplicationDistributionService>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IThrottleManager, DistroCv.Infrastructure.Services.ThrottleManager>();
+builder.Services.AddScoped<DistroCv.Core.Interfaces.IVerifiedCompanyRepository, DistroCv.Infrastructure.Data.VerifiedCompanyRepository>();
+builder.Services.AddScoped<DistroCv.Core.Interfaces.IVerifiedCompanyService, DistroCv.Infrastructure.Services.VerifiedCompanyService>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IFeedbackService, DistroCv.Infrastructure.Services.FeedbackService>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IApplicationRepository, DistroCv.Infrastructure.Data.ApplicationRepository>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IInterviewPreparationRepository, DistroCv.Infrastructure.Data.InterviewPreparationRepository>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IInterviewCoachService, DistroCv.Infrastructure.Services.InterviewCoachService>();
+builder.Services.AddScoped<DistroCv.Core.Interfaces.INotificationPublisher, DistroCv.Api.Services.SignalRNotificationPublisher>();
 
 // Configure Playwright settings
 builder.Services.Configure<DistroCv.Core.DTOs.PlaywrightSettings>(
@@ -166,6 +169,9 @@ builder.Services.AddCors(options =>
     });
 });
 
+// Add SignalR
+builder.Services.AddSignalR();
+
 // Add Health Checks
 builder.Services.AddHealthChecks()
     .AddDbContextCheck<DistroCvDbContext>("database");
@@ -192,6 +198,7 @@ app.UseAuthorization();
 app.UseSessionTracking(); // Add session tracking middleware
 
 app.MapControllers();
+app.MapHub<DistroCv.Api.Hubs.NotificationHub>("/hubs/notifications");
 app.MapHealthChecks("/health");
 
 // Welcome endpoint

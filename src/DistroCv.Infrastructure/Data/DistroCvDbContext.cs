@@ -130,8 +130,18 @@ public class DistroCvDbContext : DbContext
         {
             entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).IsRequired().HasMaxLength(300);
+            entity.Property(e => e.Website).HasMaxLength(500);
+            entity.Property(e => e.TaxNumber).HasMaxLength(20);
+            entity.Property(e => e.HREmail).HasMaxLength(255);
+            entity.Property(e => e.HRPhone).HasMaxLength(50);
+            entity.Property(e => e.Sector).HasMaxLength(100);
+            entity.Property(e => e.City).HasMaxLength(100);
+            entity.Property(e => e.Description).HasMaxLength(2000);
             entity.HasIndex(e => e.Name);
             entity.HasIndex(e => e.IsVerified);
+            entity.HasIndex(e => e.Sector);
+            entity.HasIndex(e => e.City);
+            entity.HasIndex(e => e.TaxNumber).IsUnique();
         });
 
         // InterviewPreparation Configuration
