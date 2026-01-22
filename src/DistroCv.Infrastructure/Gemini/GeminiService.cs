@@ -501,4 +501,58 @@ Important:
     }
 
     #endregion
+
+    /// <summary>
+    /// Generates content using Gemini AI
+    /// </summary>
+    public async Task<string> GenerateContentAsync(string prompt)
+    {
+        try
+        {
+            _logger.LogInformation("Generating content with Gemini");
+
+            var request = new GeminiRequest
+            {
+                Contents = new[]
+                {
+                    new Content
+                    {
+                        Parts = new[]
+                        {
+                            new Part { Text = prompt }
+                        }
+                    }
+                },
+                GenerationConfig = new GenerationConfig
+                {
+                    Temperature = 0.7,
+                    MaxOutputTokens = 8192
+                }
+            };
+
+            var requestJson = JsonSerializer.Serialize(request);
+            var content = new StringContent(requestJson, Encoding.UTF8, "application/json");
+
+            var response = await _httpClient.PostAsync($"models/gemini-1.5-flash:generateContent?key={_config.ApiKey}", content);
+            response.EnsureSuccessStatusCode();
+
+            var responseJson = await response.Content.ReadAsStringAsync();
+            var geminiResponse = JsonSerializer.Deserialize<GeminiResponse>(responseJson);
+
+            if (geminiResponse?.Candidates == null || geminiResponse.Candidates.Length == 0)
+            {
+                throw new InvalidOperationException("No response from Gemini API");
+            }
+
+            var generatedText = geminiResponse.Candidates[0].Content?.Parts?[0].Text ?? string.Empty;
+
+            _logger.LogInformation("Successfully generated content");
+            return generatedText;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error generating content with Gemini");
+            throw;
+        }
+    }
 }

@@ -42,6 +42,7 @@ builder.Services.AddScoped<DistroCv.Core.Interfaces.IJobScrapingService, DistroC
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IJobMatchRepository, DistroCv.Infrastructure.Data.JobMatchRepository>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IMatchingService, DistroCv.Infrastructure.Services.MatchingService>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.INotificationService, DistroCv.Infrastructure.Services.NotificationService>();
+builder.Services.AddScoped<DistroCv.Core.Interfaces.IResumeTailoringService, DistroCv.Infrastructure.Services.ResumeTailoringService>();
 
 // Configure Playwright settings
 builder.Services.Configure<DistroCv.Core.DTOs.PlaywrightSettings>(

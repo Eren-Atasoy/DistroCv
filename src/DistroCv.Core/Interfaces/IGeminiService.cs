@@ -26,6 +26,13 @@ public interface IGeminiService
     /// <param name="jobPostingData">The job posting data</param>
     /// <returns>Match score and reasoning</returns>
     Task<MatchResult> CalculateMatchScoreAsync(string digitalTwinData, string jobPostingData);
+    
+    /// <summary>
+    /// Generates content using Gemini AI
+    /// </summary>
+    /// <param name="prompt">The prompt for content generation</param>
+    /// <returns>Generated content</returns>
+    Task<string> GenerateContentAsync(string prompt);
 }
 
 /// <summary>
