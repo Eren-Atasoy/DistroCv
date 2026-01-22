@@ -1,6 +1,6 @@
 {
   "version": 2,
-  "dgSpecHash": "IizFkjj+OQ8=",
+  "dgSpecHash": "aoCLbfTknSk=",
   "success": true,
   "projectFilePath": "D:\\Portfolio\\DistroCv\\src\\DistroCv.Infrastructure\\DistroCv.Infrastructure.csproj",
   "expectedPackageFiles": [
@@ -58,6 +58,7 @@
     "C:\\Users\\erena\\.nuget\\packages\\pgvector.entityframeworkcore\\0.3.0\\pgvector.entityframeworkcore.0.3.0.nupkg.sha512",
     "C:\\Users\\erena\\.nuget\\packages\\polly\\8.6.5\\polly.8.6.5.nupkg.sha512",
     "C:\\Users\\erena\\.nuget\\packages\\polly.core\\8.6.5\\polly.core.8.6.5.nupkg.sha512",
+    "C:\\Users\\erena\\.nuget\\packages\\puppeteersharp\\20.2.5\\puppeteersharp.20.2.5.nupkg.sha512",
     "C:\\Users\\erena\\.nuget\\packages\\system.codedom\\6.0.0\\system.codedom.6.0.0.nupkg.sha512",
     "C:\\Users\\erena\\.nuget\\packages\\system.collections.immutable\\7.0.0\\system.collections.immutable.7.0.0.nupkg.sha512",
     "C:\\Users\\erena\\.nuget\\packages\\system.componentmodel.annotations\\5.0.0\\system.componentmodel.annotations.5.0.0.nupkg.sha512",

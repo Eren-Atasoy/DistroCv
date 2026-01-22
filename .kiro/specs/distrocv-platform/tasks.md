@@ -65,12 +65,12 @@
 
 ### 7. Resume Tailoring Service
 - [x] 7.1 Create IResumeTailoringService and implement tailored resume generation (Validates: Requirement 4.1, 4.2)
-- [ ] 7.2 Implement keyword optimization logic using Gemini (Validates: Requirement 4.2)
-- [ ] 7.3 Implement cover letter generation with company analysis (Validates: Requirement 4.4, 4.5)
-- [ ] 7.4 Integrate company culture analysis using Gemini (Validates: Requirement 12.1, 12.2)
-- [ ] 7.5 Create HTML to PDF converter for resume export (Validates: Requirement 4.6)
-- [ ] 7.6 Implement S3 file upload for tailored resumes
-- [ ] 7.7 Create resume comparison view (original vs tailored) (Validates: Requirement 4.3)
+- [x] 7.2 Implement keyword optimization logic using Gemini (Validates: Requirement 4.2)
+- [x] 7.3 Implement cover letter generation with company analysis (Validates: Requirement 4.4, 4.5)
+- [x] 7.4 Integrate company culture analysis using Gemini (Validates: Requirement 12.1, 12.2)
+- [x] 7.5 Create HTML to PDF converter for resume export (Validates: Requirement 4.6)
+- [x] 7.6 Implement S3 file upload for tailored resumes
+- [x] 7.7 Create resume comparison view (original vs tailored) (Validates: Requirement 4.3)
 
 ## Phase 3: Application Distribution
 

@@ -23,6 +23,7 @@
     <PackageReference Include="AWSSDK.Lambda" Version="3.7.407.7" />
     <PackageReference Include="AWSSDK.Extensions.NETCore.Setup" Version="3.7.301" />
     <PackageReference Include="Polly" Version="8.6.5" />
+    <PackageReference Include="PuppeteerSharp" Version="20.2.5" />
     <PackageReference Include="UglyToad.PdfPig" Version="1.7.0-custom-5" />
   </ItemGroup>
 

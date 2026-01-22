@@ -1,6 +1,7 @@
 using DistroCv.Core.Entities;
 using DistroCv.Core.Interfaces;
 using DistroCv.Infrastructure.Data;
+using DistroCv.Infrastructure.AWS;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
@@ -15,15 +16,18 @@ public class ResumeTailoringService : IResumeTailoringService
 {
     private readonly DistroCvDbContext _context;
     private readonly IGeminiService _geminiService;
+    private readonly IS3Service _s3Service;
     private readonly ILogger<ResumeTailoringService> _logger;
 
     public ResumeTailoringService(
         DistroCvDbContext context,
         IGeminiService geminiService,
+        IS3Service s3Service,
         ILogger<ResumeTailoringService> logger)
     {
         _context = context;
         _geminiService = geminiService;
+        _s3Service = s3Service;
         _logger = logger;
     }
 
@@ -251,12 +255,39 @@ Return the response in JSON format:
 
         try
         {
-            // TODO: Implement HTML to PDF conversion
-            // This would typically use a library like PuppeteerSharp, IronPdf, or SelectPdf
-            // For now, return placeholder
-            
-            _logger.LogWarning("PDF export not yet implemented, returning placeholder");
-            return Encoding.UTF8.GetBytes("PDF export not yet implemented");
+            // Download browser if not already downloaded
+            var browserFetcher = new PuppeteerSharp.BrowserFetcher();
+            await browserFetcher.DownloadAsync();
+
+            // Launch browser
+            await using var browser = await PuppeteerSharp.Puppeteer.LaunchAsync(new PuppeteerSharp.LaunchOptions
+            {
+                Headless = true,
+                Args = new[] { "--no-sandbox", "--disable-setuid-sandbox" }
+            });
+
+            // Create new page
+            await using var page = await browser.NewPageAsync();
+
+            // Set content
+            await page.SetContentAsync(htmlContent);
+
+            // Generate PDF
+            var pdfBytes = await page.PdfDataAsync(new PuppeteerSharp.PdfOptions
+            {
+                Format = PuppeteerSharp.Media.PaperFormat.A4,
+                PrintBackground = true,
+                MarginOptions = new PuppeteerSharp.Media.MarginOptions
+                {
+                    Top = "1cm",
+                    Right = "1cm",
+                    Bottom = "1cm",
+                    Left = "1cm"
+                }
+            });
+
+            _logger.LogInformation("Successfully exported resume to PDF, size: {Size} bytes", pdfBytes.Length);
+            return pdfBytes;
         }
         catch (Exception ex)
         {
@@ -471,6 +502,43 @@ Return ONLY the cover letter text without any additional formatting or explanati
                 HighlightedExperiences = new List<string>(),
                 AtsScore = 70
             };
+        }
+    }
+
+    /// <summary>
+    /// Generates tailored resume, exports to PDF, and uploads to S3 (Validates: Requirement 4.6)
+    /// </summary>
+    public async Task<(string fileKey, string presignedUrl)> GenerateAndUploadTailoredResumeAsync(
+        Guid userId, 
+        Guid jobPostingId, 
+        CancellationToken cancellationToken = default)
+    {
+        _logger.LogInformation("Generating and uploading tailored resume for user {UserId} and job {JobPostingId}", 
+            userId, jobPostingId);
+
+        try
+        {
+            // Step 1: Generate tailored resume
+            var tailoredResume = await GenerateTailoredResumeAsync(userId, jobPostingId, cancellationToken);
+
+            // Step 2: Export to PDF
+            var pdfBytes = await ExportToPdfAsync(tailoredResume.HtmlContent, cancellationToken);
+
+            // Step 3: Upload to S3
+            var fileName = $"tailored-resume-{DateTime.UtcNow:yyyyMMdd-HHmmss}.pdf";
+            var fileKey = await _s3Service.UploadTailoredResumeAsync(pdfBytes, userId, jobPostingId, fileName);
+
+            // Step 4: Generate presigned URL for download
+            var presignedUrl = await _s3Service.GetPresignedUrlAsync(fileKey, expirationMinutes: 1440); // 24 hours
+
+            _logger.LogInformation("Successfully generated and uploaded tailored resume to S3: {FileKey}", fileKey);
+            
+            return (fileKey, presignedUrl);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error generating and uploading tailored resume for user {UserId}", userId);
+            throw;
         }
     }
 }

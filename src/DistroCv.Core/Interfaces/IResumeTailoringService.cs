@@ -74,6 +74,18 @@ public interface IResumeTailoringService
     Task<ResumeComparisonResult> CompareResumesAsync(
         string originalContent, 
         string tailoredContent);
+    
+    /// <summary>
+    /// Generates tailored resume, exports to PDF, and uploads to S3
+    /// </summary>
+    /// <param name="userId">User ID</param>
+    /// <param name="jobPostingId">Job posting ID</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>S3 file key and presigned URL</returns>
+    Task<(string fileKey, string presignedUrl)> GenerateAndUploadTailoredResumeAsync(
+        Guid userId, 
+        Guid jobPostingId, 
+        CancellationToken cancellationToken = default);
 }
 
 /// <summary>

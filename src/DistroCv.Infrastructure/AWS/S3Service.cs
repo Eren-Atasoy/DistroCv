@@ -10,6 +10,7 @@ public interface IS3Service
     Task<Stream> DownloadFileAsync(string fileKey);
     Task<bool> DeleteFileAsync(string fileKey);
     Task<string> GetPresignedUrlAsync(string fileKey, int expirationMinutes = 60);
+    Task<string> UploadTailoredResumeAsync(byte[] pdfBytes, Guid userId, Guid jobPostingId, string fileName);
 }
 
 public class S3Service : IS3Service
@@ -75,5 +76,32 @@ public class S3Service : IS3Service
         };
 
         return await Task.FromResult(_s3Client.GetPreSignedURL(request));
+    }
+
+    public async Task<string> UploadTailoredResumeAsync(byte[] pdfBytes, Guid userId, Guid jobPostingId, string fileName)
+    {
+        // Create organized folder structure: tailored-resumes/{userId}/{jobPostingId}/{fileName}
+        var fileKey = $"tailored-resumes/{userId}/{jobPostingId}/{fileName}";
+        
+        using var memoryStream = new MemoryStream(pdfBytes);
+        
+        var request = new PutObjectRequest
+        {
+            BucketName = _awsConfig.S3BucketName,
+            Key = fileKey,
+            InputStream = memoryStream,
+            ContentType = "application/pdf",
+            ServerSideEncryptionMethod = ServerSideEncryptionMethod.AES256,
+            Metadata =
+            {
+                ["user-id"] = userId.ToString(),
+                ["job-posting-id"] = jobPostingId.ToString(),
+                ["upload-date"] = DateTime.UtcNow.ToString("O")
+            }
+        };
+
+        await _s3Client.PutObjectAsync(request);
+        
+        return fileKey;
     }
 }

@@ -1163,6 +1163,22 @@
           }
         }
       },
+      "PuppeteerSharp/20.2.5": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.Logging": "8.0.0"
+        },
+        "compile": {
+          "lib/net8.0/PuppeteerSharp.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/PuppeteerSharp.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "System.CodeDom/6.0.0": {
         "type": "package",
         "compile": {
@@ -4050,6 +4066,21 @@
         "polly.core.nuspec"
       ]
     },
+    "PuppeteerSharp/20.2.5": {
+      "sha512": "w9/oEME3spddIKjh8C3sMxQziJe6lcdsTtQCnG3GevupZYQPx243dz1znh9YIE9otulXa9lg+Pnf/SMUCq4/Gw==",
+      "type": "package",
+      "path": "puppeteersharp/20.2.5",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net8.0/PuppeteerSharp.dll",
+        "lib/net8.0/PuppeteerSharp.xml",
+        "lib/netstandard2.0/PuppeteerSharp.dll",
+        "lib/netstandard2.0/PuppeteerSharp.xml",
+        "puppeteersharp.20.2.5.nupkg.sha512",
+        "puppeteersharp.nuspec"
+      ]
+    },
     "System.CodeDom/6.0.0": {
       "sha512": "CPc6tWO1LAer3IzfZufDBRL+UZQcj5uS207NHALQzP84Vp/z6wF0Aa0YZImOQY8iStY0A2zI/e3ihKNPfUm8XA==",
       "type": "package",
@@ -4753,6 +4784,7 @@
       "Npgsql.EntityFrameworkCore.PostgreSQL >= 9.0.4",
       "Pgvector.EntityFrameworkCore >= 0.3.0",
       "Polly >= 8.6.5",
+      "PuppeteerSharp >= 20.2.5",
       "UglyToad.PdfPig >= 1.7.0-custom-5"
     ]
   },
@@ -4871,6 +4903,10 @@
           "Polly": {
             "target": "Package",
             "version": "[8.6.5, )"
+          },
+          "PuppeteerSharp": {
+            "target": "Package",
+            "version": "[20.2.5, )"
           },
           "UglyToad.PdfPig": {
             "target": "Package",
