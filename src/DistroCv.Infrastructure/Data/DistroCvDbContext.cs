@@ -31,6 +31,18 @@ public class DistroCvDbContext : DbContext
     public DbSet<AuditLog> AuditLogs { get; set; }
     public DbSet<UserConsent> UserConsents { get; set; }
 
+    // Beta Testing Entities
+    public DbSet<BetaTester> BetaTesters { get; set; }
+    public DbSet<BugReport> BugReports { get; set; }
+    public DbSet<BugReportComment> BugReportComments { get; set; }
+    public DbSet<FeatureRequest> FeatureRequests { get; set; }
+    public DbSet<FeatureRequestComment> FeatureRequestComments { get; set; }
+    public DbSet<FeatureVote> FeatureVotes { get; set; }
+    public DbSet<Survey> Surveys { get; set; }
+    public DbSet<SurveyQuestion> SurveyQuestions { get; set; }
+    public DbSet<SurveyResponse> SurveyResponses { get; set; }
+    public DbSet<SurveyAnswer> SurveyAnswers { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
@@ -299,6 +311,174 @@ public class DistroCvDbContext : DbContext
             entity.HasIndex(e => e.UserId);
             entity.HasIndex(e => new { e.UserId, e.LinkedInUrl });
             entity.HasIndex(e => e.CreatedAt);
+        });
+
+        // BetaTester Configuration
+        modelBuilder.Entity<BetaTester>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Email).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.FullName).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.PhoneNumber).HasMaxLength(20);
+            entity.Property(e => e.Industry).HasMaxLength(100);
+            entity.Property(e => e.JobTitle).HasMaxLength(200);
+            entity.Property(e => e.Location).HasMaxLength(100);
+            entity.Property(e => e.TechProficiency).HasMaxLength(50);
+            entity.Property(e => e.InviteCode).HasMaxLength(20);
+            entity.Property(e => e.PreferredLanguage).HasMaxLength(5).HasDefaultValue("tr");
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.SetNull);
+            entity.HasIndex(e => e.Email).IsUnique();
+            entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => e.InviteCode);
+        });
+
+        // BugReport Configuration
+        modelBuilder.Entity<BugReport>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Title).IsRequired().HasMaxLength(300);
+            entity.Property(e => e.Description).IsRequired().HasMaxLength(5000);
+            entity.Property(e => e.StepsToReproduce).HasMaxLength(5000);
+            entity.Property(e => e.ExpectedBehavior).HasMaxLength(2000);
+            entity.Property(e => e.ActualBehavior).HasMaxLength(2000);
+            entity.Property(e => e.Browser).HasMaxLength(100);
+            entity.Property(e => e.OperatingSystem).HasMaxLength(100);
+            entity.Property(e => e.DeviceType).HasMaxLength(50);
+            entity.Property(e => e.PageUrl).HasMaxLength(500);
+            entity.Property(e => e.AppVersion).HasMaxLength(50);
+            entity.Property(e => e.AssignedTo).HasMaxLength(100);
+            entity.Property(e => e.FixVersion).HasMaxLength(50);
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(e => e.BetaTester)
+                .WithMany(bt => bt.BugReports)
+                .HasForeignKey(e => e.BetaTesterId)
+                .OnDelete(DeleteBehavior.SetNull);
+            entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => e.Priority);
+            entity.HasIndex(e => e.Severity);
+            entity.HasIndex(e => e.CreatedAt);
+        });
+
+        // BugReportComment Configuration
+        modelBuilder.Entity<BugReportComment>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.AuthorName).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Content).IsRequired().HasMaxLength(5000);
+            entity.HasOne(e => e.BugReport)
+                .WithMany(br => br.Comments)
+                .HasForeignKey(e => e.BugReportId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // FeatureRequest Configuration
+        modelBuilder.Entity<FeatureRequest>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Title).IsRequired().HasMaxLength(300);
+            entity.Property(e => e.Description).IsRequired().HasMaxLength(5000);
+            entity.Property(e => e.UseCase).HasMaxLength(2000);
+            entity.Property(e => e.ExpectedBehavior).HasMaxLength(2000);
+            entity.Property(e => e.AlternativeSolutions).HasMaxLength(2000);
+            entity.Property(e => e.AssignedTo).HasMaxLength(100);
+            entity.Property(e => e.TargetVersion).HasMaxLength(50);
+            entity.Property(e => e.InternalNotes).HasMaxLength(2000);
+            entity.Property(e => e.RejectionReason).HasMaxLength(1000);
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(e => e.BetaTester)
+                .WithMany(bt => bt.FeatureRequests)
+                .HasForeignKey(e => e.BetaTesterId)
+                .OnDelete(DeleteBehavior.SetNull);
+            entity.HasIndex(e => e.Status);
+            entity.HasIndex(e => e.Category);
+            entity.HasIndex(e => e.VoteCount);
+            entity.HasIndex(e => e.CreatedAt);
+        });
+
+        // FeatureRequestComment Configuration
+        modelBuilder.Entity<FeatureRequestComment>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.AuthorName).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Content).IsRequired().HasMaxLength(5000);
+            entity.HasOne(e => e.FeatureRequest)
+                .WithMany(fr => fr.Comments)
+                .HasForeignKey(e => e.FeatureRequestId)
+                .OnDelete(DeleteBehavior.Cascade);
+        });
+
+        // FeatureVote Configuration
+        modelBuilder.Entity<FeatureVote>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasOne(e => e.FeatureRequest)
+                .WithMany(fr => fr.Votes)
+                .HasForeignKey(e => e.FeatureRequestId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => new { e.FeatureRequestId, e.UserId }).IsUnique();
+        });
+
+        // Survey Configuration
+        modelBuilder.Entity<Survey>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Title).IsRequired().HasMaxLength(300);
+            entity.Property(e => e.Description).HasMaxLength(2000);
+            entity.Property(e => e.TargetFeature).HasMaxLength(100);
+            entity.HasIndex(e => e.IsActive);
+            entity.HasIndex(e => e.Type);
+        });
+
+        // SurveyQuestion Configuration
+        modelBuilder.Entity<SurveyQuestion>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.QuestionText).IsRequired().HasMaxLength(1000);
+            entity.Property(e => e.QuestionTextTr).HasMaxLength(1000);
+            entity.HasOne(e => e.Survey)
+                .WithMany(s => s.Questions)
+                .HasForeignKey(e => e.SurveyId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => new { e.SurveyId, e.Order });
+        });
+
+        // SurveyResponse Configuration
+        modelBuilder.Entity<SurveyResponse>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Browser).HasMaxLength(100);
+            entity.Property(e => e.OperatingSystem).HasMaxLength(100);
+            entity.Property(e => e.PageUrl).HasMaxLength(500);
+            entity.HasOne(e => e.Survey)
+                .WithMany(s => s.Responses)
+                .HasForeignKey(e => e.SurveyId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => new { e.SurveyId, e.UserId });
+            entity.HasIndex(e => e.IsCompleted);
+        });
+
+        // SurveyAnswer Configuration
+        modelBuilder.Entity<SurveyAnswer>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.TextAnswer).HasMaxLength(5000);
+            entity.HasOne(e => e.SurveyResponse)
+                .WithMany(sr => sr.Answers)
+                .HasForeignKey(e => e.SurveyResponseId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.SurveyQuestion)
+                .WithMany()
+                .HasForeignKey(e => e.SurveyQuestionId)
+                .OnDelete(DeleteBehavior.Restrict);
         });
     }
 }

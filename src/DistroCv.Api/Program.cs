@@ -94,6 +94,8 @@ builder.Services.AddScoped<DistroCv.Core.Interfaces.IGDPRService, DistroCv.Infra
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IApplicationRepository, DistroCv.Infrastructure.Data.ApplicationRepository>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IInterviewPreparationRepository, DistroCv.Infrastructure.Data.InterviewPreparationRepository>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IInterviewCoachService, DistroCv.Infrastructure.Services.InterviewCoachService>();
+builder.Services.AddScoped<DistroCv.Core.Interfaces.IBetaTestingService, DistroCv.Infrastructure.Services.BetaTestingService>(); // Task 31
+
 // Configure Serilog
 builder.Host.UseSerilog((context, services, configuration) => configuration
     .ReadFrom.Configuration(context.Configuration)

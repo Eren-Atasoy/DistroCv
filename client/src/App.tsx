@@ -9,6 +9,8 @@ import AdminCompanies from './pages/AdminCompanies'
 import SkillGapPage from './pages/SkillGapPage'
 import LinkedInOptimizerPage from './pages/LinkedInOptimizerPage'
 import PreferencesPage from './pages/PreferencesPage'
+import BugReportPage from './pages/BugReportPage'
+import FeatureRequestPage from './pages/FeatureRequestPage'
 import Layout from './components/layout/Layout'
 
 function App() {
@@ -28,6 +30,8 @@ function App() {
         <Route path="/skills" element={<SkillGapPage />} />
         <Route path="/linkedin-optimizer" element={<LinkedInOptimizerPage />} />
         <Route path="/preferences" element={<PreferencesPage />} />
+        <Route path="/bugs" element={<BugReportPage />} />
+        <Route path="/features" element={<FeatureRequestPage />} />
       </Route>
     </Routes>
   )
