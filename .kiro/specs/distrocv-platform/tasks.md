@@ -39,8 +39,8 @@
 - [x] 4.5 Integrate Gemini for resume analysis
 - [x] 4.6 Implement Digital Twin creation
 - [x] 4.7 Generate pgvector embeddings
-- [ ] 4.8 Implement preference management
-- [ ] 4.9 Create profile update endpoint
+- [x] 4.8 Implement preference management
+- [x] 4.9 Create profile update endpoint
 
 ### 5. Job Scraping Service
 - [ ] 5.1 Setup Playwright .NET
