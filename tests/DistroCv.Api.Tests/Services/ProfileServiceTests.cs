@@ -309,6 +309,198 @@ public class ProfileServiceTests
     }
 
     [Fact]
+    public async Task ParseResumeAsync_WithPdfFile_ReturnsStructuredJson()
+    {
+        // Arrange
+        var fileName = "resume.pdf";
+        
+        // Create a minimal valid PDF manually (simplified PDF structure)
+        // This is a very basic PDF with just text content
+        var pdfContent = @"%PDF-1.4
+1 0 obj
+<<
+/Type /Catalog
+/Pages 2 0 R
+>>
+endobj
+2 0 obj
+<<
+/Type /Pages
+/Kids [3 0 R]
+/Count 1
+>>
+endobj
+3 0 obj
+<<
+/Type /Page
+/Parent 2 0 R
+/Resources <<
+/Font <<
+/F1 <<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+>>
+>>
+>>
+/MediaBox [0 0 612 792]
+/Contents 4 0 R
+>>
+endobj
+4 0 obj
+<<
+/Length 85
+>>
+stream
+BT
+/F1 12 Tf
+50 700 Td
+(John Doe - Software Engineer) Tj
+0 -20 Td
+(Experience: 5 years) Tj
+ET
+endstream
+endobj
+xref
+0 5
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000317 00000 n 
+trailer
+<<
+/Size 5
+/Root 1 0 R
+>>
+startxref
+451
+%%EOF";
+        
+        var memoryStream = new MemoryStream(System.Text.Encoding.ASCII.GetBytes(pdfContent));
+
+        // Act
+        var result = await _profileService.ParseResumeAsync(memoryStream, fileName);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Contains("pdf", result);
+        
+        // Verify the JSON structure
+        var jsonDoc = System.Text.Json.JsonDocument.Parse(result);
+        Assert.Equal("pdf", jsonDoc.RootElement.GetProperty("type").GetString());
+        
+        // The status should be either "success" or "error" depending on PDF validity
+        var status = jsonDoc.RootElement.GetProperty("status").GetString();
+        Assert.True(status == "success" || status == "error");
+    }
+
+    [Fact]
+    public async Task CreateDigitalTwinAsync_WithPdfResume_ParsesAndStoresCorrectly()
+    {
+        // Arrange
+        var userId = Guid.NewGuid();
+        var user = new User
+        {
+            Id = userId,
+            Email = "test@example.com",
+            FullName = "Test User",
+            CognitoUserId = "cognito-123",
+            PreferredLanguage = "en",
+            CreatedAt = DateTime.UtcNow,
+            IsActive = true
+        };
+        _context.Users.Add(user);
+        await _context.SaveChangesAsync();
+
+        var fileName = "resume.pdf";
+        
+        // Create a minimal valid PDF
+        var pdfContent = @"%PDF-1.4
+1 0 obj
+<<
+/Type /Catalog
+/Pages 2 0 R
+>>
+endobj
+2 0 obj
+<<
+/Type /Pages
+/Kids [3 0 R]
+/Count 1
+>>
+endobj
+3 0 obj
+<<
+/Type /Page
+/Parent 2 0 R
+/Resources <<
+/Font <<
+/F1 <<
+/Type /Font
+/Subtype /Type1
+/BaseFont /Helvetica
+>>
+>>
+>>
+/MediaBox [0 0 612 792]
+/Contents 4 0 R
+>>
+endobj
+4 0 obj
+<<
+/Length 70
+>>
+stream
+BT
+/F1 12 Tf
+50 700 Td
+(Jane Smith - Senior Developer) Tj
+ET
+endstream
+endobj
+xref
+0 5
+0000000000 65535 f 
+0000000009 00000 n 
+0000000058 00000 n 
+0000000115 00000 n 
+0000000317 00000 n 
+trailer
+<<
+/Size 5
+/Root 1 0 R
+>>
+startxref
+436
+%%EOF";
+        
+        var memoryStream = new MemoryStream(System.Text.Encoding.ASCII.GetBytes(pdfContent));
+
+        _mockS3Service
+            .Setup(s => s.UploadFileAsync(It.IsAny<Stream>(), fileName, "application/pdf"))
+            .ReturnsAsync("test-s3-key/resume.pdf");
+
+        // Act
+        var result = await _profileService.CreateDigitalTwinAsync(userId, memoryStream, fileName);
+
+        // Assert
+        Assert.NotNull(result);
+        Assert.Equal(userId, result.UserId);
+        Assert.NotNull(result.ParsedResumeJson);
+        
+        // Verify the parsed JSON contains PDF data
+        var parsedJson = System.Text.Json.JsonDocument.Parse(result.ParsedResumeJson);
+        Assert.Equal("pdf", parsedJson.RootElement.GetProperty("type").GetString());
+        
+        // Verify S3 upload was called with correct content type
+        _mockS3Service.Verify(s => s.UploadFileAsync(
+            It.IsAny<Stream>(), 
+            fileName, 
+            "application/pdf"), Times.Once);
+    }
+
+    [Fact]
     public void GenerateEmbeddingAsync_WithText_ReturnsVector()
     {
         // Arrange

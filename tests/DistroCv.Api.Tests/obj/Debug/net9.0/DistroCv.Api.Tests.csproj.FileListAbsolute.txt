@@ -160,3 +160,11 @@ D:\Portfolio\DistroCv\tests\DistroCv.Api.Tests\obj\Debug\net9.0\ref\DistroCv.Api
 D:\Portfolio\DistroCv\tests\DistroCv.Api.Tests\bin\Debug\net9.0\Microsoft.Extensions.Diagnostics.dll
 D:\Portfolio\DistroCv\tests\DistroCv.Api.Tests\bin\Debug\net9.0\Microsoft.Extensions.Http.dll
 D:\Portfolio\DistroCv\tests\DistroCv.Api.Tests\bin\Debug\net9.0\Microsoft.EntityFrameworkCore.InMemory.dll
+D:\Portfolio\DistroCv\tests\DistroCv.Api.Tests\bin\Debug\net9.0\UglyToad.PdfPig.dll
+D:\Portfolio\DistroCv\tests\DistroCv.Api.Tests\bin\Debug\net9.0\UglyToad.PdfPig.Core.dll
+D:\Portfolio\DistroCv\tests\DistroCv.Api.Tests\bin\Debug\net9.0\UglyToad.PdfPig.Fonts.dll
+D:\Portfolio\DistroCv\tests\DistroCv.Api.Tests\bin\Debug\net9.0\UglyToad.PdfPig.Tokenization.dll
+D:\Portfolio\DistroCv\tests\DistroCv.Api.Tests\bin\Debug\net9.0\UglyToad.PdfPig.Tokens.dll
+D:\Portfolio\DistroCv\tests\DistroCv.Api.Tests\bin\Debug\net9.0\DocumentFormat.OpenXml.dll
+D:\Portfolio\DistroCv\tests\DistroCv.Api.Tests\bin\Debug\net9.0\DocumentFormat.OpenXml.Framework.dll
+D:\Portfolio\DistroCv\tests\DistroCv.Api.Tests\bin\Debug\net9.0\System.IO.Packaging.dll

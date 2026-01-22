@@ -206,51 +206,593 @@ public class ProfileService : IProfileService
     /// </summary>
     private async Task<string> ParsePdfAsync(Stream stream)
     {
-        // TODO: Implement PDF parsing (Task 4.2)
-        // For now, return a placeholder
-        _logger.LogWarning("PDF parsing not yet implemented. Returning placeholder.");
-        
-        return await Task.FromResult(@"{
-            ""type"": ""pdf"",
-            ""status"": ""pending_implementation"",
-            ""message"": ""PDF parsing will be implemented in task 4.2""
-        }");
+        try
+        {
+            _logger.LogInformation("Parsing PDF resume");
+
+            // Use PdfPig to extract text from PDF
+            using var document = UglyToad.PdfPig.PdfDocument.Open(stream);
+            
+            var extractedData = new
+            {
+                type = "pdf",
+                status = "success",
+                pageCount = document.NumberOfPages,
+                content = new List<object>(),
+                fullText = string.Empty
+            };
+
+            var fullTextBuilder = new System.Text.StringBuilder();
+            var contentList = new List<object>();
+
+            // Extract text from each page
+            foreach (var page in document.GetPages())
+            {
+                var pageText = page.Text;
+                fullTextBuilder.AppendLine(pageText);
+
+                contentList.Add(new
+                {
+                    pageNumber = page.Number,
+                    text = pageText,
+                    width = page.Width,
+                    height = page.Height
+                });
+
+                _logger.LogDebug("Extracted text from page {PageNumber}: {CharCount} characters", 
+                    page.Number, pageText.Length);
+            }
+
+            var result = new
+            {
+                type = "pdf",
+                status = "success",
+                pageCount = document.NumberOfPages,
+                pages = contentList,
+                fullText = fullTextBuilder.ToString().Trim(),
+                extractedAt = DateTime.UtcNow
+            };
+
+            var jsonResult = System.Text.Json.JsonSerializer.Serialize(result, new System.Text.Json.JsonSerializerOptions
+            {
+                WriteIndented = true
+            });
+
+            _logger.LogInformation("Successfully parsed PDF with {PageCount} pages and {CharCount} total characters", 
+                document.NumberOfPages, fullTextBuilder.Length);
+
+            return await Task.FromResult(jsonResult);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error parsing PDF resume");
+            
+            // Return error information in JSON format
+            var errorResult = new
+            {
+                type = "pdf",
+                status = "error",
+                error = ex.Message,
+                errorType = ex.GetType().Name
+            };
+
+            return System.Text.Json.JsonSerializer.Serialize(errorResult);
+        }
     }
 
     /// <summary>
     /// Parses DOCX resume
     /// </summary>
-    private async Task<string> ParseDocxAsync(Stream stream)
+    private Task<string> ParseDocxAsync(Stream stream)
     {
-        // TODO: Implement DOCX parsing (Task 4.3)
-        // For now, return a placeholder
-        _logger.LogWarning("DOCX parsing not yet implemented. Returning placeholder.");
-        
-        return await Task.FromResult(@"{
-            ""type"": ""docx"",
-            ""status"": ""pending_implementation"",
-            ""message"": ""DOCX parsing will be implemented in task 4.3""
-        }");
+        try
+        {
+            _logger.LogInformation("Parsing DOCX resume");
+
+            // Use DocumentFormat.OpenXml to extract text from DOCX
+            using var document = DocumentFormat.OpenXml.Packaging.WordprocessingDocument.Open(stream, false);
+            
+            if (document.MainDocumentPart == null)
+            {
+                throw new InvalidOperationException("DOCX document has no main document part");
+            }
+
+            var body = document.MainDocumentPart.Document.Body;
+            if (body == null)
+            {
+                throw new InvalidOperationException("DOCX document has no body");
+            }
+
+            var fullTextBuilder = new System.Text.StringBuilder();
+            var paragraphs = new List<object>();
+            var tables = new List<object>();
+
+            // Extract paragraphs
+            foreach (var paragraph in body.Elements<DocumentFormat.OpenXml.Wordprocessing.Paragraph>())
+            {
+                var paragraphText = paragraph.InnerText;
+                if (!string.IsNullOrWhiteSpace(paragraphText))
+                {
+                    fullTextBuilder.AppendLine(paragraphText);
+                    paragraphs.Add(new
+                    {
+                        text = paragraphText.Trim(),
+                        type = "paragraph"
+                    });
+                }
+            }
+
+            // Extract tables
+            var tableIndex = 0;
+            foreach (var table in body.Elements<DocumentFormat.OpenXml.Wordprocessing.Table>())
+            {
+                var tableData = new List<List<string>>();
+                
+                foreach (var row in table.Elements<DocumentFormat.OpenXml.Wordprocessing.TableRow>())
+                {
+                    var rowData = new List<string>();
+                    foreach (var cell in row.Elements<DocumentFormat.OpenXml.Wordprocessing.TableCell>())
+                    {
+                        var cellText = cell.InnerText.Trim();
+                        rowData.Add(cellText);
+                        fullTextBuilder.AppendLine(cellText);
+                    }
+                    if (rowData.Any(c => !string.IsNullOrWhiteSpace(c)))
+                    {
+                        tableData.Add(rowData);
+                    }
+                }
+
+                if (tableData.Count > 0)
+                {
+                    tables.Add(new
+                    {
+                        tableIndex = tableIndex++,
+                        rows = tableData,
+                        type = "table"
+                    });
+                }
+            }
+
+            var result = new
+            {
+                type = "docx",
+                status = "success",
+                paragraphCount = paragraphs.Count,
+                tableCount = tables.Count,
+                paragraphs = paragraphs,
+                tables = tables,
+                fullText = fullTextBuilder.ToString().Trim(),
+                extractedAt = DateTime.UtcNow
+            };
+
+            var jsonResult = System.Text.Json.JsonSerializer.Serialize(result, new System.Text.Json.JsonSerializerOptions
+            {
+                WriteIndented = true
+            });
+
+            _logger.LogInformation("Successfully parsed DOCX with {ParagraphCount} paragraphs, {TableCount} tables, and {CharCount} total characters", 
+                paragraphs.Count, tables.Count, fullTextBuilder.Length);
+
+            return Task.FromResult(jsonResult);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error parsing DOCX resume");
+            
+            // Return error information in JSON format
+            var errorResult = new
+            {
+                type = "docx",
+                status = "error",
+                error = ex.Message,
+                errorType = ex.GetType().Name
+            };
+
+            return Task.FromResult(System.Text.Json.JsonSerializer.Serialize(errorResult));
+        }
     }
 
     /// <summary>
-    /// Parses TXT resume
+    /// Parses TXT resume and extracts structured data
     /// </summary>
     private async Task<string> ParseTxtAsync(Stream stream)
     {
-        // TODO: Implement TXT parsing (Task 4.4)
-        // For now, read the text content
-        _logger.LogInformation("Parsing TXT file");
-        
-        using var reader = new StreamReader(stream);
-        var content = await reader.ReadToEndAsync();
-        
-        return System.Text.Json.JsonSerializer.Serialize(new
+        try
         {
-            type = "txt",
-            status = "basic_parsing",
-            content = content,
-            message = "Basic text extraction complete. Advanced parsing will be implemented in task 4.4"
-        });
+            _logger.LogInformation("Parsing TXT resume with structure extraction");
+            
+            using var reader = new StreamReader(stream);
+            var content = await reader.ReadToEndAsync();
+            
+            if (string.IsNullOrWhiteSpace(content))
+            {
+                throw new InvalidOperationException("TXT file is empty");
+            }
+
+            // Split content into lines for analysis
+            var lines = content.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries)
+                              .Select(l => l.Trim())
+                              .Where(l => !string.IsNullOrWhiteSpace(l))
+                              .ToList();
+
+            // Extract structured sections
+            var sections = ExtractResumeSections(lines);
+            
+            // Identify contact information
+            var contactInfo = ExtractContactInformation(lines);
+            
+            // Extract skills
+            var skills = ExtractSkills(sections, lines);
+            
+            // Extract experience entries
+            var experience = ExtractExperience(sections, lines);
+            
+            // Extract education entries
+            var education = ExtractEducation(sections, lines);
+
+            var result = new
+            {
+                type = "txt",
+                status = "success",
+                lineCount = lines.Count,
+                fullText = content.Trim(),
+                contactInfo = contactInfo,
+                sections = sections.Select(s => new
+                {
+                    name = s.Key,
+                    startLine = s.Value.StartLine,
+                    endLine = s.Value.EndLine,
+                    content = s.Value.Content
+                }).ToList(),
+                skills = skills,
+                experience = experience,
+                education = education,
+                extractedAt = DateTime.UtcNow
+            };
+
+            var jsonResult = System.Text.Json.JsonSerializer.Serialize(result, new System.Text.Json.JsonSerializerOptions
+            {
+                WriteIndented = true
+            });
+
+            _logger.LogInformation("Successfully parsed TXT with {LineCount} lines, {SectionCount} sections identified", 
+                lines.Count, sections.Count);
+
+            return jsonResult;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error parsing TXT resume");
+            
+            // Return error information in JSON format
+            var errorResult = new
+            {
+                type = "txt",
+                status = "error",
+                error = ex.Message,
+                errorType = ex.GetType().Name
+            };
+
+            return System.Text.Json.JsonSerializer.Serialize(errorResult);
+        }
+    }
+
+    /// <summary>
+    /// Extracts resume sections based on common headers
+    /// </summary>
+    private Dictionary<string, (int StartLine, int EndLine, string Content)> ExtractResumeSections(List<string> lines)
+    {
+        var sections = new Dictionary<string, (int StartLine, int EndLine, string Content)>();
+        
+        // Common section headers (case-insensitive)
+        var sectionKeywords = new Dictionary<string, string[]>
+        {
+            { "Experience", new[] { "experience", "work experience", "employment", "work history", "professional experience", "iş deneyimi", "deneyim", "i̇ş deneyimi" } },
+            { "Education", new[] { "education", "academic", "qualifications", "eğitim", "öğrenim", "eği̇ti̇m" } },
+            { "Skills", new[] { "skills", "technical skills", "competencies", "expertise", "yetenekler", "beceriler", "beceri̇ler" } },
+            { "Summary", new[] { "summary", "profile", "objective", "about", "professional summary", "özet", "profil" } },
+            { "Projects", new[] { "projects", "portfolio", "projeler" } },
+            { "Certifications", new[] { "certifications", "certificates", "licenses", "sertifikalar", "serti̇fi̇kalar" } },
+            { "Languages", new[] { "languages", "diller", "di̇ller" } },
+            { "References", new[] { "references", "referanslar" } }
+        };
+
+        int currentSectionStart = -1;
+        string currentSectionName = "";
+
+        for (int i = 0; i < lines.Count; i++)
+        {
+            var line = lines[i];
+            // Normalize Turkish characters for comparison
+            var lineLower = line.ToLowerInvariant()
+                .Replace("ı", "i")
+                .Replace("İ", "i")
+                .Replace("ğ", "g")
+                .Replace("Ğ", "g")
+                .Replace("ü", "u")
+                .Replace("Ü", "u")
+                .Replace("ş", "s")
+                .Replace("Ş", "s")
+                .Replace("ö", "o")
+                .Replace("Ö", "o")
+                .Replace("ç", "c")
+                .Replace("Ç", "c");
+
+            // Check if this line is a section header
+            foreach (var section in sectionKeywords)
+            {
+                var normalizedKeywords = section.Value.Select(k => k
+                    .Replace("ı", "i")
+                    .Replace("İ", "i")
+                    .Replace("ğ", "g")
+                    .Replace("Ğ", "g")
+                    .Replace("ü", "u")
+                    .Replace("Ü", "u")
+                    .Replace("ş", "s")
+                    .Replace("Ş", "s")
+                    .Replace("ö", "o")
+                    .Replace("Ö", "o")
+                    .Replace("ç", "c")
+                    .Replace("Ç", "c")).ToArray();
+
+                if (normalizedKeywords.Any(keyword => 
+                    lineLower.Equals(keyword, StringComparison.OrdinalIgnoreCase) ||
+                    lineLower.StartsWith(keyword + ":", StringComparison.OrdinalIgnoreCase) ||
+                    lineLower.StartsWith(keyword + " -", StringComparison.OrdinalIgnoreCase)))
+                {
+                    // Save previous section if exists
+                    if (currentSectionStart >= 0 && !string.IsNullOrEmpty(currentSectionName))
+                    {
+                        var content = string.Join("\n", lines.Skip(currentSectionStart + 1).Take(i - currentSectionStart - 1));
+                        sections[currentSectionName] = (currentSectionStart, i - 1, content);
+                    }
+
+                    // Start new section
+                    currentSectionName = section.Key;
+                    currentSectionStart = i;
+                    break;
+                }
+            }
+        }
+
+        // Save last section
+        if (currentSectionStart >= 0 && !string.IsNullOrEmpty(currentSectionName))
+        {
+            var content = string.Join("\n", lines.Skip(currentSectionStart + 1));
+            sections[currentSectionName] = (currentSectionStart, lines.Count - 1, content);
+        }
+
+        return sections;
+    }
+
+    /// <summary>
+    /// Extracts contact information from resume
+    /// </summary>
+    private object ExtractContactInformation(List<string> lines)
+    {
+        var contactInfo = new
+        {
+            email = ExtractEmail(lines),
+            phone = ExtractPhone(lines),
+            linkedin = ExtractLinkedIn(lines),
+            github = ExtractGitHub(lines)
+        };
+
+        return contactInfo;
+    }
+
+    /// <summary>
+    /// Extracts email address from lines
+    /// </summary>
+    private string? ExtractEmail(List<string> lines)
+    {
+        var emailPattern = @"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b";
+        
+        foreach (var line in lines.Take(20)) // Check first 20 lines
+        {
+            var match = System.Text.RegularExpressions.Regex.Match(line, emailPattern);
+            if (match.Success)
+            {
+                return match.Value;
+            }
+        }
+        
+        return null;
+    }
+
+    /// <summary>
+    /// Extracts phone number from lines
+    /// </summary>
+    private string? ExtractPhone(List<string> lines)
+    {
+        var phonePatterns = new[]
+        {
+            @"\+?\d{1,3}[-.\s]?\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}",  // International format
+            @"\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}",                    // US format
+            @"\+?\d{10,15}"                                             // Simple international
+        };
+        
+        foreach (var line in lines.Take(20)) // Check first 20 lines
+        {
+            foreach (var pattern in phonePatterns)
+            {
+                var match = System.Text.RegularExpressions.Regex.Match(line, pattern);
+                if (match.Success)
+                {
+                    return match.Value;
+                }
+            }
+        }
+        
+        return null;
+    }
+
+    /// <summary>
+    /// Extracts LinkedIn URL from lines
+    /// </summary>
+    private string? ExtractLinkedIn(List<string> lines)
+    {
+        var linkedInPattern = @"(https?://)?(www\.)?linkedin\.com/in/[\w-]+/?";
+        
+        foreach (var line in lines.Take(30)) // Check first 30 lines
+        {
+            var match = System.Text.RegularExpressions.Regex.Match(line, linkedInPattern, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            if (match.Success)
+            {
+                return match.Value;
+            }
+        }
+        
+        return null;
+    }
+
+    /// <summary>
+    /// Extracts GitHub URL from lines
+    /// </summary>
+    private string? ExtractGitHub(List<string> lines)
+    {
+        var githubPattern = @"(https?://)?(www\.)?github\.com/[\w-]+/?";
+        
+        foreach (var line in lines.Take(30)) // Check first 30 lines
+        {
+            var match = System.Text.RegularExpressions.Regex.Match(line, githubPattern, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+            if (match.Success)
+            {
+                return match.Value;
+            }
+        }
+        
+        return null;
+    }
+
+    /// <summary>
+    /// Extracts skills from resume
+    /// </summary>
+    private List<string> ExtractSkills(Dictionary<string, (int StartLine, int EndLine, string Content)> sections, List<string> lines)
+    {
+        var skills = new List<string>();
+
+        if (sections.ContainsKey("Skills"))
+        {
+            var skillsContent = sections["Skills"].Content;
+            
+            // Split by common delimiters
+            var delimiters = new[] { ',', ';', '|', '\n', '•', '-', '·' };
+            var skillItems = skillsContent.Split(delimiters, StringSplitOptions.RemoveEmptyEntries)
+                                         .Select(s => s.Trim())
+                                         .Where(s => !string.IsNullOrWhiteSpace(s) && s.Length > 1)
+                                         .ToList();
+
+            skills.AddRange(skillItems);
+        }
+
+        return skills.Distinct().ToList();
+    }
+
+    /// <summary>
+    /// Extracts work experience entries
+    /// </summary>
+    private List<object> ExtractExperience(Dictionary<string, (int StartLine, int EndLine, string Content)> sections, List<string> lines)
+    {
+        var experiences = new List<object>();
+
+        if (sections.ContainsKey("Experience"))
+        {
+            var experienceContent = sections["Experience"].Content;
+            var experienceLines = experienceContent.Split('\n', StringSplitOptions.RemoveEmptyEntries)
+                                                   .Select(l => l.Trim())
+                                                   .Where(l => !string.IsNullOrWhiteSpace(l))
+                                                   .ToList();
+
+            // Try to identify experience entries (simplified heuristic)
+            var currentEntry = new List<string>();
+            
+            foreach (var line in experienceLines)
+            {
+                // Check if line might be a job title or company (usually shorter, may contain dates)
+                var hasDate = System.Text.RegularExpressions.Regex.IsMatch(line, @"\d{4}|\d{1,2}/\d{4}");
+                var isShortLine = line.Length < 100;
+
+                if ((hasDate || isShortLine) && currentEntry.Count > 0)
+                {
+                    // Save previous entry
+                    experiences.Add(new
+                    {
+                        text = string.Join(" ", currentEntry),
+                        type = "experience_entry"
+                    });
+                    currentEntry.Clear();
+                }
+
+                currentEntry.Add(line);
+            }
+
+            // Add last entry
+            if (currentEntry.Count > 0)
+            {
+                experiences.Add(new
+                {
+                    text = string.Join(" ", currentEntry),
+                    type = "experience_entry"
+                });
+            }
+        }
+
+        return experiences;
+    }
+
+    /// <summary>
+    /// Extracts education entries
+    /// </summary>
+    private List<object> ExtractEducation(Dictionary<string, (int StartLine, int EndLine, string Content)> sections, List<string> lines)
+    {
+        var educationEntries = new List<object>();
+
+        if (sections.ContainsKey("Education"))
+        {
+            var educationContent = sections["Education"].Content;
+            var educationLines = educationContent.Split('\n', StringSplitOptions.RemoveEmptyEntries)
+                                                 .Select(l => l.Trim())
+                                                 .Where(l => !string.IsNullOrWhiteSpace(l))
+                                                 .ToList();
+
+            // Try to identify education entries
+            var currentEntry = new List<string>();
+            
+            foreach (var line in educationLines)
+            {
+                // Check if line might be a degree or institution
+                var hasDate = System.Text.RegularExpressions.Regex.IsMatch(line, @"\d{4}|\d{1,2}/\d{4}");
+                var hasDegreeKeyword = System.Text.RegularExpressions.Regex.IsMatch(line, 
+                    @"\b(bachelor|master|phd|doctorate|diploma|degree|bs|ba|ms|ma|mba|university|college|üniversite)\b", 
+                    System.Text.RegularExpressions.RegexOptions.IgnoreCase);
+
+                if ((hasDate || hasDegreeKeyword) && currentEntry.Count > 0)
+                {
+                    // Save previous entry
+                    educationEntries.Add(new
+                    {
+                        text = string.Join(" ", currentEntry),
+                        type = "education_entry"
+                    });
+                    currentEntry.Clear();
+                }
+
+                currentEntry.Add(line);
+            }
+
+            // Add last entry
+            if (currentEntry.Count > 0)
+            {
+                educationEntries.Add(new
+                {
+                    text = string.Join(" ", currentEntry),
+                    type = "education_entry"
+                });
+            }
+        }
+
+        return educationEntries;
     }
 }

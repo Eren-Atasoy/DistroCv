@@ -23,16 +23,16 @@
 - [x] 2.11 Setup database migrations ✅ (InitialCreate migration generated)
 
 ### 3. Authentication & Authorization
-- [ ] 3.1 Integrate AWS Cognito
-- [ ] 3.2 Implement Google OAuth login
-- [ ] 3.3 Setup JWT token management
+- [x] 3.1 Integrate AWS Cognito
+- [x] 3.2 Implement Google OAuth login
+- [x] 3.3 Setup JWT token management
 - [x] 3.4 Create authentication middleware ✅ (Structure ready)
-- [ ] 3.5 Implement user session management
+- [x] 3.5 Implement user session management
 
 ## Phase 2: Core Services
 
 ### 4. Profile Service
-- [ ] 4.1 Implement resume upload endpoint
+- [x] 4.1 Implement resume upload endpoint
 - [ ] 4.2 Create PDF parser
 - [ ] 4.3 Create DOCX parser
 - [ ] 4.4 Create TXT parser
