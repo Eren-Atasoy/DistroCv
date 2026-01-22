@@ -159,3 +159,4 @@ D:\Portfolio\DistroCv\tests\DistroCv.Api.Tests\obj\Debug\net9.0\DistroCv.Api.Tes
 D:\Portfolio\DistroCv\tests\DistroCv.Api.Tests\obj\Debug\net9.0\ref\DistroCv.Api.Tests.dll
 D:\Portfolio\DistroCv\tests\DistroCv.Api.Tests\bin\Debug\net9.0\Microsoft.Extensions.Diagnostics.dll
 D:\Portfolio\DistroCv\tests\DistroCv.Api.Tests\bin\Debug\net9.0\Microsoft.Extensions.Http.dll
+D:\Portfolio\DistroCv\tests\DistroCv.Api.Tests\bin\Debug\net9.0\Microsoft.EntityFrameworkCore.InMemory.dll

@@ -31,6 +31,7 @@ builder.Services.AddAwsServices(builder.Configuration);
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IUserService, DistroCv.Infrastructure.Services.UserService>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.ISessionRepository, DistroCv.Infrastructure.Data.SessionRepository>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.ISessionService, DistroCv.Infrastructure.Services.SessionService>();
+builder.Services.AddScoped<DistroCv.Core.Interfaces.IProfileService, DistroCv.Infrastructure.Services.ProfileService>();
 
 // Register background services
 builder.Services.AddHostedService<DistroCv.Api.BackgroundServices.SessionCleanupService>();
