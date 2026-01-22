@@ -1,0 +1,283 @@
+{
+    "common": {
+        "appName": "DistroCV",
+        "loading": "Yükleniyor...",
+        "save": "Kaydet",
+        "cancel": "İptal",
+        "delete": "Sil",
+        "edit": "Düzenle",
+        "view": "Görüntüle",
+        "search": "Ara",
+        "filter": "Filtrele",
+        "reset": "Sıfırla",
+        "submit": "Gönder",
+        "confirm": "Onayla",
+        "close": "Kapat",
+        "back": "Geri",
+        "next": "İleri",
+        "previous": "Önceki",
+        "yes": "Evet",
+        "no": "Hayır",
+        "or": "veya",
+        "all": "Tümü",
+        "none": "Hiçbiri",
+        "error": "Hata",
+        "success": "Başarılı",
+        "warning": "Uyarı",
+        "info": "Bilgi"
+    },
+    "nav": {
+        "dashboard": "Kontrol Paneli",
+        "discover": "İş Bul",
+        "applications": "Başvurular",
+        "skills": "Beceriler",
+        "linkedin": "LinkedIn",
+        "companies": "Şirketler",
+        "settings": "Ayarlar",
+        "logout": "Çıkış Yap"
+    },
+    "landing": {
+        "heroTitle": "Yapay Zeka Destekli Kariyer Asistanınız",
+        "heroSubtitle": "Özgeçmişinizi yükleyin, dijital ikizinizi oluşturun ve sadece size uygun işlere başvurun.",
+        "uploadResume": "Özgeçmiş Yükle",
+        "dropResume": "Özgeçmişinizi buraya sürükleyin",
+        "supportedFormats": "Desteklenen formatlar: PDF, DOCX, TXT",
+        "features": {
+            "smartMatching": "Akıllı Eşleştirme",
+            "smartMatchingDesc": "AI ile %80+ uyum oranına sahip iş ilanları",
+            "autoApply": "Otomatik Başvuru",
+            "autoApplyDesc": "LinkedIn ve e-posta ile güvenli başvuru",
+            "interviewPrep": "Mülakat Hazırlığı",
+            "interviewPrepDesc": "Şirkete özel mülakat simülasyonu",
+            "skillGap": "Yetenek Analizi",
+            "skillGapDesc": "Eksik becerileri tespit et, kurs önerileri al"
+        },
+        "getStarted": "Hemen Başla",
+        "learnMore": "Daha Fazla Bilgi"
+    },
+    "dashboard": {
+        "title": "Kontrol Paneli",
+        "welcome": "Hoş geldiniz",
+        "stats": {
+            "totalApplications": "Toplam Başvuru",
+            "pendingReview": "Bekleyen İnceleme",
+            "interviews": "Mülakatlar",
+            "matchScore": "Ortalama Eşleşme"
+        },
+        "recentApplications": "Son Başvurular",
+        "upcomingInterviews": "Yaklaşan Mülakatlar",
+        "skillProgress": "Beceri Gelişimi",
+        "noApplications": "Henüz başvuru yok",
+        "noInterviews": "Planlanmış mülakat yok"
+    },
+    "discover": {
+        "title": "İş Keşfet",
+        "subtitle": "Size uygun iş ilanlarını kaydırarak keşfedin",
+        "swipeLeft": "Reddet",
+        "swipeRight": "Başvur",
+        "matchScore": "Uyum Skoru",
+        "matchReason": "Eşleşme Nedeni",
+        "companyInfo": "Şirket Bilgisi",
+        "requirements": "Gereksinimler",
+        "noMoreJobs": "Yeni iş ilanı yok",
+        "loadingJobs": "İş ilanları yükleniyor...",
+        "feedbackTitle": "Neden reddettiğinizi belirtin",
+        "feedbackReasons": {
+            "lowSalary": "Maaş düşük",
+            "oldTech": "Teknoloji eski",
+            "badLocation": "Lokasyon uygun değil",
+            "badCulture": "Şirket kültürü uymuyor",
+            "other": "Diğer"
+        }
+    },
+    "applications": {
+        "title": "Başvurularım",
+        "status": {
+            "all": "Tümü",
+            "pending": "Beklemede",
+            "sent": "Gönderildi",
+            "viewed": "Görüldü",
+            "responded": "Yanıt Alındı",
+            "rejected": "Reddedildi",
+            "interview": "Mülakat"
+        },
+        "columns": {
+            "company": "Şirket",
+            "position": "Pozisyon",
+            "status": "Durum",
+            "appliedAt": "Başvuru Tarihi",
+            "matchScore": "Uyum",
+            "actions": "İşlemler"
+        },
+        "actions": {
+            "viewDetails": "Detayları Gör",
+            "editResume": "CV Düzenle",
+            "prepareInterview": "Mülakata Hazırlan",
+            "withdraw": "Başvuruyu Geri Çek"
+        },
+        "noApplications": "Henüz başvuru yapmadınız",
+        "startDiscovering": "İş keşfetmeye başlayın"
+    },
+    "resume": {
+        "title": "Özgeçmiş Editörü",
+        "original": "Orijinal",
+        "tailored": "Özelleştirilmiş",
+        "coverLetter": "Kapak Mektubu",
+        "preview": "Önizleme",
+        "edit": "Düzenle",
+        "download": "PDF İndir",
+        "send": "Başvuruyu Gönder",
+        "tone": {
+            "label": "Ton Ayarı",
+            "professional": "Profesyonel",
+            "creative": "Yaratıcı"
+        },
+        "sections": {
+            "personalInfo": "Kişisel Bilgiler",
+            "summary": "Özet",
+            "experience": "Deneyim",
+            "education": "Eğitim",
+            "skills": "Beceriler",
+            "certifications": "Sertifikalar"
+        },
+        "aiOptimized": "AI Optimizasyonu",
+        "changes": "Değişiklikler"
+    },
+    "skills": {
+        "title": "Yetenek Geliştirme",
+        "subtitle": "Eksik becerilerinizi analiz edin ve geliştirin",
+        "analyzeCareer": "Kariyer Analizi Yap",
+        "analyzing": "Analiz Ediliyor...",
+        "totalGaps": "Toplam Beceri Açığı",
+        "completed": "Tamamlanan",
+        "inProgress": "Devam Eden",
+        "overallProgress": "Genel İlerleme",
+        "categories": {
+            "all": "Tüm Kategoriler",
+            "technical": "Teknik Beceriler",
+            "certification": "Sertifikalar",
+            "experience": "Deneyim",
+            "softSkill": "Soft Skills"
+        },
+        "statuses": {
+            "all": "Tüm Durumlar",
+            "notStarted": "Başlanmadı",
+            "inProgress": "Devam Ediyor",
+            "completed": "Tamamlandı"
+        },
+        "estimatedHours": "Tahmini Süre",
+        "courses": "Kurslar",
+        "projects": "Projeler",
+        "certifications": "Sertifikalar",
+        "startLearning": "Başla",
+        "markComplete": "Tamamla",
+        "details": "Detaylar",
+        "roadmap": "Öğrenme Yolculuğunuz",
+        "currentlyLearning": "Şu an öğreniyorsunuz",
+        "upNext": "Sıradaki beceriler",
+        "recentlyCompleted": "Tamamlanan"
+    },
+    "linkedin": {
+        "title": "LinkedIn Profil Optimizasyonu",
+        "subtitle": "Profilinizi SEO ve ATS uyumlu hale getirin",
+        "profileUrl": "LinkedIn Profil URL'si",
+        "targetPositions": "Hedef Pozisyonlar",
+        "analyze": "Profili Analiz Et",
+        "analyzing": "Analiz Ediliyor...",
+        "profileScore": "Profil Skoru",
+        "seoAnalysis": "SEO Analizi",
+        "searchability": "Bulunabilirlik",
+        "keywordDensity": "Anahtar Kelime Yoğunluğu",
+        "completeness": "Profil Tamlığı",
+        "missingKeywords": "Eksik Anahtar Kelimeler",
+        "strongKeywords": "Güçlü Anahtar Kelimeler",
+        "improvements": "İyileştirme Önerileri",
+        "optimized": "Optimize Edilmiş",
+        "suggestedHeadline": "Önerilen Başlık",
+        "suggestedAbout": "Önerilen Hakkında",
+        "suggestedSkills": "Önerilen Beceriler",
+        "comparison": "Karşılaştırma",
+        "history": "Geçmiş",
+        "sections": {
+            "headline": "Başlık",
+            "about": "Hakkında",
+            "experience": "Deneyim",
+            "skills": "Beceriler",
+            "education": "Eğitim"
+        }
+    },
+    "interview": {
+        "title": "Mülakat Hazırlığı",
+        "subtitle": "Şirkete özel sorularla hazırlanın",
+        "generateQuestions": "Soru Üret",
+        "startSimulation": "Simülasyona Başla",
+        "questions": "Sorular",
+        "yourAnswer": "Cevabınız",
+        "submitAnswer": "Cevabı Gönder",
+        "feedback": "Geri Bildirim",
+        "starTechnique": "STAR Tekniği",
+        "situation": "Durum",
+        "task": "Görev",
+        "action": "Eylem",
+        "result": "Sonuç",
+        "improvementTips": "İyileştirme Önerileri",
+        "practiceMore": "Daha Fazla Pratik Yap"
+    },
+    "companies": {
+        "title": "Şirket Yönetimi",
+        "subtitle": "Doğrulanmış şirketleri yönetin",
+        "addCompany": "Şirket Ekle",
+        "verifyCompany": "Şirketi Doğrula",
+        "seedCompanies": "Şirket Verisi Yükle",
+        "totalCompanies": "Toplam Şirket",
+        "verified": "Doğrulanmış",
+        "unverified": "Doğrulanmamış",
+        "columns": {
+            "name": "Şirket Adı",
+            "sector": "Sektör",
+            "location": "Konum",
+            "website": "Web Sitesi",
+            "verified": "Doğrulandı",
+            "actions": "İşlemler"
+        },
+        "actions": {
+            "verify": "Doğrula",
+            "analyzeCulture": "Kültür Analizi",
+            "scrapeNews": "Haber Tara",
+            "edit": "Düzenle",
+            "delete": "Sil"
+        }
+    },
+    "settings": {
+        "title": "Ayarlar",
+        "language": "Dil",
+        "theme": "Tema",
+        "notifications": "Bildirimler",
+        "privacy": "Gizlilik",
+        "account": "Hesap",
+        "languages": {
+            "tr": "Türkçe",
+            "en": "English"
+        },
+        "themes": {
+            "light": "Açık",
+            "dark": "Koyu",
+            "system": "Sistem"
+        }
+    },
+    "errors": {
+        "generic": "Bir hata oluştu. Lütfen tekrar deneyin.",
+        "network": "Bağlantı hatası. İnternet bağlantınızı kontrol edin.",
+        "unauthorized": "Bu işlem için yetkiniz yok.",
+        "notFound": "Sayfa bulunamadı.",
+        "validation": "Lütfen tüm alanları doğru doldurun."
+    },
+    "notifications": {
+        "newMatch": "Yeni eşleşme bulundu!",
+        "applicationSent": "Başvurunuz gönderildi.",
+        "interviewScheduled": "Mülakat planlandı.",
+        "skillCompleted": "Beceri tamamlandı!",
+        "profileOptimized": "Profil analizi tamamlandı."
+    }
+}
+

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react'
+import React, { useState, useEffect, useRef } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { motion, AnimatePresence } from 'framer-motion'
 import {
@@ -17,7 +17,6 @@ import {
     ArrowLeft,
     Send,
     Highlighter,
-    Copy,
     CheckCircle2
 } from 'lucide-react'
 import { api } from '../services/api'
@@ -73,7 +72,7 @@ export default function ResumeEditor() {
     const [tailoredResume, setTailoredResume] = useState('')
     const [editedResume, setEditedResume] = useState('')
     const [coverLetter, setCoverLetter] = useState('')
-    const [customMessage, setCustomMessage] = useState('')
+    const [_customMessage, setCustomMessage] = useState('')
 
     const [viewMode, setViewMode] = useState<'split' | 'tailored' | 'preview'>('split')
     const [isEditing, setIsEditing] = useState(false)
@@ -88,7 +87,7 @@ export default function ResumeEditor() {
 
     const [resumeResult, setResumeResult] = useState<TailoredResumeResult | null>(null)
     const [comparison, setComparison] = useState<ResumeComparison | null>(null)
-    const [showPreview, setShowPreview] = useState(false)
+    const [_showPreview, setShowPreview] = useState(false)
     const [error, setError] = useState<string | null>(null)
     const [successMessage, setSuccessMessage] = useState<string | null>(null)
 
@@ -364,12 +363,12 @@ export default function ResumeEditor() {
         }
     }
 
-    const highlightChanges = (text: string, changes: ResumeChange[]): JSX.Element[] => {
+    const highlightChanges = (text: string, changes: ResumeChange[]): React.JSX.Element[] => {
         if (!showChanges || !changes || changes.length === 0) {
             return [<span key="0">{text}</span>]
         }
 
-        const elements: JSX.Element[] = []
+        const elements: React.JSX.Element[] = []
         let lastIndex = 0
 
         changes.forEach((change, idx) => {

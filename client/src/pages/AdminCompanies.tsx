@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
-import { 
-    adminApi, 
+import { adminApi } from '../services/api';
+import type { 
     VerifiedCompany, 
     CompanyStats, 
     CompanyCultureAnalysis,

@@ -33,6 +33,15 @@ public interface IGeminiService
     /// <param name="prompt">The prompt for content generation</param>
     /// <returns>Generated content</returns>
     Task<string> GenerateContentAsync(string prompt);
+
+    /// <summary>
+    /// Generates content using Gemini AI in a specific language
+    /// Task 19.5: Language-aware content generation
+    /// </summary>
+    /// <param name="prompt">The prompt for content generation</param>
+    /// <param name="language">Target language code (tr, en)</param>
+    /// <returns>Generated content in specified language</returns>
+    Task<string> GenerateContentAsync(string prompt, string language);
 }
 
 /// <summary>

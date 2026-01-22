@@ -13,19 +13,26 @@ import {
     Linkedin
 } from 'lucide-react'
 import { useState } from 'react'
+import { useTranslation } from 'react-i18next'
+import LanguageSwitcher from '../LanguageSwitcher'
 
-const navItems = [
-    { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
-    { path: '/discover', icon: Compass, label: 'İş Bul' },
-    { path: '/applications', icon: FileText, label: 'Başvurular' },
-    { path: '/skills', icon: GraduationCap, label: 'Beceriler' },
-    { path: '/linkedin-optimizer', icon: Linkedin, label: 'LinkedIn' },
-    { path: '/admin/companies', icon: Building2, label: 'Şirketler' },
-]
+const useNavItems = () => {
+    const { t } = useTranslation()
+    return [
+        { path: '/dashboard', icon: LayoutDashboard, label: t('nav.dashboard') },
+        { path: '/discover', icon: Compass, label: t('nav.discover') },
+        { path: '/applications', icon: FileText, label: t('nav.applications') },
+        { path: '/skills', icon: GraduationCap, label: t('nav.skills') },
+        { path: '/linkedin-optimizer', icon: Linkedin, label: t('nav.linkedin') },
+        { path: '/admin/companies', icon: Building2, label: t('nav.companies') },
+    ]
+}
 
 export default function Layout() {
     const location = useLocation()
     const [sidebarOpen, setSidebarOpen] = useState(false)
+    const { t } = useTranslation()
+    const navItems = useNavItems()
 
     return (
         <div className="min-h-screen bg-surface-950 flex">
@@ -91,6 +98,11 @@ export default function Layout() {
                         })}
                     </nav>
 
+                    {/* Language Switcher */}
+                    <div className="p-4 border-t border-surface-700">
+                        <LanguageSwitcher variant="buttons" className="w-full justify-center" />
+                    </div>
+
                     {/* Bottom Section */}
                     <div className="p-4 border-t border-surface-700 space-y-2">
                         <Link
@@ -98,13 +110,13 @@ export default function Layout() {
                             className="flex items-center gap-3 px-4 py-3 rounded-xl text-surface-400 hover:text-white hover:bg-surface-800 transition-all duration-200"
                         >
                             <Settings size={20} />
-                            <span className="font-medium">Ayarlar</span>
+                            <span className="font-medium">{t('nav.settings')}</span>
                         </Link>
                         <button
                             className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-surface-400 hover:text-error hover:bg-error/10 transition-all duration-200"
                         >
                             <LogOut size={20} />
-                            <span className="font-medium">Çıkış Yap</span>
+                            <span className="font-medium">{t('nav.logout')}</span>
                         </button>
                     </div>
                 </div>

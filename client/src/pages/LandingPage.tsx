@@ -14,45 +14,58 @@ import {
     Briefcase
 } from 'lucide-react'
 import { useState, useCallback } from 'react'
+import { useTranslation } from 'react-i18next'
+import LanguageSwitcher from '../components/LanguageSwitcher'
 
-const features = [
-    {
-        icon: Target,
-        title: 'Akıllı Eşleştirme',
-        description: 'AI destekli semantik analiz ile %80+ uyumlu işleri otomatik buluyoruz.',
-        gradient: 'from-primary-500 to-primary-600',
-    },
-    {
-        icon: Sparkles,
-        title: 'Dinamik CV Optimizasyonu',
-        description: 'Her iş ilanına özel, anahtar kelime optimize edilmiş CV oluşturuyoruz.',
-        gradient: 'from-accent-cyan to-primary-500',
-    },
-    {
-        icon: Bot,
-        title: 'Otomatik Başvuru',
-        description: 'LinkedIn ve e-posta üzerinden insan benzeri davranışlarla başvuru yapıyoruz.',
-        gradient: 'from-accent-violet to-accent-fuchsia',
-    },
-    {
-        icon: Shield,
-        title: 'Anti-Bot Koruma',
-        description: 'Akıllı hız sınırlama ile hesap güvenliğinizi koruyoruz.',
-        gradient: 'from-accent-emerald to-accent-cyan',
-    },
-]
+const useFeatures = () => {
+    const { t } = useTranslation()
+    return [
+        {
+            icon: Target,
+            title: t('landing.features.smartMatching'),
+            description: t('landing.features.smartMatchingDesc'),
+            gradient: 'from-primary-500 to-primary-600',
+        },
+        {
+            icon: Sparkles,
+            title: 'Dinamik CV Optimizasyonu',
+            description: 'Her iş ilanına özel, anahtar kelime optimize edilmiş CV oluşturuyoruz.',
+            gradient: 'from-accent-cyan to-primary-500',
+        },
+        {
+            icon: Bot,
+            title: t('landing.features.autoApply'),
+            description: t('landing.features.autoApplyDesc'),
+            gradient: 'from-accent-violet to-accent-fuchsia',
+        },
+        {
+            icon: Shield,
+            title: 'Anti-Bot Koruma',
+            description: 'Akıllı hız sınırlama ile hesap güvenliğinizi koruyoruz.',
+            gradient: 'from-accent-emerald to-accent-cyan',
+        },
+    ]
+}
 
-const stats = [
-    { value: '1000+', label: 'Günlük Taranan İlan' },
-    { value: '%87', label: 'Ortalama Eşleşme' },
-    { value: '5dk', label: 'Ortalama Başvuru Süresi' },
-    { value: '%35', label: 'Yanıt Oranı Artışı' },
-]
+const useStats = () => {
+    const { i18n } = useTranslation()
+    const isEn = i18n.language === 'en'
+    return [
+        { value: '1000+', label: isEn ? 'Daily Jobs Scanned' : 'Günlük Taranan İlan' },
+        { value: isEn ? '87%' : '%87', label: isEn ? 'Average Match' : 'Ortalama Eşleşme' },
+        { value: isEn ? '5min' : '5dk', label: isEn ? 'Avg. Application Time' : 'Ortalama Başvuru Süresi' },
+        { value: isEn ? '+35%' : '%35', label: isEn ? 'Response Rate Increase' : 'Yanıt Oranı Artışı' },
+    ]
+}
 
 export default function LandingPage() {
     const navigate = useNavigate()
+    const { t, i18n } = useTranslation()
     const [isUploading, setIsUploading] = useState(false)
     const [uploadedFile, setUploadedFile] = useState<File | null>(null)
+    const features = useFeatures()
+    const stats = useStats()
+    const isEn = i18n.language === 'en'
 
     const onDrop = useCallback((acceptedFiles: File[]) => {
         const file = acceptedFiles[0]
@@ -95,16 +108,17 @@ export default function LandingPage() {
                     </div>
                     <div className="flex items-center gap-4">
                         <button className="text-surface-300 hover:text-white transition-colors">
-                            Özellikler
+                            {isEn ? 'Features' : 'Özellikler'}
                         </button>
                         <button className="text-surface-300 hover:text-white transition-colors">
-                            Fiyatlandırma
+                            {isEn ? 'Pricing' : 'Fiyatlandırma'}
                         </button>
+                        <LanguageSwitcher variant="minimal" />
                         <button
                             onClick={() => navigate('/dashboard')}
                             className="px-4 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-all"
                         >
-                            Giriş Yap
+                            {isEn ? 'Login' : 'Giriş Yap'}
                         </button>
                     </div>
                 </nav>
@@ -119,7 +133,7 @@ export default function LandingPage() {
                     >
                         <span className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-primary-500/20 text-primary-300 text-sm font-medium mb-6">
                             <Sparkles size={16} />
-                            AI Destekli Kariyer Asistanı
+                            {isEn ? 'AI-Powered Career Assistant' : 'AI Destekli Kariyer Asistanı'}
                         </span>
                     </motion.div>
 
@@ -129,9 +143,9 @@ export default function LandingPage() {
                         transition={{ duration: 0.6, delay: 0.1 }}
                         className="font-display font-bold text-5xl md:text-6xl lg:text-7xl text-white mb-6 leading-tight"
                     >
-                        İş Başvurusu Yapmak
+                        {isEn ? 'Applying for Jobs' : 'İş Başvurusu Yapmak'}
                         <br />
-                        <span className="gradient-text">Hiç Bu Kadar Kolay Olmamıştı</span>
+                        <span className="gradient-text">{isEn ? 'Has Never Been Easier' : 'Hiç Bu Kadar Kolay Olmamıştı'}</span>
                     </motion.h1>
 
                     <motion.p
@@ -140,8 +154,7 @@ export default function LandingPage() {
                         transition={{ duration: 0.6, delay: 0.2 }}
                         className="text-xl text-surface-300 mb-12 max-w-2xl mx-auto"
                     >
-                        CV'ni yükle, AI profilini oluştursun, en uygun işleri bul ve
-                        tek tıkla başvur. Geri kalan her şeyi biz halledelim.
+                        {t('landing.heroSubtitle')}
                     </motion.p>
                 </div>
 
@@ -166,7 +179,7 @@ export default function LandingPage() {
                                 <div className="w-16 h-16 mx-auto rounded-full bg-primary-500/20 flex items-center justify-center">
                                     <div className="w-8 h-8 border-2 border-primary-500 border-t-transparent rounded-full animate-spin" />
                                 </div>
-                                <p className="text-white font-medium">CV analiz ediliyor...</p>
+                                <p className="text-white font-medium">{isEn ? 'Analyzing resume...' : 'CV analiz ediliyor...'}</p>
                                 <p className="text-surface-400 text-sm">{uploadedFile?.name}</p>
                             </div>
                         ) : uploadedFile ? (
@@ -174,7 +187,7 @@ export default function LandingPage() {
                                 <div className="w-16 h-16 mx-auto rounded-full bg-accent-emerald/20 flex items-center justify-center">
                                     <CheckCircle size={32} className="text-accent-emerald" />
                                 </div>
-                                <p className="text-white font-medium">CV yüklendi!</p>
+                                <p className="text-white font-medium">{isEn ? 'Resume uploaded!' : 'CV yüklendi!'}</p>
                                 <p className="text-surface-400 text-sm">{uploadedFile.name}</p>
                             </div>
                         ) : (
@@ -183,13 +196,15 @@ export default function LandingPage() {
                                     <Upload size={36} className="text-primary-400" />
                                 </div>
                                 <h3 className="text-xl font-semibold text-white mb-2">
-                                    {isDragActive ? "CV'yi buraya bırak!" : "CV'ni yükle"}
+                                    {isDragActive 
+                                        ? (isEn ? 'Drop your resume here!' : "CV'yi buraya bırak!") 
+                                        : t('landing.uploadResume')}
                                 </h3>
                                 <p className="text-surface-400 mb-4">
-                                    PDF, DOCX veya TXT formatında, maksimum 10MB
+                                    {t('landing.supportedFormats')}
                                 </p>
                                 <button className="btn-glow px-6 py-3 rounded-xl bg-primary-500 text-white font-medium">
-                                    Dosya Seç
+                                    {isEn ? 'Select File' : 'Dosya Seç'}
                                 </button>
                             </>
                         )}
@@ -216,7 +231,7 @@ export default function LandingPage() {
                     transition={{ duration: 0.6, delay: 0.5 }}
                 >
                     <h2 className="text-3xl font-display font-bold text-white text-center mb-12">
-                        Neden DistroCV?
+                        {isEn ? 'Why DistroCV?' : 'Neden DistroCV?'}
                     </h2>
                     <div className="grid md:grid-cols-2 gap-6 max-w-5xl mx-auto">
                         {features.map((feature, index) => (
@@ -244,19 +259,24 @@ export default function LandingPage() {
                     className="mt-32"
                 >
                     <h2 className="text-3xl font-display font-bold text-white text-center mb-4">
-                        Nasıl Çalışır?
+                        {isEn ? 'How It Works?' : 'Nasıl Çalışır?'}
                     </h2>
                     <p className="text-surface-400 text-center mb-12 max-w-2xl mx-auto">
-                        4 basit adımda hayalinizdeki işe başvurun
+                        {isEn ? 'Apply to your dream job in 4 simple steps' : '4 basit adımda hayalinizdeki işe başvurun'}
                     </p>
 
                     <div className="flex flex-col md:flex-row items-center justify-center gap-6 md:gap-0 max-w-5xl mx-auto">
-                        {[
+                        {(isEn ? [
+                            { icon: FileText, title: 'Upload Resume', desc: 'Upload your resume or import from LinkedIn' },
+                            { icon: Target, title: 'See Matches', desc: 'AI shows you the best matching jobs' },
+                            { icon: Sparkles, title: 'Approve', desc: 'Approve the jobs you like' },
+                            { icon: Briefcase, title: 'Apply', desc: 'Apply with one click' },
+                        ] : [
                             { icon: FileText, title: 'CV Yükle', desc: "CV'ni yükle ya da LinkedIn'den çek" },
                             { icon: Target, title: 'Eşleşmeleri Gör', desc: 'AI en uygun işleri sana göstersin' },
                             { icon: Sparkles, title: 'Onay Ver', desc: 'Beğendiğin işleri onayla' },
                             { icon: Briefcase, title: 'Başvur', desc: 'Tek tıkla otomatik başvur' },
-                        ].map((step, index) => (
+                        ]).map((step, index) => (
                             <div key={index} className="flex items-center">
                                 <div className="flex flex-col items-center text-center">
                                     <div className="w-16 h-16 rounded-2xl bg-surface-800 border border-surface-700 flex items-center justify-center mb-4 group-hover:border-primary-500 transition-colors">
@@ -281,16 +301,16 @@ export default function LandingPage() {
                 >
                     <div className="glass-card max-w-3xl mx-auto p-12">
                         <h2 className="text-3xl font-display font-bold text-white mb-4">
-                            Kariyer Yolculuğunuza Başlayın
+                            {isEn ? 'Start Your Career Journey' : 'Kariyer Yolculuğunuza Başlayın'}
                         </h2>
                         <p className="text-surface-400 mb-8">
-                            Ücretsiz başlayın, istediğiniz zaman yükseltin.
+                            {isEn ? 'Start for free, upgrade anytime.' : 'Ücretsiz başlayın, istediğiniz zaman yükseltin.'}
                         </p>
                         <button
                             onClick={() => document.querySelector('.dropzone')?.scrollIntoView({ behavior: 'smooth' })}
                             className="btn-glow px-8 py-4 rounded-xl bg-gradient-to-r from-primary-500 to-accent-cyan text-white font-semibold text-lg inline-flex items-center gap-2"
                         >
-                            Hemen Başla
+                            {t('landing.getStarted')}
                             <Zap size={20} />
                         </button>
                     </div>
@@ -299,7 +319,7 @@ export default function LandingPage() {
 
             <footer className="relative z-10 border-t border-surface-800 py-8">
                 <div className="container mx-auto px-6 text-center text-surface-500 text-sm">
-                    <p>© 2024 DistroCV. Tüm hakları saklıdır.</p>
+                    <p>© 2024 DistroCV. {isEn ? 'All rights reserved.' : 'Tüm hakları saklıdır.'}</p>
                 </div>
             </footer>
         </div>

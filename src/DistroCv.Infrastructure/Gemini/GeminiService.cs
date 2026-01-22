@@ -507,9 +507,22 @@ Important:
     /// </summary>
     public async Task<string> GenerateContentAsync(string prompt)
     {
+        return await GenerateContentAsync(prompt, "tr"); // Default to Turkish
+    }
+
+    /// <summary>
+    /// Generates content using Gemini AI in a specific language
+    /// Task 19.5: Language-aware content generation
+    /// </summary>
+    public async Task<string> GenerateContentAsync(string prompt, string language)
+    {
         try
         {
-            _logger.LogInformation("Generating content with Gemini");
+            _logger.LogInformation("Generating content with Gemini in language: {Language}", language);
+
+            // Add language instruction to prompt
+            var languageInstruction = GetLanguageInstruction(language);
+            var enhancedPrompt = $"{languageInstruction}\n\n{prompt}";
 
             var request = new GeminiRequest
             {
@@ -519,7 +532,7 @@ Important:
                     {
                         Parts = new[]
                         {
-                            new Part { Text = prompt }
+                            new Part { Text = enhancedPrompt }
                         }
                     }
                 },
@@ -546,7 +559,7 @@ Important:
 
             var generatedText = geminiResponse.Candidates[0].Content?.Parts?[0].Text ?? string.Empty;
 
-            _logger.LogInformation("Successfully generated content");
+            _logger.LogInformation("Successfully generated content in {Language}", language);
             return generatedText;
         }
         catch (Exception ex)
@@ -554,5 +567,21 @@ Important:
             _logger.LogError(ex, "Error generating content with Gemini");
             throw;
         }
+    }
+
+    /// <summary>
+    /// Gets language instruction for Gemini prompt
+    /// </summary>
+    private static string GetLanguageInstruction(string language)
+    {
+        return language?.ToLower() switch
+        {
+            "tr" => "IMPORTANT: Respond ONLY in Turkish (Türkçe). All text, explanations, and content must be in Turkish.",
+            "en" => "IMPORTANT: Respond ONLY in English. All text, explanations, and content must be in English.",
+            "de" => "IMPORTANT: Respond ONLY in German (Deutsch). All text, explanations, and content must be in German.",
+            "fr" => "IMPORTANT: Respond ONLY in French (Français). All text, explanations, and content must be in French.",
+            "es" => "IMPORTANT: Respond ONLY in Spanish (Español). All text, explanations, and content must be in Spanish.",
+            _ => "IMPORTANT: Respond ONLY in Turkish (Türkçe). All text, explanations, and content must be in Turkish."
+        };
     }
 }

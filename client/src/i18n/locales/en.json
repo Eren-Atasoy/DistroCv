@@ -1,0 +1,283 @@
+{
+    "common": {
+        "appName": "DistroCV",
+        "loading": "Loading...",
+        "save": "Save",
+        "cancel": "Cancel",
+        "delete": "Delete",
+        "edit": "Edit",
+        "view": "View",
+        "search": "Search",
+        "filter": "Filter",
+        "reset": "Reset",
+        "submit": "Submit",
+        "confirm": "Confirm",
+        "close": "Close",
+        "back": "Back",
+        "next": "Next",
+        "previous": "Previous",
+        "yes": "Yes",
+        "no": "No",
+        "or": "or",
+        "all": "All",
+        "none": "None",
+        "error": "Error",
+        "success": "Success",
+        "warning": "Warning",
+        "info": "Info"
+    },
+    "nav": {
+        "dashboard": "Dashboard",
+        "discover": "Discover Jobs",
+        "applications": "Applications",
+        "skills": "Skills",
+        "linkedin": "LinkedIn",
+        "companies": "Companies",
+        "settings": "Settings",
+        "logout": "Logout"
+    },
+    "landing": {
+        "heroTitle": "Your AI-Powered Career Assistant",
+        "heroSubtitle": "Upload your resume, create your digital twin, and apply only to jobs that match you.",
+        "uploadResume": "Upload Resume",
+        "dropResume": "Drop your resume here",
+        "supportedFormats": "Supported formats: PDF, DOCX, TXT",
+        "features": {
+            "smartMatching": "Smart Matching",
+            "smartMatchingDesc": "AI-powered job matching with 80%+ compatibility",
+            "autoApply": "Auto Apply",
+            "autoApplyDesc": "Secure applications via LinkedIn and email",
+            "interviewPrep": "Interview Prep",
+            "interviewPrepDesc": "Company-specific interview simulation",
+            "skillGap": "Skill Analysis",
+            "skillGapDesc": "Identify skill gaps, get course recommendations"
+        },
+        "getStarted": "Get Started",
+        "learnMore": "Learn More"
+    },
+    "dashboard": {
+        "title": "Dashboard",
+        "welcome": "Welcome",
+        "stats": {
+            "totalApplications": "Total Applications",
+            "pendingReview": "Pending Review",
+            "interviews": "Interviews",
+            "matchScore": "Average Match"
+        },
+        "recentApplications": "Recent Applications",
+        "upcomingInterviews": "Upcoming Interviews",
+        "skillProgress": "Skill Progress",
+        "noApplications": "No applications yet",
+        "noInterviews": "No scheduled interviews"
+    },
+    "discover": {
+        "title": "Discover Jobs",
+        "subtitle": "Swipe through jobs that match your profile",
+        "swipeLeft": "Reject",
+        "swipeRight": "Apply",
+        "matchScore": "Match Score",
+        "matchReason": "Match Reason",
+        "companyInfo": "Company Info",
+        "requirements": "Requirements",
+        "noMoreJobs": "No more jobs available",
+        "loadingJobs": "Loading jobs...",
+        "feedbackTitle": "Why did you reject this job?",
+        "feedbackReasons": {
+            "lowSalary": "Low salary",
+            "oldTech": "Outdated technology",
+            "badLocation": "Bad location",
+            "badCulture": "Company culture mismatch",
+            "other": "Other"
+        }
+    },
+    "applications": {
+        "title": "My Applications",
+        "status": {
+            "all": "All",
+            "pending": "Pending",
+            "sent": "Sent",
+            "viewed": "Viewed",
+            "responded": "Responded",
+            "rejected": "Rejected",
+            "interview": "Interview"
+        },
+        "columns": {
+            "company": "Company",
+            "position": "Position",
+            "status": "Status",
+            "appliedAt": "Applied Date",
+            "matchScore": "Match",
+            "actions": "Actions"
+        },
+        "actions": {
+            "viewDetails": "View Details",
+            "editResume": "Edit Resume",
+            "prepareInterview": "Prepare Interview",
+            "withdraw": "Withdraw Application"
+        },
+        "noApplications": "You haven't applied to any jobs yet",
+        "startDiscovering": "Start discovering jobs"
+    },
+    "resume": {
+        "title": "Resume Editor",
+        "original": "Original",
+        "tailored": "Tailored",
+        "coverLetter": "Cover Letter",
+        "preview": "Preview",
+        "edit": "Edit",
+        "download": "Download PDF",
+        "send": "Send Application",
+        "tone": {
+            "label": "Tone Adjustment",
+            "professional": "Professional",
+            "creative": "Creative"
+        },
+        "sections": {
+            "personalInfo": "Personal Info",
+            "summary": "Summary",
+            "experience": "Experience",
+            "education": "Education",
+            "skills": "Skills",
+            "certifications": "Certifications"
+        },
+        "aiOptimized": "AI Optimized",
+        "changes": "Changes"
+    },
+    "skills": {
+        "title": "Skill Development",
+        "subtitle": "Analyze and develop your missing skills",
+        "analyzeCareer": "Analyze Career",
+        "analyzing": "Analyzing...",
+        "totalGaps": "Total Skill Gaps",
+        "completed": "Completed",
+        "inProgress": "In Progress",
+        "overallProgress": "Overall Progress",
+        "categories": {
+            "all": "All Categories",
+            "technical": "Technical Skills",
+            "certification": "Certifications",
+            "experience": "Experience",
+            "softSkill": "Soft Skills"
+        },
+        "statuses": {
+            "all": "All Statuses",
+            "notStarted": "Not Started",
+            "inProgress": "In Progress",
+            "completed": "Completed"
+        },
+        "estimatedHours": "Estimated Time",
+        "courses": "Courses",
+        "projects": "Projects",
+        "certifications": "Certifications",
+        "startLearning": "Start",
+        "markComplete": "Complete",
+        "details": "Details",
+        "roadmap": "Your Learning Journey",
+        "currentlyLearning": "Currently Learning",
+        "upNext": "Up Next",
+        "recentlyCompleted": "Recently Completed"
+    },
+    "linkedin": {
+        "title": "LinkedIn Profile Optimization",
+        "subtitle": "Make your profile SEO and ATS friendly",
+        "profileUrl": "LinkedIn Profile URL",
+        "targetPositions": "Target Positions",
+        "analyze": "Analyze Profile",
+        "analyzing": "Analyzing...",
+        "profileScore": "Profile Score",
+        "seoAnalysis": "SEO Analysis",
+        "searchability": "Searchability",
+        "keywordDensity": "Keyword Density",
+        "completeness": "Profile Completeness",
+        "missingKeywords": "Missing Keywords",
+        "strongKeywords": "Strong Keywords",
+        "improvements": "Improvement Suggestions",
+        "optimized": "Optimized",
+        "suggestedHeadline": "Suggested Headline",
+        "suggestedAbout": "Suggested About",
+        "suggestedSkills": "Suggested Skills",
+        "comparison": "Comparison",
+        "history": "History",
+        "sections": {
+            "headline": "Headline",
+            "about": "About",
+            "experience": "Experience",
+            "skills": "Skills",
+            "education": "Education"
+        }
+    },
+    "interview": {
+        "title": "Interview Preparation",
+        "subtitle": "Prepare with company-specific questions",
+        "generateQuestions": "Generate Questions",
+        "startSimulation": "Start Simulation",
+        "questions": "Questions",
+        "yourAnswer": "Your Answer",
+        "submitAnswer": "Submit Answer",
+        "feedback": "Feedback",
+        "starTechnique": "STAR Technique",
+        "situation": "Situation",
+        "task": "Task",
+        "action": "Action",
+        "result": "Result",
+        "improvementTips": "Improvement Tips",
+        "practiceMore": "Practice More"
+    },
+    "companies": {
+        "title": "Company Management",
+        "subtitle": "Manage verified companies",
+        "addCompany": "Add Company",
+        "verifyCompany": "Verify Company",
+        "seedCompanies": "Seed Company Data",
+        "totalCompanies": "Total Companies",
+        "verified": "Verified",
+        "unverified": "Unverified",
+        "columns": {
+            "name": "Company Name",
+            "sector": "Sector",
+            "location": "Location",
+            "website": "Website",
+            "verified": "Verified",
+            "actions": "Actions"
+        },
+        "actions": {
+            "verify": "Verify",
+            "analyzeCulture": "Culture Analysis",
+            "scrapeNews": "Scrape News",
+            "edit": "Edit",
+            "delete": "Delete"
+        }
+    },
+    "settings": {
+        "title": "Settings",
+        "language": "Language",
+        "theme": "Theme",
+        "notifications": "Notifications",
+        "privacy": "Privacy",
+        "account": "Account",
+        "languages": {
+            "tr": "Türkçe",
+            "en": "English"
+        },
+        "themes": {
+            "light": "Light",
+            "dark": "Dark",
+            "system": "System"
+        }
+    },
+    "errors": {
+        "generic": "An error occurred. Please try again.",
+        "network": "Connection error. Check your internet connection.",
+        "unauthorized": "You are not authorized for this action.",
+        "notFound": "Page not found.",
+        "validation": "Please fill in all fields correctly."
+    },
+    "notifications": {
+        "newMatch": "New match found!",
+        "applicationSent": "Application sent successfully.",
+        "interviewScheduled": "Interview scheduled.",
+        "skillCompleted": "Skill completed!",
+        "profileOptimized": "Profile analysis completed."
+    }
+}
+

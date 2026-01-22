@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { linkedInProfileApi, LinkedInOptimizationResult, ProfileComparison, ProfileOptimizationHistory } from '../services/api';
+import { linkedInProfileApi } from '../services/api';
+import type { LinkedInOptimizationResult, ProfileComparison, ProfileOptimizationHistory } from '../services/api';
 
 // Icons
 const LinkedInIcon = () => (
