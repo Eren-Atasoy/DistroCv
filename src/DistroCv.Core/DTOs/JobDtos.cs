@@ -17,7 +17,10 @@ public record JobPostingDto(
 public record JobMatchDto(
     Guid Id,
     Guid JobPostingId,
-    JobPostingDto JobPosting,
+    string JobTitle,
+    string CompanyName,
+    string? Location,
+    string? SalaryRange,
     decimal MatchScore,
     string? MatchReasoning,
     string? SkillGaps,
@@ -26,9 +29,8 @@ public record JobMatchDto(
 );
 
 public record JobFeedbackDto(
-    Guid JobMatchId,
     string Reason,
-    string? AdditionalNotes
+    string? AdditionalNotes = null
 );
 
 public record JobSearchFilterDto(

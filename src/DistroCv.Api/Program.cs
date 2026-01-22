@@ -5,6 +5,8 @@ using DistroCv.Api.Middleware;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
+using Hangfire;
+using Hangfire.PostgreSql;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -46,6 +48,24 @@ builder.Services.Configure<DistroCv.Core.DTOs.PlaywrightSettings>(
 
 // Register background services
 builder.Services.AddHostedService<DistroCv.Api.BackgroundServices.SessionCleanupService>();
+builder.Services.AddHostedService<DistroCv.Api.BackgroundServices.JobScrapingBackgroundService>();
+
+// Configure Hangfire for background job processing
+builder.Services.AddHangfire(configuration => configuration
+    .SetDataCompatibilityLevel(CompatibilityLevel.Version_180)
+    .UseSimpleAssemblyNameTypeSerializer()
+    .UseRecommendedSerializerSettings()
+    .UsePostgreSqlStorage(options =>
+    {
+        options.UseNpgsqlConnection(builder.Configuration.GetConnectionString("DefaultConnection"));
+    }));
+
+// Add Hangfire server
+builder.Services.AddHangfireServer(options =>
+{
+    options.WorkerCount = 5; // Number of concurrent workers
+    options.SchedulePollingInterval = TimeSpan.FromSeconds(15);
+});
 
 // Configure JWT Authentication
 // AWS Cognito uses the User Pool as the issuer
@@ -145,6 +165,12 @@ if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
     app.UseDeveloperExceptionPage();
+    
+    // Enable Hangfire Dashboard in development
+    app.UseHangfireDashboard("/hangfire", new DashboardOptions
+    {
+        Authorization = new[] { new HangfireAuthorizationFilter() }
+    });
 }
 
 app.UseHttpsRedirection();
