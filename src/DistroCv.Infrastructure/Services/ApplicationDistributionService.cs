@@ -1,6 +1,7 @@
 using DistroCv.Core.Entities;
 using DistroCv.Core.Interfaces;
 using DistroCv.Infrastructure.Data;
+using DistroCv.Infrastructure.Gmail;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 using System.Text;
@@ -14,15 +15,18 @@ public class ApplicationDistributionService : IApplicationDistributionService
 {
     private readonly DistroCvDbContext _context;
     private readonly IGeminiService _geminiService;
+    private readonly IGmailService _gmailService;
     private readonly ILogger<ApplicationDistributionService> _logger;
 
     public ApplicationDistributionService(
         DistroCvDbContext context,
         IGeminiService geminiService,
+        IGmailService gmailService,
         ILogger<ApplicationDistributionService> logger)
     {
         _context = context;
         _geminiService = geminiService;
+        _gmailService = gmailService;
         _logger = logger;
     }
 
@@ -50,15 +54,27 @@ public class ApplicationDistributionService : IApplicationDistributionService
             // Generate personalized email
             var emailContent = await GeneratePersonalizedEmailAsync(applicationId, cancellationToken);
 
-            // TODO: Implement Gmail API integration
-            // This will be implemented in task 8.2
-            _logger.LogWarning("Gmail API integration not yet implemented");
+            // Send email via Gmail API
+            var messageId = await _gmailService.SendEmailAsync(
+                userEmail: application.User.Email,
+                recipientEmail: emailContent.RecipientEmail,
+                subject: emailContent.Subject,
+                body: emailContent.Body,
+                attachments: null, // TODO: Add resume and cover letter attachments
+                cancellationToken: cancellationToken);
+
+            // Log successful send
+            await LogApplicationActionAsync(
+                applicationId,
+                "EmailSent",
+                $"Email sent successfully. Message ID: {messageId}",
+                cancellationToken);
 
             // Update application status
             await UpdateApplicationStatusAsync(
                 applicationId, 
                 "Sent", 
-                "Sent via email", 
+                $"Sent via email. Message ID: {messageId}", 
                 cancellationToken);
 
             _logger.LogInformation("Successfully sent application {ApplicationId} via email", applicationId);
@@ -326,6 +342,35 @@ Do not include any additional formatting or explanations.";
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error logging application error for {ApplicationId}", applicationId);
+        }
+    }
+
+    /// <summary>
+    /// Logs application action
+    /// </summary>
+    private async Task LogApplicationActionAsync(
+        Guid applicationId,
+        string actionType,
+        string details,
+        CancellationToken cancellationToken)
+    {
+        try
+        {
+            var log = new ApplicationLog
+            {
+                Id = Guid.NewGuid(),
+                ApplicationId = applicationId,
+                ActionType = actionType,
+                Details = details,
+                Timestamp = DateTime.UtcNow
+            };
+
+            _context.ApplicationLogs.Add(log);
+            await _context.SaveChangesAsync(cancellationToken);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error logging application action for {ApplicationId}", applicationId);
         }
     }
 }
