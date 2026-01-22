@@ -57,6 +57,10 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "dependencies": {
+            "AWS.Logger.SeriLog": {
+              "target": "Package",
+              "version": "[3.4.0, )"
+            },
             "AWSSDK.CognitoIdentityProvider": {
               "target": "Package",
               "version": "[3.7.400.57, )"
@@ -98,6 +102,14 @@
             "Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore": {
               "target": "Package",
               "version": "[9.0.1, )"
+            },
+            "Serilog.AspNetCore": {
+              "target": "Package",
+              "version": "[10.0.0, )"
+            },
+            "Serilog.Sinks.Console": {
+              "target": "Package",
+              "version": "[6.1.1, )"
             }
           },
           "imports": [
@@ -244,6 +256,10 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "dependencies": {
+            "AWSSDK.CloudWatch": {
+              "target": "Package",
+              "version": "[3.7.300, )"
+            },
             "AWSSDK.CognitoIdentityProvider": {
               "target": "Package",
               "version": "[3.7.400.57, )"
@@ -271,6 +287,10 @@
             "Microsoft.EntityFrameworkCore.Design": {
               "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
               "suppressParent": "All",
+              "target": "Package",
+              "version": "[9.0.1, )"
+            },
+            "Microsoft.Extensions.Caching.StackExchangeRedis": {
               "target": "Package",
               "version": "[9.0.1, )"
             },

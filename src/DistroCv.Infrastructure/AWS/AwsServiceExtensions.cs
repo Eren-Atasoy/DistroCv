@@ -35,6 +35,12 @@ public static class AwsServiceExtensions
             Region = region
         });
 
+        // Register AWS CloudWatch client
+        services.AddAWSService<Amazon.CloudWatch.IAmazonCloudWatch>(new Amazon.Extensions.NETCore.Setup.AWSOptions
+        {
+            Region = region
+        });
+
         // Register custom services
         services.AddScoped<IS3Service, S3Service>();
         services.AddScoped<ICognitoService, CognitoService>();

@@ -12,13 +12,16 @@ public class ProfileController : BaseApiController
 {
     private readonly ILogger<ProfileController> _logger;
     private readonly IProfileService _profileService;
+    private readonly IEncryptionService _encryptionService;
 
     public ProfileController(
         ILogger<ProfileController> logger,
-        IProfileService profileService)
+        IProfileService profileService,
+        IEncryptionService encryptionService)
     {
         _logger = logger;
         _profileService = profileService;
+        _encryptionService = encryptionService;
     }
 
     /// <summary>
@@ -196,16 +199,16 @@ public class ProfileController : BaseApiController
     public async Task<IActionResult> UpdateApiKey([FromBody] ApiKeyDto dto)
     {
         var userId = GetCurrentUserId();
-        // Uses injected IEncryptionService (need to inject it first)
-        // I will add IEncryptionService to constructor manually or via next step
-        // For now I'll write the method logic assuming _encryptionService exists.
-        // It seems better to inject it in constructor first.
-        // I will do that via a new plan or modify constructor in this same step if possible.
-        // Wait, I can only update a block.
         
-        // I'll skip implementation here and execute a multi_replace to handle constructor injection first.
-        
-        return BadRequest("Implementation pending injection");
+        if (string.IsNullOrWhiteSpace(dto.ApiKey))
+        {
+            return BadRequest("API Key cannot be empty");
+        }
+
+        var encryptedKey = _encryptionService.Encrypt(dto.ApiKey);
+        await _profileService.UpdateUserApiKeyAsync(userId, encryptedKey);
+
+        return Ok(new { message = "API Key updated successfully" });
     }
 
     #region Task 20: Sector & Geographic Filtering

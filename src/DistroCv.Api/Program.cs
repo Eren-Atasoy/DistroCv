@@ -2,12 +2,14 @@ using DistroCv.Infrastructure.Data;
 using DistroCv.Infrastructure.AWS;
 using DistroCv.Infrastructure.Gemini;
 using DistroCv.Infrastructure.Gmail;
+using DistroCv.Infrastructure.Caching;
 using DistroCv.Api.Middleware;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.IdentityModel.Tokens;
 using Hangfire;
 using Hangfire.PostgreSql;
+using Serilog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -60,7 +62,12 @@ builder.Services.AddGeminiServices(builder.Configuration);
 // Configure Gmail Services
 builder.Services.AddGmailServices();
 
+// Configure Caching Services (Task 29.1)
+builder.Services.AddCachingServices(builder.Configuration);
+
 // Register application services
+builder.Services.AddScoped<DistroCv.Core.Interfaces.IUserRepository, DistroCv.Infrastructure.Data.UserRepository>(); // Task 2.12
+builder.Services.AddScoped<DistroCv.Core.Interfaces.IDigitalTwinRepository, DistroCv.Infrastructure.Data.DigitalTwinRepository>(); // Task 2.13
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IUserService, DistroCv.Infrastructure.Services.UserService>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.ISessionRepository, DistroCv.Infrastructure.Data.SessionRepository>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.ISessionService, DistroCv.Infrastructure.Services.SessionService>();
@@ -87,7 +94,16 @@ builder.Services.AddScoped<DistroCv.Core.Interfaces.IGDPRService, DistroCv.Infra
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IApplicationRepository, DistroCv.Infrastructure.Data.ApplicationRepository>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IInterviewPreparationRepository, DistroCv.Infrastructure.Data.InterviewPreparationRepository>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IInterviewCoachService, DistroCv.Infrastructure.Services.InterviewCoachService>();
+// Configure Serilog
+builder.Host.UseSerilog((context, services, configuration) => configuration
+    .ReadFrom.Configuration(context.Configuration)
+    .ReadFrom.Services(services)
+    .Enrich.FromLogContext()
+    .WriteTo.Console());
+
+// Configure Services
 builder.Services.AddScoped<DistroCv.Core.Interfaces.INotificationPublisher, DistroCv.Api.Services.SignalRNotificationPublisher>();
+builder.Services.AddScoped<DistroCv.Core.Interfaces.IMetricsService, DistroCv.Infrastructure.Services.CloudWatchMetricsService>();
 
 // Configure Playwright settings
 builder.Services.Configure<DistroCv.Core.DTOs.PlaywrightSettings>(
@@ -238,6 +254,7 @@ app.UseHttpsRedirection();
 // Add security middleware (order matters!)
 app.UseSecurityHeaders(); // Add security headers first
 app.UseRateLimiting(); // Rate limiting before authentication
+app.UseResponseTimeTracking(); // Track API response times (Task 29.5)
 
 app.UseCors("AllowFrontend");
 app.UseAuthentication();
@@ -263,3 +280,6 @@ app.MapGet("/", () => Results.Ok(new
 }));
 
 app.Run();
+
+// Make Program class accessible to integration tests
+public partial class Program { }

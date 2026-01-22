@@ -861,4 +861,25 @@ public class ProfileService : IProfileService
     }
 
     #endregion
+
+    #region Task 21: Security - Secure API Key Storage
+    
+    /// <summary>
+    /// Updates the user's encrypted API key (Task 21.5)
+    /// </summary>
+    public async Task UpdateUserApiKeyAsync(Guid userId, string encryptedApiKey)
+    {
+        var user = await _context.Users.FindAsync(userId);
+        if (user == null)
+        {
+            throw new ArgumentException("User not found");
+        }
+
+        user.EncryptedApiKey = encryptedApiKey;
+        await _context.SaveChangesAsync();
+        
+        _logger.LogInformation("Updated API Key for user {UserId}", userId);
+    }
+    
+    #endregion
 }

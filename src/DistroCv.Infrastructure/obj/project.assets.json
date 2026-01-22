@@ -2,6 +2,22 @@
   "version": 3,
   "targets": {
     "net9.0": {
+      "AWSSDK.CloudWatch/3.7.300": {
+        "type": "package",
+        "dependencies": {
+          "AWSSDK.Core": "[3.7.300, 4.0.0)"
+        },
+        "compile": {
+          "lib/net8.0/AWSSDK.CloudWatch.dll": {
+            "related": ".pdb;.xml"
+          }
+        },
+        "runtime": {
+          "lib/net8.0/AWSSDK.CloudWatch.dll": {
+            "related": ".pdb;.xml"
+          }
+        }
+      },
       "AWSSDK.CognitoIdentityProvider/3.7.401": {
         "type": "package",
         "dependencies": {
@@ -671,6 +687,25 @@
           "buildTransitive/net8.0/_._": {}
         }
       },
+      "Microsoft.Extensions.Caching.StackExchangeRedis/9.0.1": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.Caching.Abstractions": "9.0.1",
+          "Microsoft.Extensions.Logging.Abstractions": "9.0.1",
+          "Microsoft.Extensions.Options": "9.0.1",
+          "StackExchange.Redis": "2.7.27"
+        },
+        "compile": {
+          "lib/net9.0/Microsoft.Extensions.Caching.StackExchangeRedis.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net9.0/Microsoft.Extensions.Caching.StackExchangeRedis.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "Microsoft.Extensions.Configuration/9.0.1": {
         "type": "package",
         "dependencies": {
@@ -1214,6 +1249,22 @@
           "build/net8.0/Pgvector.EntityFrameworkCore.targets": {}
         }
       },
+      "Pipelines.Sockets.Unofficial/2.2.8": {
+        "type": "package",
+        "dependencies": {
+          "System.IO.Pipelines": "5.0.1"
+        },
+        "compile": {
+          "lib/net5.0/Pipelines.Sockets.Unofficial.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net5.0/Pipelines.Sockets.Unofficial.dll": {
+            "related": ".xml"
+          }
+        }
+      },
       "Polly/8.6.5": {
         "type": "package",
         "dependencies": {
@@ -1255,6 +1306,23 @@
         },
         "runtime": {
           "lib/net8.0/PuppeteerSharp.dll": {
+            "related": ".xml"
+          }
+        }
+      },
+      "StackExchange.Redis/2.7.27": {
+        "type": "package",
+        "dependencies": {
+          "Microsoft.Extensions.Logging.Abstractions": "6.0.0",
+          "Pipelines.Sockets.Unofficial": "2.2.8"
+        },
+        "compile": {
+          "lib/net6.0/StackExchange.Redis.dll": {
+            "related": ".xml"
+          }
+        },
+        "runtime": {
+          "lib/net6.0/StackExchange.Redis.dll": {
             "related": ".xml"
           }
         }
@@ -1449,7 +1517,7 @@
       "System.IO.Pipelines/7.0.0": {
         "type": "package",
         "compile": {
-          "lib/net7.0/_._": {
+          "lib/net7.0/System.IO.Pipelines.dll": {
             "related": ".xml"
           }
         },
@@ -1660,6 +1728,38 @@
     }
   },
   "libraries": {
+    "AWSSDK.CloudWatch/3.7.300": {
+      "sha512": "qlWTXofrnWpPrLd7PRYXKckDUf9zttWKEL1k2vO4xYGodTFOoND2peGVg/wrw3QV3IVDCBhI9+4VvPFh0qNkUw==",
+      "type": "package",
+      "path": "awssdk.cloudwatch/3.7.300",
+      "hasTools": true,
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "analyzers/dotnet/cs/AWSSDK.CloudWatch.CodeAnalysis.dll",
+        "analyzers/dotnet/cs/SharedAnalysisCode.dll",
+        "awssdk.cloudwatch.3.7.300.nupkg.sha512",
+        "awssdk.cloudwatch.nuspec",
+        "images/AWSLogo.png",
+        "lib/net35/AWSSDK.CloudWatch.dll",
+        "lib/net35/AWSSDK.CloudWatch.pdb",
+        "lib/net35/AWSSDK.CloudWatch.xml",
+        "lib/net45/AWSSDK.CloudWatch.dll",
+        "lib/net45/AWSSDK.CloudWatch.pdb",
+        "lib/net45/AWSSDK.CloudWatch.xml",
+        "lib/net8.0/AWSSDK.CloudWatch.dll",
+        "lib/net8.0/AWSSDK.CloudWatch.pdb",
+        "lib/net8.0/AWSSDK.CloudWatch.xml",
+        "lib/netcoreapp3.1/AWSSDK.CloudWatch.dll",
+        "lib/netcoreapp3.1/AWSSDK.CloudWatch.pdb",
+        "lib/netcoreapp3.1/AWSSDK.CloudWatch.xml",
+        "lib/netstandard2.0/AWSSDK.CloudWatch.dll",
+        "lib/netstandard2.0/AWSSDK.CloudWatch.pdb",
+        "lib/netstandard2.0/AWSSDK.CloudWatch.xml",
+        "tools/install.ps1",
+        "tools/uninstall.ps1"
+      ]
+    },
     "AWSSDK.CognitoIdentityProvider/3.7.401": {
       "sha512": "4/ShB7IHcGrMmNAopuwDXZxg1HBzhIgePXRIYKLfocflYpDUvGW1fKPmj2KvpzjFnpqFIePc/2mCgSoYEpXNRg==",
       "type": "package",
@@ -3075,6 +3175,27 @@
         "useSharedDesignerContext.txt"
       ]
     },
+    "Microsoft.Extensions.Caching.StackExchangeRedis/9.0.1": {
+      "sha512": "yM7TFQxgMaZLsRKCgkdOAqbCFg3JydnQ5VE8KQkc0Y6KLOpEK0ciQ0XE8ginoEEeWTUw2mCUVjFkcwLeH4jwgg==",
+      "type": "package",
+      "path": "microsoft.extensions.caching.stackexchangeredis/9.0.1",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "Icon.png",
+        "THIRD-PARTY-NOTICES.TXT",
+        "lib/net462/Microsoft.Extensions.Caching.StackExchangeRedis.dll",
+        "lib/net462/Microsoft.Extensions.Caching.StackExchangeRedis.xml",
+        "lib/net8.0/Microsoft.Extensions.Caching.StackExchangeRedis.dll",
+        "lib/net8.0/Microsoft.Extensions.Caching.StackExchangeRedis.xml",
+        "lib/net9.0/Microsoft.Extensions.Caching.StackExchangeRedis.dll",
+        "lib/net9.0/Microsoft.Extensions.Caching.StackExchangeRedis.xml",
+        "lib/netstandard2.0/Microsoft.Extensions.Caching.StackExchangeRedis.dll",
+        "lib/netstandard2.0/Microsoft.Extensions.Caching.StackExchangeRedis.xml",
+        "microsoft.extensions.caching.stackexchangeredis.9.0.1.nupkg.sha512",
+        "microsoft.extensions.caching.stackexchangeredis.nuspec"
+      ]
+    },
     "Microsoft.Extensions.Configuration/9.0.1": {
       "sha512": "VuthqFS+ju6vT8W4wevdhEFiRi1trvQtkzWLonApfF5USVzzDcTBoY3F24WvN/tffLSrycArVfX1bThm/9xY2A==",
       "type": "package",
@@ -4234,6 +4355,29 @@
         "pgvector.entityframeworkcore.nuspec"
       ]
     },
+    "Pipelines.Sockets.Unofficial/2.2.8": {
+      "sha512": "zG2FApP5zxSx6OcdJQLbZDk2AVlN2BNQD6MorwIfV6gVj0RRxWPEp2LXAxqDGZqeNV1Zp0BNPcNaey/GXmTdvQ==",
+      "type": "package",
+      "path": "pipelines.sockets.unofficial/2.2.8",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net461/Pipelines.Sockets.Unofficial.dll",
+        "lib/net461/Pipelines.Sockets.Unofficial.xml",
+        "lib/net472/Pipelines.Sockets.Unofficial.dll",
+        "lib/net472/Pipelines.Sockets.Unofficial.xml",
+        "lib/net5.0/Pipelines.Sockets.Unofficial.dll",
+        "lib/net5.0/Pipelines.Sockets.Unofficial.xml",
+        "lib/netcoreapp3.1/Pipelines.Sockets.Unofficial.dll",
+        "lib/netcoreapp3.1/Pipelines.Sockets.Unofficial.xml",
+        "lib/netstandard2.0/Pipelines.Sockets.Unofficial.dll",
+        "lib/netstandard2.0/Pipelines.Sockets.Unofficial.xml",
+        "lib/netstandard2.1/Pipelines.Sockets.Unofficial.dll",
+        "lib/netstandard2.1/Pipelines.Sockets.Unofficial.xml",
+        "pipelines.sockets.unofficial.2.2.8.nupkg.sha512",
+        "pipelines.sockets.unofficial.nuspec"
+      ]
+    },
     "Polly/8.6.5": {
       "sha512": "VqtW2ZE/ALvQMAH1cQY3qZ2cF2OXa3oe/HKMdOv6Q02HCoEW0rsFNfcBONXlHBe1TnjWW1vdRxBEkPeq0/2FHA==",
       "type": "package",
@@ -4302,6 +4446,27 @@
         "lib/netstandard2.0/PuppeteerSharp.xml",
         "puppeteersharp.20.2.5.nupkg.sha512",
         "puppeteersharp.nuspec"
+      ]
+    },
+    "StackExchange.Redis/2.7.27": {
+      "sha512": "Uqc2OQHglqj9/FfGQ6RkKFkZfHySfZlfmbCl+hc+u2I/IqunfelQ7QJi7ZhvAJxUtu80pildVX6NPLdDaUffOw==",
+      "type": "package",
+      "path": "stackexchange.redis/2.7.27",
+      "files": [
+        ".nupkg.metadata",
+        ".signature.p7s",
+        "lib/net461/StackExchange.Redis.dll",
+        "lib/net461/StackExchange.Redis.xml",
+        "lib/net472/StackExchange.Redis.dll",
+        "lib/net472/StackExchange.Redis.xml",
+        "lib/net6.0/StackExchange.Redis.dll",
+        "lib/net6.0/StackExchange.Redis.xml",
+        "lib/netcoreapp3.1/StackExchange.Redis.dll",
+        "lib/netcoreapp3.1/StackExchange.Redis.xml",
+        "lib/netstandard2.0/StackExchange.Redis.dll",
+        "lib/netstandard2.0/StackExchange.Redis.xml",
+        "stackexchange.redis.2.7.27.nupkg.sha512",
+        "stackexchange.redis.nuspec"
       ]
     },
     "System.CodeDom/7.0.0": {
@@ -5023,6 +5188,7 @@
   },
   "projectFileDependencyGroups": {
     "net9.0": [
+      "AWSSDK.CloudWatch >= 3.7.300",
       "AWSSDK.CognitoIdentityProvider >= 3.7.400.57",
       "AWSSDK.Extensions.NETCore.Setup >= 3.7.301",
       "AWSSDK.Lambda >= 3.7.407.7",
@@ -5031,6 +5197,7 @@
       "DocumentFormat.OpenXml >= 3.4.1",
       "Google.Apis.Gmail.v1 >= 1.73.0.4029",
       "Microsoft.EntityFrameworkCore.Design >= 9.0.1",
+      "Microsoft.Extensions.Caching.StackExchangeRedis >= 9.0.1",
       "Microsoft.Extensions.Configuration.Binder >= 9.0.1",
       "Microsoft.Extensions.Configuration.Json >= 9.0.1",
       "Microsoft.Extensions.Diagnostics.HealthChecks >= 10.0.2",
@@ -5098,6 +5265,10 @@
       "net9.0": {
         "targetAlias": "net9.0",
         "dependencies": {
+          "AWSSDK.CloudWatch": {
+            "target": "Package",
+            "version": "[3.7.300, )"
+          },
           "AWSSDK.CognitoIdentityProvider": {
             "target": "Package",
             "version": "[3.7.400.57, )"
@@ -5125,6 +5296,10 @@
           "Microsoft.EntityFrameworkCore.Design": {
             "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
             "suppressParent": "All",
+            "target": "Package",
+            "version": "[9.0.1, )"
+          },
+          "Microsoft.Extensions.Caching.StackExchangeRedis": {
             "target": "Package",
             "version": "[9.0.1, )"
           },
@@ -5198,7 +5373,7 @@
       "code": "NU1603",
       "level": "Warning",
       "warningLevel": 1,
-      "message": "DistroCv.Infrastructure, AWSSDK.CognitoIdentityProvider (>= 3.7.400.57) öğesine bağlı ancak AWSSDK.CognitoIdentityProvider 3.7.400.57 bulunamadı. Bunun yerine AWSSDK.CognitoIdentityProvider 3.7.401 çözümlendi.",
+      "message": "DistroCv.Infrastructure depends on AWSSDK.CognitoIdentityProvider (>= 3.7.400.57) but AWSSDK.CognitoIdentityProvider 3.7.400.57 was not found. AWSSDK.CognitoIdentityProvider 3.7.401 was resolved instead.",
       "libraryId": "AWSSDK.CognitoIdentityProvider",
       "targetGraphs": [
         "net9.0"
@@ -5208,7 +5383,7 @@
       "code": "NU1603",
       "level": "Warning",
       "warningLevel": 1,
-      "message": "DistroCv.Infrastructure, AWSSDK.Lambda (>= 3.7.407.7) öğesine bağlı ancak AWSSDK.Lambda 3.7.407.7 bulunamadı. Bunun yerine AWSSDK.Lambda 3.7.408 çözümlendi.",
+      "message": "DistroCv.Infrastructure depends on AWSSDK.Lambda (>= 3.7.407.7) but AWSSDK.Lambda 3.7.407.7 was not found. AWSSDK.Lambda 3.7.408 was resolved instead.",
       "libraryId": "AWSSDK.Lambda",
       "targetGraphs": [
         "net9.0"
@@ -5218,7 +5393,7 @@
       "code": "NU1603",
       "level": "Warning",
       "warningLevel": 1,
-      "message": "DistroCv.Infrastructure, AWSSDK.S3 (>= 3.7.407.7) öğesine bağlı ancak AWSSDK.S3 3.7.407.7 bulunamadı. Bunun yerine AWSSDK.S3 3.7.408 çözümlendi.",
+      "message": "DistroCv.Infrastructure depends on AWSSDK.S3 (>= 3.7.407.7) but AWSSDK.S3 3.7.407.7 was not found. AWSSDK.S3 3.7.408 was resolved instead.",
       "libraryId": "AWSSDK.S3",
       "targetGraphs": [
         "net9.0"

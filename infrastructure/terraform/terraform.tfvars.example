@@ -1,0 +1,44 @@
+# DistroCV Terraform Variables Example
+# Copy this file to terraform.tfvars and fill in your values
+
+# AWS Configuration
+aws_region         = "eu-west-1"
+environment        = "production"
+availability_zones = ["eu-west-1a", "eu-west-1b", "eu-west-1c"]
+
+# VPC Configuration
+vpc_cidr = "10.0.0.0/16"
+
+# ECS Configuration
+api_image         = "123456789012.dkr.ecr.eu-west-1.amazonaws.com/distrocv-api:latest"
+api_cpu           = 1024  # 1 vCPU
+api_memory        = 2048  # 2GB
+api_desired_count = 2
+api_min_capacity  = 2
+api_max_capacity  = 10
+
+# RDS Configuration
+db_instance_class       = "db.t4g.large"
+db_allocated_storage    = 100
+db_name                 = "distrocv"
+db_username             = "distrocv_admin"
+db_password             = "CHANGE_ME_STRONG_PASSWORD"  # Use AWS Secrets Manager in production
+backup_retention_period = 30
+enable_deletion_protection = true
+
+# Domain Configuration
+domain_name     = "distrocv.com"
+certificate_arn = "arn:aws:acm:us-east-1:123456789012:certificate/xxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
+
+# API Keys (Use AWS Secrets Manager in production)
+gemini_api_key      = "YOUR_GEMINI_API_KEY"
+gmail_client_id     = "YOUR_GMAIL_CLIENT_ID"
+gmail_client_secret = "YOUR_GMAIL_CLIENT_SECRET"
+
+# Tags
+tags = {
+  Project     = "DistroCV"
+  Environment = "Production"
+  ManagedBy   = "Terraform"
+  Team        = "Platform"
+}

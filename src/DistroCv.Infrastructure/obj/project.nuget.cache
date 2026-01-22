@@ -1,9 +1,10 @@
 {
   "version": 2,
-  "dgSpecHash": "jO/JJMqxgAg=",
+  "dgSpecHash": "f7jRH6v53xc=",
   "success": true,
   "projectFilePath": "D:\\Portfolio\\DistroCv\\src\\DistroCv.Infrastructure\\DistroCv.Infrastructure.csproj",
   "expectedPackageFiles": [
+    "C:\\Users\\erena\\.nuget\\packages\\awssdk.cloudwatch\\3.7.300\\awssdk.cloudwatch.3.7.300.nupkg.sha512",
     "C:\\Users\\erena\\.nuget\\packages\\awssdk.cognitoidentityprovider\\3.7.401\\awssdk.cognitoidentityprovider.3.7.401.nupkg.sha512",
     "C:\\Users\\erena\\.nuget\\packages\\awssdk.core\\3.7.400.57\\awssdk.core.3.7.400.57.nupkg.sha512",
     "C:\\Users\\erena\\.nuget\\packages\\awssdk.extensions.netcore.setup\\3.7.301\\awssdk.extensions.netcore.setup.3.7.301.nupkg.sha512",
@@ -32,6 +33,7 @@
     "C:\\Users\\erena\\.nuget\\packages\\microsoft.entityframeworkcore.relational\\9.0.1\\microsoft.entityframeworkcore.relational.9.0.1.nupkg.sha512",
     "C:\\Users\\erena\\.nuget\\packages\\microsoft.extensions.caching.abstractions\\9.0.1\\microsoft.extensions.caching.abstractions.9.0.1.nupkg.sha512",
     "C:\\Users\\erena\\.nuget\\packages\\microsoft.extensions.caching.memory\\9.0.1\\microsoft.extensions.caching.memory.9.0.1.nupkg.sha512",
+    "C:\\Users\\erena\\.nuget\\packages\\microsoft.extensions.caching.stackexchangeredis\\9.0.1\\microsoft.extensions.caching.stackexchangeredis.9.0.1.nupkg.sha512",
     "C:\\Users\\erena\\.nuget\\packages\\microsoft.extensions.configuration\\9.0.1\\microsoft.extensions.configuration.9.0.1.nupkg.sha512",
     "C:\\Users\\erena\\.nuget\\packages\\microsoft.extensions.configuration.abstractions\\10.0.2\\microsoft.extensions.configuration.abstractions.10.0.2.nupkg.sha512",
     "C:\\Users\\erena\\.nuget\\packages\\microsoft.extensions.configuration.binder\\9.0.1\\microsoft.extensions.configuration.binder.9.0.1.nupkg.sha512",
@@ -61,9 +63,11 @@
     "C:\\Users\\erena\\.nuget\\packages\\npgsql.entityframeworkcore.postgresql\\9.0.4\\npgsql.entityframeworkcore.postgresql.9.0.4.nupkg.sha512",
     "C:\\Users\\erena\\.nuget\\packages\\pgvector\\0.3.2\\pgvector.0.3.2.nupkg.sha512",
     "C:\\Users\\erena\\.nuget\\packages\\pgvector.entityframeworkcore\\0.3.0\\pgvector.entityframeworkcore.0.3.0.nupkg.sha512",
+    "C:\\Users\\erena\\.nuget\\packages\\pipelines.sockets.unofficial\\2.2.8\\pipelines.sockets.unofficial.2.2.8.nupkg.sha512",
     "C:\\Users\\erena\\.nuget\\packages\\polly\\8.6.5\\polly.8.6.5.nupkg.sha512",
     "C:\\Users\\erena\\.nuget\\packages\\polly.core\\8.6.5\\polly.core.8.6.5.nupkg.sha512",
     "C:\\Users\\erena\\.nuget\\packages\\puppeteersharp\\20.2.5\\puppeteersharp.20.2.5.nupkg.sha512",
+    "C:\\Users\\erena\\.nuget\\packages\\stackexchange.redis\\2.7.27\\stackexchange.redis.2.7.27.nupkg.sha512",
     "C:\\Users\\erena\\.nuget\\packages\\system.codedom\\7.0.0\\system.codedom.7.0.0.nupkg.sha512",
     "C:\\Users\\erena\\.nuget\\packages\\system.collections.immutable\\7.0.0\\system.collections.immutable.7.0.0.nupkg.sha512",
     "C:\\Users\\erena\\.nuget\\packages\\system.componentmodel.annotations\\5.0.0\\system.componentmodel.annotations.5.0.0.nupkg.sha512",
@@ -91,7 +95,7 @@
     {
       "code": "NU1603",
       "level": "Warning",
-      "message": "DistroCv.Infrastructure, AWSSDK.CognitoIdentityProvider (>= 3.7.400.57) öğesine bağlı ancak AWSSDK.CognitoIdentityProvider 3.7.400.57 bulunamadı. Bunun yerine AWSSDK.CognitoIdentityProvider 3.7.401 çözümlendi.",
+      "message": "DistroCv.Infrastructure depends on AWSSDK.CognitoIdentityProvider (>= 3.7.400.57) but AWSSDK.CognitoIdentityProvider 3.7.400.57 was not found. AWSSDK.CognitoIdentityProvider 3.7.401 was resolved instead.",
       "projectPath": "D:\\Portfolio\\DistroCv\\src\\DistroCv.Infrastructure\\DistroCv.Infrastructure.csproj",
       "warningLevel": 1,
       "filePath": "D:\\Portfolio\\DistroCv\\src\\DistroCv.Infrastructure\\DistroCv.Infrastructure.csproj",
@@ -103,7 +107,7 @@
     {
       "code": "NU1603",
       "level": "Warning",
-      "message": "DistroCv.Infrastructure, AWSSDK.Lambda (>= 3.7.407.7) öğesine bağlı ancak AWSSDK.Lambda 3.7.407.7 bulunamadı. Bunun yerine AWSSDK.Lambda 3.7.408 çözümlendi.",
+      "message": "DistroCv.Infrastructure depends on AWSSDK.Lambda (>= 3.7.407.7) but AWSSDK.Lambda 3.7.407.7 was not found. AWSSDK.Lambda 3.7.408 was resolved instead.",
       "projectPath": "D:\\Portfolio\\DistroCv\\src\\DistroCv.Infrastructure\\DistroCv.Infrastructure.csproj",
       "warningLevel": 1,
       "filePath": "D:\\Portfolio\\DistroCv\\src\\DistroCv.Infrastructure\\DistroCv.Infrastructure.csproj",
@@ -115,7 +119,7 @@
     {
       "code": "NU1603",
       "level": "Warning",
-      "message": "DistroCv.Infrastructure, AWSSDK.S3 (>= 3.7.407.7) öğesine bağlı ancak AWSSDK.S3 3.7.407.7 bulunamadı. Bunun yerine AWSSDK.S3 3.7.408 çözümlendi.",
+      "message": "DistroCv.Infrastructure depends on AWSSDK.S3 (>= 3.7.407.7) but AWSSDK.S3 3.7.407.7 was not found. AWSSDK.S3 3.7.408 was resolved instead.",
       "projectPath": "D:\\Portfolio\\DistroCv\\src\\DistroCv.Infrastructure\\DistroCv.Infrastructure.csproj",
       "warningLevel": 1,
       "filePath": "D:\\Portfolio\\DistroCv\\src\\DistroCv.Infrastructure\\DistroCv.Infrastructure.csproj",

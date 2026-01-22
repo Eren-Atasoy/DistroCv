@@ -57,6 +57,10 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "dependencies": {
+            "AWS.Logger.SeriLog": {
+              "target": "Package",
+              "version": "[3.4.0, )"
+            },
             "AWSSDK.CognitoIdentityProvider": {
               "target": "Package",
               "version": "[3.7.400.57, )"
@@ -72,6 +76,14 @@
             "AWSSDK.S3": {
               "target": "Package",
               "version": "[3.7.407.7, )"
+            },
+            "Hangfire.AspNetCore": {
+              "target": "Package",
+              "version": "[1.8.22, )"
+            },
+            "Hangfire.PostgreSql": {
+              "target": "Package",
+              "version": "[1.20.13, )"
             },
             "Microsoft.AspNetCore.Authentication.JwtBearer": {
               "target": "Package",
@@ -90,6 +102,14 @@
             "Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore": {
               "target": "Package",
               "version": "[9.0.1, )"
+            },
+            "Serilog.AspNetCore": {
+              "target": "Package",
+              "version": "[10.0.0, )"
+            },
+            "Serilog.Sinks.Console": {
+              "target": "Package",
+              "version": "[6.1.1, )"
             }
           },
           "imports": [
@@ -236,6 +256,10 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "dependencies": {
+            "AWSSDK.CloudWatch": {
+              "target": "Package",
+              "version": "[3.7.300, )"
+            },
             "AWSSDK.CognitoIdentityProvider": {
               "target": "Package",
               "version": "[3.7.400.57, )"
@@ -256,9 +280,17 @@
               "target": "Package",
               "version": "[3.4.1, )"
             },
+            "Google.Apis.Gmail.v1": {
+              "target": "Package",
+              "version": "[1.73.0.4029, )"
+            },
             "Microsoft.EntityFrameworkCore.Design": {
               "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
               "suppressParent": "All",
+              "target": "Package",
+              "version": "[9.0.1, )"
+            },
+            "Microsoft.Extensions.Caching.StackExchangeRedis": {
               "target": "Package",
               "version": "[9.0.1, )"
             },
@@ -270,6 +302,10 @@
               "target": "Package",
               "version": "[9.0.1, )"
             },
+            "Microsoft.Extensions.Diagnostics.HealthChecks": {
+              "target": "Package",
+              "version": "[10.0.2, )"
+            },
             "Microsoft.Extensions.Http": {
               "target": "Package",
               "version": "[9.0.1, )"
@@ -278,6 +314,10 @@
               "target": "Package",
               "version": "[9.0.1, )"
             },
+            "Microsoft.Playwright": {
+              "target": "Package",
+              "version": "[1.57.0, )"
+            },
             "Npgsql.EntityFrameworkCore.PostgreSQL": {
               "target": "Package",
               "version": "[9.0.4, )"
@@ -285,6 +325,14 @@
             "Pgvector.EntityFrameworkCore": {
               "target": "Package",
               "version": "[0.3.0, )"
+            },
+            "Polly": {
+              "target": "Package",
+              "version": "[8.6.5, )"
+            },
+            "PuppeteerSharp": {
+              "target": "Package",
+              "version": "[20.2.5, )"
             },
             "UglyToad.PdfPig": {
               "target": "Package",
@@ -367,6 +415,14 @@
         "net9.0": {
           "targetAlias": "net9.0",
           "dependencies": {
+            "FsCheck.Xunit": {
+              "target": "Package",
+              "version": "[2.16.6, )"
+            },
+            "Microsoft.AspNetCore.Mvc.Testing": {
+              "target": "Package",
+              "version": "[9.0.0, )"
+            },
             "Microsoft.EntityFrameworkCore.InMemory": {
               "target": "Package",
               "version": "[9.0.0, )"
