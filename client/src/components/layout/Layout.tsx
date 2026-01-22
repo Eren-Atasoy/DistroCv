@@ -8,7 +8,8 @@ import {
     LogOut,
     Menu,
     X,
-    Building2
+    Building2,
+    GraduationCap
 } from 'lucide-react'
 import { useState } from 'react'
 
@@ -16,6 +17,7 @@ const navItems = [
     { path: '/dashboard', icon: LayoutDashboard, label: 'Dashboard' },
     { path: '/discover', icon: Compass, label: 'İş Bul' },
     { path: '/applications', icon: FileText, label: 'Başvurular' },
+    { path: '/skills', icon: GraduationCap, label: 'Beceriler' },
     { path: '/admin/companies', icon: Building2, label: 'Şirketler' },
 ]
 

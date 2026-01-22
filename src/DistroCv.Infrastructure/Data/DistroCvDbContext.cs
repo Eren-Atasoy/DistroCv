@@ -25,6 +25,7 @@ public class DistroCvDbContext : DbContext
     public DbSet<ThrottleLog> ThrottleLogs { get; set; }
     public DbSet<UserSession> UserSessions { get; set; }
     public DbSet<Notification> Notifications { get; set; }
+    public DbSet<SkillGapAnalysis> SkillGapAnalyses { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -218,6 +219,29 @@ public class DistroCvDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade);
             entity.HasIndex(e => new { e.UserId, e.IsRead });
             entity.HasIndex(e => e.CreatedAt);
+        });
+
+        // SkillGapAnalysis Configuration
+        modelBuilder.Entity<SkillGapAnalysis>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.SkillName).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Category).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.SubCategory).HasMaxLength(100);
+            entity.Property(e => e.Status).HasMaxLength(50).HasDefaultValue("NotStarted");
+            entity.Property(e => e.Description).HasMaxLength(2000);
+            entity.Property(e => e.Notes).HasMaxLength(2000);
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.JobMatch)
+                .WithMany()
+                .HasForeignKey(e => e.JobMatchId)
+                .OnDelete(DeleteBehavior.SetNull);
+            entity.HasIndex(e => new { e.UserId, e.Category });
+            entity.HasIndex(e => new { e.UserId, e.Status });
+            entity.HasIndex(e => e.JobMatchId);
         });
     }
 }

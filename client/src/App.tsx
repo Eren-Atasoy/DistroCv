@@ -6,6 +6,7 @@ import ResumeEditor from './pages/ResumeEditor'
 import ApplicationsPage from './pages/ApplicationsPage'
 import InterviewPrep from './pages/InterviewPrep'
 import AdminCompanies from './pages/AdminCompanies'
+import SkillGapPage from './pages/SkillGapPage'
 import Layout from './components/layout/Layout'
 
 function App() {
@@ -22,6 +23,7 @@ function App() {
         <Route path="/applications/:id/resume" element={<ResumeEditor />} />
         <Route path="/applications/:id/interview" element={<InterviewPrep />} />
         <Route path="/admin/companies" element={<AdminCompanies />} />
+        <Route path="/skills" element={<SkillGapPage />} />
       </Route>
     </Routes>
   )

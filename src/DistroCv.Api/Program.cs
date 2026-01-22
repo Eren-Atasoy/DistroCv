@@ -51,6 +51,8 @@ builder.Services.AddScoped<DistroCv.Core.Interfaces.IApplicationDistributionServ
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IThrottleManager, DistroCv.Infrastructure.Services.ThrottleManager>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IVerifiedCompanyRepository, DistroCv.Infrastructure.Data.VerifiedCompanyRepository>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IVerifiedCompanyService, DistroCv.Infrastructure.Services.VerifiedCompanyService>();
+builder.Services.AddScoped<DistroCv.Core.Interfaces.ISkillGapRepository, DistroCv.Infrastructure.Data.SkillGapRepository>();
+builder.Services.AddScoped<DistroCv.Core.Interfaces.ISkillGapService, DistroCv.Infrastructure.Services.SkillGapService>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IFeedbackService, DistroCv.Infrastructure.Services.FeedbackService>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IApplicationRepository, DistroCv.Infrastructure.Data.ApplicationRepository>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IInterviewPreparationRepository, DistroCv.Infrastructure.Data.InterviewPreparationRepository>();

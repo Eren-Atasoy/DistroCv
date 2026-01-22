@@ -266,3 +266,171 @@ export const adminApi = {
         return api.post('/admin/companies/seed');
     },
 };
+
+// Skill Gap Types
+export interface SkillGap {
+    id: string;
+    skillName: string;
+    category: string;
+    subCategory: string;
+    importanceLevel: number;
+    description?: string;
+    recommendedCourses: CourseRecommendation[];
+    recommendedProjects: ProjectSuggestion[];
+    recommendedCertifications: CertificationRecommendation[];
+    estimatedLearningHours: number;
+    status: string;
+    progressPercentage: number;
+    startedAt?: string;
+    completedAt?: string;
+    createdAt: string;
+}
+
+export interface CourseRecommendation {
+    title: string;
+    provider: string;
+    url: string;
+    level: string;
+    estimatedHours: number;
+    price?: number;
+    rating?: number;
+    description?: string;
+}
+
+export interface ProjectSuggestion {
+    title: string;
+    description: string;
+    difficulty: string;
+    technologies: string[];
+    estimatedHours: number;
+    gitHubTemplate?: string;
+    learningOutcomes?: string;
+}
+
+export interface CertificationRecommendation {
+    name: string;
+    provider: string;
+    url: string;
+    level: string;
+    cost?: number;
+    validityYears?: number;
+    description?: string;
+    prerequisites: string[];
+}
+
+export interface SkillGapAnalysisResult {
+    technicalSkills: SkillGap[];
+    certifications: SkillGap[];
+    experienceGaps: SkillGap[];
+    softSkills: SkillGap[];
+    totalGaps: number;
+    completedGaps: number;
+    inProgressGaps: number;
+    overallReadinessScore: number;
+    summary: string;
+    priorityRecommendations: string[];
+}
+
+export interface SkillDevelopmentProgress {
+    userId: string;
+    totalSkillGaps: number;
+    completedSkills: number;
+    inProgressSkills: number;
+    notStartedSkills: number;
+    overallProgress: number;
+    totalLearningHoursEstimated: number;
+    totalLearningHoursCompleted: number;
+    gapsByCategory: Record<string, number>;
+    completedByCategory: Record<string, number>;
+    recentlyCompleted: SkillGap[];
+    currentlyLearning: SkillGap[];
+}
+
+export interface SkillGapFilter {
+    category?: string;
+    status?: string;
+    minImportance?: number;
+    jobMatchId?: string;
+    skip?: number;
+    take?: number;
+}
+
+export interface UpdateSkillGapProgress {
+    status?: string;
+    progressPercentage?: number;
+    notes?: string;
+}
+
+// Skill Gap API Methods
+export const skillGapApi = {
+    // Analyze skill gaps for a job match
+    analyzeForJob: async (jobMatchId: string): Promise<{ message: string; result: SkillGapAnalysisResult }> => {
+        return api.post(`/skill-gaps/analyze/${jobMatchId}`);
+    },
+
+    // Analyze career gaps
+    analyzeCareer: async (): Promise<{ message: string; result: SkillGapAnalysisResult }> => {
+        return api.post('/skill-gaps/analyze-career');
+    },
+
+    // Get all skill gaps
+    getSkillGaps: async (filter?: SkillGapFilter): Promise<{ gaps: SkillGap[]; total: number }> => {
+        const params = new URLSearchParams();
+        if (filter?.category) params.set('category', filter.category);
+        if (filter?.status) params.set('status', filter.status);
+        if (filter?.minImportance) params.set('minImportance', String(filter.minImportance));
+        if (filter?.jobMatchId) params.set('jobMatchId', filter.jobMatchId);
+        if (filter?.skip !== undefined) params.set('skip', String(filter.skip));
+        if (filter?.take !== undefined) params.set('take', String(filter.take));
+        
+        return api.get(`/skill-gaps?${params.toString()}`);
+    },
+
+    // Get a specific skill gap
+    getSkillGap: async (id: string): Promise<SkillGap> => {
+        return api.get(`/skill-gaps/${id}`);
+    },
+
+    // Get course recommendations
+    getCourseRecommendations: async (skillName: string, category?: string): Promise<{ courses: CourseRecommendation[] }> => {
+        const params = category ? `?category=${encodeURIComponent(category)}` : '';
+        return api.get(`/skill-gaps/courses/${encodeURIComponent(skillName)}${params}`);
+    },
+
+    // Get project suggestions
+    getProjectSuggestions: async (skillName: string, category?: string): Promise<{ projects: ProjectSuggestion[] }> => {
+        const params = category ? `?category=${encodeURIComponent(category)}` : '';
+        return api.get(`/skill-gaps/projects/${encodeURIComponent(skillName)}${params}`);
+    },
+
+    // Get certification recommendations
+    getCertificationRecommendations: async (skillName: string, category?: string): Promise<{ certifications: CertificationRecommendation[] }> => {
+        const params = category ? `?category=${encodeURIComponent(category)}` : '';
+        return api.get(`/skill-gaps/certifications/${encodeURIComponent(skillName)}${params}`);
+    },
+
+    // Update progress
+    updateProgress: async (id: string, data: UpdateSkillGapProgress): Promise<{ message: string; skillGap: SkillGap }> => {
+        return api.put(`/skill-gaps/${id}/progress`, data);
+    },
+
+    // Mark as completed
+    markAsCompleted: async (id: string): Promise<{ message: string; skillGap: SkillGap }> => {
+        return api.post(`/skill-gaps/${id}/complete`);
+    },
+
+    // Get development progress
+    getDevelopmentProgress: async (): Promise<SkillDevelopmentProgress> => {
+        return api.get('/skill-gaps/progress');
+    },
+
+    // Delete skill gap
+    deleteSkillGap: async (id: string): Promise<void> => {
+        return api.delete(`/skill-gaps/${id}`);
+    },
+
+    // Recalculate match score
+    recalculateMatchScore: async (jobMatchId: string): Promise<{ message: string; newScore: number }> => {
+        return api.post(`/skill-gaps/recalculate-match/${jobMatchId}`);
+    },
+};
