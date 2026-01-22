@@ -1,0 +1,108 @@
+version: '3.8'
+
+services:
+  # PostgreSQL Database
+  postgres:
+    image: pgvector/pgvector:pg15
+    container_name: distrocv-postgres
+    environment:
+      POSTGRES_DB: distrocv_dev
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    networks:
+      - distrocv-network
+
+  # Backend API
+  api:
+    build:
+      context: .
+      dockerfile: src/DistroCv.Api/Dockerfile
+    container_name: distrocv-api
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=Host=postgres;Port=5432;Database=distrocv_dev;Username=postgres;Password=postgres
+      - AWS__Region=eu-west-1
+      - AWS__S3BucketName=distrocv-dev-files
+      - Jwt__Issuer=https://cognito-idp.eu-west-1.amazonaws.com/eu-west-1_XXXXXXXXX
+      - Jwt__Audience=your-dev-client-id
+    ports:
+      - "5000:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    networks:
+      - distrocv-network
+    restart: unless-stopped
+
+  # Frontend (Development Server)
+  frontend:
+    image: node:20-alpine
+    container_name: distrocv-frontend
+    working_dir: /app
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    command: sh -c "npm install && npm run dev -- --host"
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:5000
+    networks:
+      - distrocv-network
+    restart: unless-stopped
+
+  # Redis (for caching and session management)
+  redis:
+    image: redis:7-alpine
+    container_name: distrocv-redis
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
+    networks:
+      - distrocv-network
+    restart: unless-stopped
+
+  # pgAdmin (Database Management UI)
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: distrocv-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@distrocv.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+    networks:
+      - distrocv-network
+    restart: unless-stopped
+
+volumes:
+  postgres_data:
+    driver: local
+  redis_data:
+    driver: local
+  pgadmin_data:
+    driver: local
+
+networks:
+  distrocv-network:
+    driver: bridge

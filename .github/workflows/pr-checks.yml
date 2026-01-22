@@ -1,0 +1,254 @@
+name: Pull Request Checks
+
+on:
+  pull_request:
+    branches: [ main, develop ]
+    types: [opened, synchronize, reopened]
+
+env:
+  DOTNET_VERSION: '9.0.x'
+  NODE_VERSION: '20.x'
+
+jobs:
+  # Code Quality Checks
+  code-quality:
+    name: Code Quality
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0  # Full history for better analysis
+        
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+        
+    - name: Restore dependencies
+      run: dotnet restore
+      
+    - name: Check code formatting
+      run: dotnet format --verify-no-changes --verbosity diagnostic
+      
+    - name: Run code analysis
+      run: dotnet build --no-restore /p:TreatWarningsAsErrors=true
+
+  # Backend Tests
+  backend-tests:
+    name: Backend Tests
+    runs-on: ubuntu-latest
+    
+    services:
+      postgres:
+        image: pgvector/pgvector:pg15
+        env:
+          POSTGRES_DB: distrocv_test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup .NET
+      uses: actions/setup-dotnet@v4
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+        
+    - name: Restore dependencies
+      run: dotnet restore
+      
+    - name: Build
+      run: dotnet build --no-restore
+      
+    - name: Run unit tests
+      run: dotnet test --no-build --filter "Category=Unit" --verbosity normal --collect:"XPlat Code Coverage"
+      
+    - name: Run integration tests
+      env:
+        ConnectionStrings__DefaultConnection: "Host=localhost;Port=5432;Database=distrocv_test;Username=postgres;Password=postgres"
+      run: dotnet test --no-build --filter "Category=Integration" --verbosity normal
+      
+    - name: Generate coverage report
+      uses: danielpalme/ReportGenerator-GitHub-Action@5.2.0
+      with:
+        reports: '**/coverage.cobertura.xml'
+        targetdir: 'coveragereport'
+        reporttypes: 'HtmlInline;Cobertura;Badges'
+        
+    - name: Upload coverage report
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-report
+        path: coveragereport
+        
+    - name: Comment coverage on PR
+      uses: romeovs/lcov-reporter-action@v0.3.1
+      with:
+        lcov-file: ./coveragereport/Cobertura.xml
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+
+  # Frontend Tests
+  frontend-tests:
+    name: Frontend Tests
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: ${{ env.NODE_VERSION }}
+        cache: 'npm'
+        cache-dependency-path: client/package-lock.json
+        
+    - name: Install dependencies
+      working-directory: ./client
+      run: npm ci
+      
+    - name: Run ESLint
+      working-directory: ./client
+      run: npm run lint
+      
+    - name: Check TypeScript
+      working-directory: ./client
+      run: npx tsc --noEmit
+      
+    - name: Build
+      working-directory: ./client
+      run: npm run build
+
+  # Dependency Check
+  dependency-check:
+    name: Dependency Security Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      
+    - name: Run Snyk to check for vulnerabilities
+      uses: snyk/actions/dotnet@master
+      continue-on-error: true
+      env:
+        SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+      with:
+        args: --severity-threshold=high
+        
+    - name: Check npm dependencies
+      working-directory: ./client
+      run: npm audit --audit-level=high
+
+  # PR Size Check
+  pr-size:
+    name: PR Size Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Check PR size
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const pr = context.payload.pull_request;
+          const additions = pr.additions;
+          const deletions = pr.deletions;
+          const changes = additions + deletions;
+          
+          console.log(`PR has ${changes} total changes (${additions} additions, ${deletions} deletions)`);
+          
+          if (changes > 1000) {
+            core.setFailed('❌ PR is too large! Please split into smaller PRs. Current: ' + changes + ' lines, Max: 1000 lines');
+          } else if (changes > 500) {
+            core.warning('⚠️ PR is quite large. Consider splitting into smaller PRs. Current: ' + changes + ' lines');
+          } else {
+            console.log('✅ PR size is acceptable');
+          }
+
+  # Commit Message Check
+  commit-lint:
+    name: Commit Message Lint
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        
+    - name: Check commit messages
+      uses: wagoid/commitlint-github-action@v5
+      with:
+        configFile: .commitlintrc.json
+
+  # Label Check
+  label-check:
+    name: PR Label Check
+    runs-on: ubuntu-latest
+    
+    steps:
+    - name: Check for required labels
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const labels = context.payload.pull_request.labels.map(l => l.name);
+          const requiredLabels = ['feature', 'bugfix', 'hotfix', 'documentation', 'refactor'];
+          
+          const hasRequiredLabel = requiredLabels.some(label => labels.includes(label));
+          
+          if (!hasRequiredLabel) {
+            core.setFailed('❌ PR must have at least one label: ' + requiredLabels.join(', '));
+          } else {
+            console.log('✅ PR has required label');
+          }
+
+  # Summary
+  pr-summary:
+    name: PR Summary
+    runs-on: ubuntu-latest
+    needs: [code-quality, backend-tests, frontend-tests, dependency-check]
+    if: always()
+    
+    steps:
+    - name: Generate summary
+      uses: actions/github-script@v7
+      with:
+        script: |
+          const jobs = [
+            { name: 'Code Quality', status: '${{ needs.code-quality.result }}' },
+            { name: 'Backend Tests', status: '${{ needs.backend-tests.result }}' },
+            { name: 'Frontend Tests', status: '${{ needs.frontend-tests.result }}' },
+            { name: 'Dependency Check', status: '${{ needs.dependency-check.result }}' }
+          ];
+          
+          let summary = '## PR Check Results\n\n';
+          
+          jobs.forEach(job => {
+            const icon = job.status === 'success' ? '✅' : '❌';
+            summary += `${icon} **${job.name}**: ${job.status}\n`;
+          });
+          
+          const allPassed = jobs.every(job => job.status === 'success');
+          
+          if (allPassed) {
+            summary += '\n🎉 All checks passed! Ready for review.';
+          } else {
+            summary += '\n⚠️ Some checks failed. Please fix the issues before merging.';
+          }
+          
+          github.rest.issues.createComment({
+            issue_number: context.issue.number,
+            owner: context.repo.owner,
+            repo: context.repo.repo,
+            body: summary
+          });

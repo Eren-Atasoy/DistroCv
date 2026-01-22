@@ -1,0 +1,13 @@
+D:\Portfolio\DistroCv\src\DistroCv.Core\bin\Debug\net9.0\DistroCv.Core.deps.json
+D:\Portfolio\DistroCv\src\DistroCv.Core\bin\Debug\net9.0\DistroCv.Core.dll
+D:\Portfolio\DistroCv\src\DistroCv.Core\bin\Debug\net9.0\DistroCv.Core.pdb
+D:\Portfolio\DistroCv\src\DistroCv.Core\obj\Debug\net9.0\DistroCv.Core.csproj.AssemblyReference.cache
+D:\Portfolio\DistroCv\src\DistroCv.Core\obj\Debug\net9.0\DistroCv.Core.GeneratedMSBuildEditorConfig.editorconfig
+D:\Portfolio\DistroCv\src\DistroCv.Core\obj\Debug\net9.0\DistroCv.Core.AssemblyInfoInputs.cache
+D:\Portfolio\DistroCv\src\DistroCv.Core\obj\Debug\net9.0\DistroCv.Core.AssemblyInfo.cs
+D:\Portfolio\DistroCv\src\DistroCv.Core\obj\Debug\net9.0\DistroCv.Core.csproj.CoreCompileInputs.cache
+D:\Portfolio\DistroCv\src\DistroCv.Core\obj\Debug\net9.0\DistroCv.Core.sourcelink.json
+D:\Portfolio\DistroCv\src\DistroCv.Core\obj\Debug\net9.0\DistroCv.Core.dll
+D:\Portfolio\DistroCv\src\DistroCv.Core\obj\Debug\net9.0\refint\DistroCv.Core.dll
+D:\Portfolio\DistroCv\src\DistroCv.Core\obj\Debug\net9.0\DistroCv.Core.pdb
+D:\Portfolio\DistroCv\src\DistroCv.Core\obj\Debug\net9.0\ref\DistroCv.Core.dll
