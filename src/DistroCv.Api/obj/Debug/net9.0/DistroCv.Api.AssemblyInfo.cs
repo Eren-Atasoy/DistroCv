@@ -13,7 +13,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("DistroCv.Api")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+bba6307a025b7235e8a9c8ed5f6c239c27e40bd6")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+3f870207140fe1f75520828281c8ab3dc27973f2")]
 [assembly: System.Reflection.AssemblyProductAttribute("DistroCv.Api")]
 [assembly: System.Reflection.AssemblyTitleAttribute("DistroCv.Api")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]

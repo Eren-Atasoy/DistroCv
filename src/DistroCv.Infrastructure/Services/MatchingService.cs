@@ -15,17 +15,20 @@ public class MatchingService : IMatchingService
     private readonly DistroCvDbContext _context;
     private readonly IJobMatchRepository _jobMatchRepository;
     private readonly IGeminiService _geminiService;
+    private readonly INotificationService _notificationService;
     private readonly ILogger<MatchingService> _logger;
 
     public MatchingService(
         DistroCvDbContext context,
         IJobMatchRepository jobMatchRepository,
         IGeminiService geminiService,
+        INotificationService notificationService,
         ILogger<MatchingService> logger)
     {
         _context = context;
         _jobMatchRepository = jobMatchRepository;
         _geminiService = geminiService;
+        _notificationService = notificationService;
         _logger = logger;
     }
 
@@ -104,6 +107,24 @@ public class MatchingService : IMatchingService
 
         // Save to database
         await _jobMatchRepository.CreateAsync(jobMatch, cancellationToken);
+
+        // Load navigation properties for notification
+        jobMatch.JobPosting = jobPosting;
+
+        // Send notification if match score >= 80 (Validates: Requirement 3.5)
+        if (jobMatch.IsInQueue)
+        {
+            try
+            {
+                await _notificationService.CreateNewMatchNotificationAsync(userId, jobMatch, cancellationToken);
+                _logger.LogInformation("Notification sent for new match {MatchId} to user {UserId}", jobMatch.Id, userId);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to send notification for match {MatchId}", jobMatch.Id);
+                // Don't fail the match creation if notification fails
+            }
+        }
 
         _logger.LogInformation("Match calculated: Score {Score} for user {UserId} and job {JobTitle}", 
             matchResult.MatchScore, userId, jobPosting.Title);

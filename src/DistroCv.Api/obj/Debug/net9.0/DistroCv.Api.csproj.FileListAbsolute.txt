@@ -532,3 +532,5 @@ D:\Portfolio\DistroCv\src\DistroCv.Api\bin\Debug\net9.0\sv\Hangfire.Core.resourc
 D:\Portfolio\DistroCv\src\DistroCv.Api\bin\Debug\net9.0\tr-TR\Hangfire.Core.resources.dll
 D:\Portfolio\DistroCv\src\DistroCv.Api\bin\Debug\net9.0\zh-TW\Hangfire.Core.resources.dll
 D:\Portfolio\DistroCv\src\DistroCv.Api\bin\Debug\net9.0\zh\Hangfire.Core.resources.dll
+D:\Portfolio\DistroCv\src\DistroCv.Api\bin\Debug\net9.0\Polly.dll
+D:\Portfolio\DistroCv\src\DistroCv.Api\bin\Debug\net9.0\Polly.Core.dll

@@ -24,6 +24,7 @@ public class DistroCvDbContext : DbContext
     public DbSet<UserFeedback> UserFeedbacks { get; set; }
     public DbSet<ThrottleLog> ThrottleLogs { get; set; }
     public DbSet<UserSession> UserSessions { get; set; }
+    public DbSet<Notification> Notifications { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -190,6 +191,23 @@ public class DistroCvDbContext : DbContext
             entity.HasIndex(e => e.RefreshToken);
             entity.HasIndex(e => new { e.UserId, e.IsActive });
             entity.HasIndex(e => e.ExpiresAt);
+        });
+
+        // Notification Configuration
+        modelBuilder.Entity<Notification>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Title).IsRequired().HasMaxLength(200);
+            entity.Property(e => e.Message).IsRequired().HasMaxLength(1000);
+            entity.Property(e => e.Type).IsRequired();
+            entity.Property(e => e.IsRead).HasDefaultValue(false);
+            entity.Property(e => e.RelatedEntityType).HasMaxLength(50);
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => new { e.UserId, e.IsRead });
+            entity.HasIndex(e => e.CreatedAt);
         });
     }
 }
