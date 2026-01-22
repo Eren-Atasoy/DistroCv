@@ -1,6 +1,7 @@
 using DistroCv.Infrastructure.Data;
 using DistroCv.Infrastructure.AWS;
 using DistroCv.Infrastructure.Gemini;
+using DistroCv.Infrastructure.Gmail;
 using DistroCv.Api.Middleware;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
@@ -33,6 +34,9 @@ builder.Services.AddAwsServices(builder.Configuration);
 // Configure Gemini Services
 builder.Services.AddGeminiServices(builder.Configuration);
 
+// Configure Gmail Services
+builder.Services.AddGmailServices();
+
 // Register application services
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IUserService, DistroCv.Infrastructure.Services.UserService>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.ISessionRepository, DistroCv.Infrastructure.Data.SessionRepository>();
@@ -43,6 +47,12 @@ builder.Services.AddScoped<DistroCv.Core.Interfaces.IJobMatchRepository, DistroC
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IMatchingService, DistroCv.Infrastructure.Services.MatchingService>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.INotificationService, DistroCv.Infrastructure.Services.NotificationService>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IResumeTailoringService, DistroCv.Infrastructure.Services.ResumeTailoringService>();
+builder.Services.AddScoped<DistroCv.Core.Interfaces.IApplicationDistributionService, DistroCv.Infrastructure.Services.ApplicationDistributionService>();
+builder.Services.AddScoped<DistroCv.Core.Interfaces.IThrottleManager, DistroCv.Infrastructure.Services.ThrottleManager>();
+builder.Services.AddScoped<DistroCv.Core.Interfaces.IFeedbackService, DistroCv.Infrastructure.Services.FeedbackService>();
+builder.Services.AddScoped<DistroCv.Core.Interfaces.IApplicationRepository, DistroCv.Infrastructure.Data.ApplicationRepository>();
+builder.Services.AddScoped<DistroCv.Core.Interfaces.IInterviewPreparationRepository, DistroCv.Infrastructure.Data.InterviewPreparationRepository>();
+builder.Services.AddScoped<DistroCv.Core.Interfaces.IInterviewCoachService, DistroCv.Infrastructure.Services.InterviewCoachService>();
 
 // Configure Playwright settings
 builder.Services.Configure<DistroCv.Core.DTOs.PlaywrightSettings>(

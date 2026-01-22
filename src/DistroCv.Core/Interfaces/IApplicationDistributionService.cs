@@ -1,34 +1,57 @@
-using DistroCv.Core.Entities;
-
 namespace DistroCv.Core.Interfaces;
 
 /// <summary>
-/// Service interface for application distribution via email and LinkedIn
+/// Service for distributing job applications via email and LinkedIn
 /// </summary>
 public interface IApplicationDistributionService
 {
     /// <summary>
-    /// Sends application via email using Gmail API
+    /// Sends application via Gmail API (Validates: Requirement 5.1, 5.2)
     /// </summary>
-    Task<bool> SendViaEmailAsync(Application application);
+    /// <param name="applicationId">Application ID</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>True if sent successfully</returns>
+    Task<bool> SendViaEmailAsync(Guid applicationId, CancellationToken cancellationToken = default);
     
     /// <summary>
-    /// Sends application via LinkedIn automation
+    /// Sends application via LinkedIn Easy Apply (Validates: Requirement 5.3)
     /// </summary>
-    Task<bool> SendViaLinkedInAsync(Application application);
+    /// <param name="applicationId">Application ID</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>True if sent successfully</returns>
+    Task<bool> SendViaLinkedInAsync(Guid applicationId, CancellationToken cancellationToken = default);
     
     /// <summary>
-    /// Simulates human-like behavior with random delays
+    /// Tracks application status (Validates: Requirement 5.6)
     /// </summary>
-    Task SimulateHumanBehaviorAsync(int minDelayMs, int maxDelayMs);
+    /// <param name="applicationId">Application ID</param>
+    /// <param name="status">New status</param>
+    /// <param name="notes">Optional notes</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    Task UpdateApplicationStatusAsync(
+        Guid applicationId, 
+        string status, 
+        string? notes = null, 
+        CancellationToken cancellationToken = default);
     
     /// <summary>
-    /// Gets the status of an application
+    /// Generates personalized email message for HR contact (Validates: Requirement 5.2)
     /// </summary>
-    Task<string> GetApplicationStatusAsync(Guid applicationId);
-    
-    /// <summary>
-    /// Logs browser automation action
-    /// </summary>
-    Task LogActionAsync(Guid applicationId, string actionType, string targetElement, string details);
+    /// <param name="applicationId">Application ID</param>
+    /// <param name="cancellationToken">Cancellation token</param>
+    /// <returns>Personalized email content</returns>
+    Task<EmailContent> GeneratePersonalizedEmailAsync(
+        Guid applicationId, 
+        CancellationToken cancellationToken = default);
+}
+
+/// <summary>
+/// Email content for application
+/// </summary>
+public class EmailContent
+{
+    public string Subject { get; set; } = string.Empty;
+    public string Body { get; set; } = string.Empty;
+    public string RecipientEmail { get; set; } = string.Empty;
+    public string RecipientName { get; set; } = string.Empty;
 }

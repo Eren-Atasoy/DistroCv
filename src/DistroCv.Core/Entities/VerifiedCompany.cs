@@ -11,10 +11,14 @@ public class VerifiedCompany
     public string? TaxNumber { get; set; }
     public string? HREmail { get; set; }
     public string? HRPhone { get; set; }
-    public string? CompanyCulture { get; set; } // Gemini analysis
+    public string? Sector { get; set; }
+    public string? City { get; set; }
+    public string? Description { get; set; }
+    public string? CompanyCulture { get; set; } // Gemini analysis JSON
     public string? RecentNews { get; set; } // JSON array
     public bool IsVerified { get; set; }
     public DateTime? VerifiedAt { get; set; }
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 
     // Navigation

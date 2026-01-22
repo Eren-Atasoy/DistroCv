@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
 import type { PanInfo } from 'framer-motion'
 import {
@@ -8,11 +8,13 @@ import {
     Building2,
     DollarSign,
     Clock,
-    Sparkles
+    Sparkles,
+    Loader2
 } from 'lucide-react'
+import { jobsApi, feedbackApi, type JobMatch } from '../services/api'
 
 interface JobCard {
-    id: number
+    id: string
     title: string
     company: string
     location: string
@@ -22,43 +24,8 @@ interface JobCard {
     requirements: string[]
     postedAt: string
     logo?: string
+    jobMatchId: string
 }
-
-const mockJobs: JobCard[] = [
-    {
-        id: 1,
-        title: 'Senior Frontend Developer',
-        company: 'Trendyol',
-        location: 'İstanbul, Türkiye',
-        salary: '₺80.000 - ₺120.000',
-        matchScore: 94,
-        matchReason: 'React, TypeScript ve e-ticaret deneyiminiz bu pozisyon için mükemmel uyum sağlıyor.',
-        requirements: ['React', 'TypeScript', 'Next.js', 'TailwindCSS'],
-        postedAt: '2 gün önce',
-    },
-    {
-        id: 2,
-        title: 'Full Stack Engineer',
-        company: 'Getir',
-        location: 'İstanbul, Türkiye (Remote)',
-        salary: '₺70.000 - ₺100.000',
-        matchScore: 91,
-        matchReason: 'Full stack becerileriniz ve startup deneyiminiz ideal.',
-        requirements: ['Node.js', 'React', 'PostgreSQL', 'Docker'],
-        postedAt: '3 gün önce',
-    },
-    {
-        id: 3,
-        title: 'React Developer',
-        company: 'Insider',
-        location: 'İstanbul, Türkiye (Hybrid)',
-        salary: '₺60.000 - ₺90.000',
-        matchScore: 88,
-        matchReason: 'React uzmanlığınız ve SaaS geçmişiniz bu rol için uygun.',
-        requirements: ['React', 'Redux', 'Jest', 'CSS-in-JS'],
-        postedAt: '1 hafta önce',
-    },
-]
 
 const rejectReasons = [
     'Maaş beklentimin altında',
@@ -69,24 +36,85 @@ const rejectReasons = [
 ]
 
 export default function SwipeInterface() {
-    const [jobs] = useState(mockJobs)
+    const [jobs, setJobs] = useState<JobCard[]>([])
     const [currentIndex, setCurrentIndex] = useState(0)
     const [showRejectModal, setShowRejectModal] = useState(false)
     const [direction, setDirection] = useState<'left' | 'right' | null>(null)
+    const [loading, setLoading] = useState(true)
+    const [error, setError] = useState<string | null>(null)
+
+    // Fetch matched jobs from backend
+    useEffect(() => {
+        const fetchJobs = async () => {
+            try {
+                setLoading(true)
+                setError(null)
+                const matches = await jobsApi.getMatchedJobs()
+
+                // Transform API data to JobCard format
+                const transformedJobs: JobCard[] = matches.map((match: JobMatch) => ({
+                    id: match.jobPosting.id,
+                    jobMatchId: match.id,
+                    title: match.jobPosting.title,
+                    company: match.jobPosting.companyName,
+                    location: match.jobPosting.location,
+                    salary: match.jobPosting.salary || 'Belirtilmemiş',
+                    matchScore: match.matchScore,
+                    matchReason: match.matchReasoning,
+                    requirements: match.jobPosting.requirements
+                        ? match.jobPosting.requirements.split(',').map(r => r.trim())
+                        : [],
+                    postedAt: new Date(match.jobPosting.postedDate).toLocaleDateString('tr-TR'),
+                }))
+
+                setJobs(transformedJobs)
+            } catch (err) {
+                console.error('Error fetching jobs:', err)
+                setError('İş ilanları yüklenirken bir hata oluştu')
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        fetchJobs()
+    }, [])
 
     const currentJob = jobs[currentIndex]
 
-    const handleSwipe = (swipeDirection: 'left' | 'right') => {
+    const handleSwipe = async (swipeDirection: 'left' | 'right') => {
         setDirection(swipeDirection)
 
-        setTimeout(() => {
+        setTimeout(async () => {
             if (swipeDirection === 'left') {
                 setShowRejectModal(true)
             } else {
-                // Approve - move to next
+                // Approve - send to backend
+                try {
+                    await jobsApi.approveMatch(currentJob.jobMatchId)
+                    await feedbackApi.submitFeedback({
+                        jobMatchId: currentJob.jobMatchId,
+                        feedbackType: 'Approve',
+                    })
+                } catch (err) {
+                    console.error('Error approving job:', err)
+                }
                 goToNext()
             }
         }, 300)
+    }
+
+    const handleReject = async (reason: string) => {
+        try {
+            await jobsApi.rejectMatch(currentJob.jobMatchId, reason)
+            await feedbackApi.submitFeedback({
+                jobMatchId: currentJob.jobMatchId,
+                feedbackType: 'Reject',
+                reason,
+            })
+        } catch (err) {
+            console.error('Error rejecting job:', err)
+        }
+        goToNext()
     }
 
     const goToNext = () => {
@@ -106,7 +134,38 @@ export default function SwipeInterface() {
         }
     }
 
-    if (currentIndex >= jobs.length) {
+    // Loading state
+    if (loading) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[70vh]">
+                <Loader2 size={48} className="text-primary-400 animate-spin mb-4" />
+                <p className="text-surface-400">İş ilanları yükleniyor...</p>
+            </div>
+        )
+    }
+
+    // Error state
+    if (error) {
+        return (
+            <div className="flex flex-col items-center justify-center min-h-[70vh] text-center">
+                <div className="w-24 h-24 rounded-full bg-error/20 flex items-center justify-center mb-6">
+                    <X size={48} className="text-error" />
+                </div>
+                <h2 className="text-2xl font-display font-bold text-white mb-2">
+                    Bir Hata Oluştu
+                </h2>
+                <p className="text-surface-400 mb-6">{error}</p>
+                <button
+                    onClick={() => window.location.reload()}
+                    className="px-6 py-3 rounded-xl bg-primary-500 text-white font-medium hover:bg-primary-600 transition-colors"
+                >
+                    Tekrar Dene
+                </button>
+            </div>
+        )
+    }
+
+    if (currentIndex >= jobs.length || jobs.length === 0) {
         return (
             <div className="flex flex-col items-center justify-center min-h-[70vh] text-center">
                 <motion.div
@@ -315,7 +374,7 @@ export default function SwipeInterface() {
                                 {rejectReasons.map((reason, index) => (
                                     <button
                                         key={index}
-                                        onClick={() => goToNext()}
+                                        onClick={() => handleReject(reason)}
                                         className="w-full p-3 rounded-xl bg-surface-800 text-surface-300 text-left hover:bg-surface-700 hover:text-white transition-colors"
                                     >
                                         {reason}
