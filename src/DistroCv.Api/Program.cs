@@ -36,6 +36,13 @@ builder.Services.AddScoped<DistroCv.Core.Interfaces.IUserService, DistroCv.Infra
 builder.Services.AddScoped<DistroCv.Core.Interfaces.ISessionRepository, DistroCv.Infrastructure.Data.SessionRepository>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.ISessionService, DistroCv.Infrastructure.Services.SessionService>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IProfileService, DistroCv.Infrastructure.Services.ProfileService>();
+builder.Services.AddScoped<DistroCv.Core.Interfaces.IJobScrapingService, DistroCv.Infrastructure.Services.JobScrapingService>();
+builder.Services.AddScoped<DistroCv.Core.Interfaces.IJobMatchRepository, DistroCv.Infrastructure.Data.JobMatchRepository>();
+builder.Services.AddScoped<DistroCv.Core.Interfaces.IMatchingService, DistroCv.Infrastructure.Services.MatchingService>();
+
+// Configure Playwright settings
+builder.Services.Configure<DistroCv.Core.DTOs.PlaywrightSettings>(
+    builder.Configuration.GetSection("Playwright"));
 
 // Register background services
 builder.Services.AddHostedService<DistroCv.Api.BackgroundServices.SessionCleanupService>();

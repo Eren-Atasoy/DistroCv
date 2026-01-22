@@ -1,4 +1,6 @@
 using DistroCv.Core.DTOs;
+using DistroCv.Core.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace DistroCv.Api.Controllers;
@@ -6,13 +8,18 @@ namespace DistroCv.Api.Controllers;
 /// <summary>
 /// Job discovery and matching controller
 /// </summary>
+[Authorize]
 public class JobsController : BaseApiController
 {
     private readonly ILogger<JobsController> _logger;
+    private readonly IMatchingService _matchingService;
 
-    public JobsController(ILogger<JobsController> logger)
+    public JobsController(
+        ILogger<JobsController> logger,
+        IMatchingService matchingService)
     {
         _logger = logger;
+        _matchingService = matchingService;
     }
 
     /// <summary>
@@ -24,17 +31,46 @@ public class JobsController : BaseApiController
         [FromQuery] int take = 20,
         [FromQuery] decimal minScore = 80)
     {
-        var userId = GetCurrentUserId();
-        
-        _logger.LogInformation("Getting matched jobs for user: {UserId}, MinScore: {MinScore}", userId, minScore);
+        try
+        {
+            var userId = GetCurrentUserId();
+            
+            _logger.LogInformation("Getting matched jobs for user: {UserId}, MinScore: {MinScore}", userId, minScore);
 
-        // TODO: Fetch matches from MatchingService
-        return Ok(new 
-        { 
-            jobs = new List<JobMatchDto>(),
-            total = 0,
-            message = "Matched jobs endpoint - implementation pending"
-        });
+            // Get existing matches or find new ones
+            var matches = await _matchingService.FindMatchesForUserAsync(userId, minScore);
+
+            var matchDtos = matches
+                .Skip(skip)
+                .Take(take)
+                .Select(m => new JobMatchDto(
+                    m.Id,
+                    m.JobPosting.Id,
+                    m.JobPosting.Title,
+                    m.JobPosting.CompanyName,
+                    m.JobPosting.Location,
+                    m.JobPosting.SalaryRange,
+                    m.MatchScore,
+                    m.MatchReasoning,
+                    m.SkillGaps,
+                    m.Status,
+                    m.CalculatedAt
+                ))
+                .ToList();
+
+            return Ok(new 
+            { 
+                jobs = matchDtos,
+                total = matches.Count,
+                skip = skip,
+                take = take
+            });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error getting matched jobs");
+            return StatusCode(500, new { message = "An error occurred while fetching matched jobs" });
+        }
     }
 
     /// <summary>
@@ -74,12 +110,37 @@ public class JobsController : BaseApiController
     [HttpPost("{id:guid}/approve")]
     public async Task<IActionResult> ApproveMatch(Guid id)
     {
-        var userId = GetCurrentUserId();
-        
-        _logger.LogInformation("Approving job match: {JobId} for user: {UserId}", id, userId);
+        try
+        {
+            var userId = GetCurrentUserId();
+            
+            _logger.LogInformation("Approving job match: {JobId} for user: {UserId}", id, userId);
 
-        // TODO: Update match status and start application process
-        return Ok(new { message = "Match approved. Starting application process..." });
+            var match = await _matchingService.ApproveMatchAsync(id, userId);
+
+            return Ok(new 
+            { 
+                message = "Match approved. Starting application process...",
+                matchId = match.Id,
+                status = match.Status,
+                isInQueue = match.IsInQueue
+            });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            _logger.LogWarning(ex, "Unauthorized approve attempt");
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Invalid approve operation");
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error approving match");
+            return StatusCode(500, new { message = "An error occurred while approving the match" });
+        }
     }
 
     /// <summary>
@@ -88,11 +149,41 @@ public class JobsController : BaseApiController
     [HttpPost("{id:guid}/reject")]
     public async Task<IActionResult> RejectMatch(Guid id, [FromBody] JobFeedbackDto? dto)
     {
-        var userId = GetCurrentUserId();
-        
-        _logger.LogInformation("Rejecting job match: {JobId} for user: {UserId}", id, userId);
+        try
+        {
+            var userId = GetCurrentUserId();
+            
+            _logger.LogInformation("Rejecting job match: {JobId} for user: {UserId}", id, userId);
 
-        // TODO: Update match status and optionally collect feedback
-        return Ok(new { message = "Match rejected" });
+            var match = await _matchingService.RejectMatchAsync(id, userId);
+
+            // TODO: If feedback provided, save it for learning
+            if (dto != null && !string.IsNullOrEmpty(dto.Reason))
+            {
+                _logger.LogInformation("Feedback provided for rejection: {Reason}", dto.Reason);
+            }
+
+            return Ok(new 
+            { 
+                message = "Match rejected",
+                matchId = match.Id,
+                status = match.Status
+            });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            _logger.LogWarning(ex, "Unauthorized reject attempt");
+            return Unauthorized(new { message = ex.Message });
+        }
+        catch (InvalidOperationException ex)
+        {
+            _logger.LogWarning(ex, "Invalid reject operation");
+            return NotFound(new { message = ex.Message });
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error rejecting match");
+            return StatusCode(500, new { message = "An error occurred while rejecting the match" });
+        }
     }
 }
