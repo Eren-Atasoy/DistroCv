@@ -20,4 +20,5 @@ public class User
     public ICollection<JobMatch> JobMatches { get; set; } = new List<JobMatch>();
     public ICollection<UserFeedback> Feedbacks { get; set; } = new List<UserFeedback>();
     public ICollection<ThrottleLog> ThrottleLogs { get; set; } = new List<ThrottleLog>();
+    public ICollection<UserSession> Sessions { get; set; } = new List<UserSession>();
 }

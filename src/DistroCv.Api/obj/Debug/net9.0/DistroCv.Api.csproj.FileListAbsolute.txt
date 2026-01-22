@@ -160,3 +160,5 @@ D:\Portfolio\DistroCv\src\DistroCv.Api\bin\Debug\net9.0\Microsoft.IdentityModel.
 D:\Portfolio\DistroCv\src\DistroCv.Api\bin\Debug\net9.0\Microsoft.IdentityModel.Protocols.OpenIdConnect.dll
 D:\Portfolio\DistroCv\src\DistroCv.Api\bin\Debug\net9.0\Microsoft.IdentityModel.Tokens.dll
 D:\Portfolio\DistroCv\src\DistroCv.Api\bin\Debug\net9.0\System.IdentityModel.Tokens.Jwt.dll
+D:\Portfolio\DistroCv\src\DistroCv.Api\bin\Debug\net9.0\Microsoft.Extensions.Diagnostics.dll
+D:\Portfolio\DistroCv\src\DistroCv.Api\bin\Debug\net9.0\Microsoft.Extensions.Http.dll

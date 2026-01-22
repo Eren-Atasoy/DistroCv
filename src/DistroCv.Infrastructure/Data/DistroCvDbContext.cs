@@ -23,6 +23,7 @@ public class DistroCvDbContext : DbContext
     public DbSet<InterviewPreparation> InterviewPreparations { get; set; }
     public DbSet<UserFeedback> UserFeedbacks { get; set; }
     public DbSet<ThrottleLog> ThrottleLogs { get; set; }
+    public DbSet<UserSession> UserSessions { get; set; }
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -169,6 +170,26 @@ public class DistroCvDbContext : DbContext
                 .HasForeignKey(e => e.UserId)
                 .OnDelete(DeleteBehavior.Cascade);
             entity.HasIndex(e => new { e.UserId, e.ActionType, e.Timestamp });
+        });
+
+        // UserSession Configuration
+        modelBuilder.Entity<UserSession>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.AccessToken).IsRequired().HasMaxLength(2048);
+            entity.Property(e => e.RefreshToken).IsRequired().HasMaxLength(2048);
+            entity.Property(e => e.DeviceInfo).HasMaxLength(500);
+            entity.Property(e => e.IpAddress).HasMaxLength(45); // IPv6 max length
+            entity.Property(e => e.UserAgent).HasMaxLength(1000);
+            entity.Property(e => e.RevokedReason).HasMaxLength(500);
+            entity.HasOne(e => e.User)
+                .WithMany(u => u.Sessions)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => e.AccessToken);
+            entity.HasIndex(e => e.RefreshToken);
+            entity.HasIndex(e => new { e.UserId, e.IsActive });
+            entity.HasIndex(e => e.ExpiresAt);
         });
     }
 }

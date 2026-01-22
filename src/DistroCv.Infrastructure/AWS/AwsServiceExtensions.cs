@@ -20,6 +20,9 @@ public static class AwsServiceExtensions
         
         var region = RegionEndpoint.GetBySystemName(awsConfig.Region ?? "eu-west-1");
 
+        // Register HttpClient for external API calls
+        services.AddHttpClient();
+
         // Register AWS S3 client
         services.AddAWSService<IAmazonS3>(new Amazon.Extensions.NETCore.Setup.AWSOptions
         {

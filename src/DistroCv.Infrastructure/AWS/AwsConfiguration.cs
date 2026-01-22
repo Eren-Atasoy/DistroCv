@@ -7,4 +7,6 @@ public class AwsConfiguration
     public string CognitoUserPoolId { get; set; } = string.Empty;
     public string CognitoClientId { get; set; } = string.Empty;
     public string CognitoClientSecret { get; set; } = string.Empty;
+    public string GoogleClientId { get; set; } = string.Empty;
+    public string GoogleClientSecret { get; set; } = string.Empty;
 }

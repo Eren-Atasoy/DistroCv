@@ -433,6 +433,72 @@ namespace DistroCv.Infrastructure.Data.Migrations
                     b.ToTable("UserFeedbacks");
                 });
 
+            modelBuilder.Entity("DistroCv.Core.Entities.UserSession", b =>
+                {
+                    b.Property<Guid>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("uuid");
+
+                    b.Property<string>("AccessToken")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("DeviceInfo")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<DateTime>("ExpiresAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("IpAddress")
+                        .IsRequired()
+                        .HasMaxLength(45)
+                        .HasColumnType("character varying(45)");
+
+                    b.Property<bool>("IsActive")
+                        .HasColumnType("boolean");
+
+                    b.Property<DateTime?>("LastActivityAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("RefreshToken")
+                        .IsRequired()
+                        .HasMaxLength(2048)
+                        .HasColumnType("character varying(2048)");
+
+                    b.Property<DateTime?>("RevokedAt")
+                        .HasColumnType("timestamp with time zone");
+
+                    b.Property<string>("RevokedReason")
+                        .HasMaxLength(500)
+                        .HasColumnType("character varying(500)");
+
+                    b.Property<string>("UserAgent")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)");
+
+                    b.Property<Guid>("UserId")
+                        .HasColumnType("uuid");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("AccessToken");
+
+                    b.HasIndex("ExpiresAt");
+
+                    b.HasIndex("RefreshToken");
+
+                    b.HasIndex("UserId", "IsActive");
+
+                    b.ToTable("UserSessions");
+                });
+
             modelBuilder.Entity("DistroCv.Core.Entities.VerifiedCompany", b =>
                 {
                     b.Property<Guid>("Id")
@@ -599,6 +665,17 @@ namespace DistroCv.Infrastructure.Data.Migrations
                     b.Navigation("User");
                 });
 
+            modelBuilder.Entity("DistroCv.Core.Entities.UserSession", b =>
+                {
+                    b.HasOne("DistroCv.Core.Entities.User", "User")
+                        .WithMany("Sessions")
+                        .HasForeignKey("UserId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.Navigation("User");
+                });
+
             modelBuilder.Entity("DistroCv.Core.Entities.Application", b =>
                 {
                     b.Navigation("InterviewPreparation");
@@ -627,6 +704,8 @@ namespace DistroCv.Infrastructure.Data.Migrations
                     b.Navigation("Feedbacks");
 
                     b.Navigation("JobMatches");
+
+                    b.Navigation("Sessions");
 
                     b.Navigation("ThrottleLogs");
                 });

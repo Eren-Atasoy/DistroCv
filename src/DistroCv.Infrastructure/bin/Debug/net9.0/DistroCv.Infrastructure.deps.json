@@ -16,6 +16,7 @@
           "Microsoft.EntityFrameworkCore.Design": "9.0.1",
           "Microsoft.Extensions.Configuration.Binder": "9.0.1",
           "Microsoft.Extensions.Configuration.Json": "9.0.1",
+          "Microsoft.Extensions.Http": "9.0.1",
           "Microsoft.Extensions.Options.ConfigurationExtensions": "9.0.1",
           "Npgsql.EntityFrameworkCore.PostgreSQL": "9.0.4",
           "Pgvector.EntityFrameworkCore": "0.3.0"
@@ -559,6 +560,31 @@
           }
         }
       },
+      "Microsoft.Extensions.Diagnostics/9.0.1": {
+        "dependencies": {
+          "Microsoft.Extensions.Configuration": "9.0.1",
+          "Microsoft.Extensions.Diagnostics.Abstractions": "9.0.1",
+          "Microsoft.Extensions.Options.ConfigurationExtensions": "9.0.1"
+        },
+        "runtime": {
+          "lib/net9.0/Microsoft.Extensions.Diagnostics.dll": {
+            "assemblyVersion": "9.0.0.0",
+            "fileVersion": "9.0.124.61010"
+          }
+        }
+      },
+      "Microsoft.Extensions.Diagnostics.Abstractions/9.0.1": {
+        "dependencies": {
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.1",
+          "Microsoft.Extensions.Options": "9.0.1"
+        },
+        "runtime": {
+          "lib/net9.0/Microsoft.Extensions.Diagnostics.Abstractions.dll": {
+            "assemblyVersion": "9.0.0.0",
+            "fileVersion": "9.0.124.61010"
+          }
+        }
+      },
       "Microsoft.Extensions.FileProviders.Abstractions/9.0.1": {
         "dependencies": {
           "Microsoft.Extensions.Primitives": "9.0.1"
@@ -586,6 +612,22 @@
       "Microsoft.Extensions.FileSystemGlobbing/9.0.1": {
         "runtime": {
           "lib/net9.0/Microsoft.Extensions.FileSystemGlobbing.dll": {
+            "assemblyVersion": "9.0.0.0",
+            "fileVersion": "9.0.124.61010"
+          }
+        }
+      },
+      "Microsoft.Extensions.Http/9.0.1": {
+        "dependencies": {
+          "Microsoft.Extensions.Configuration.Abstractions": "9.0.1",
+          "Microsoft.Extensions.DependencyInjection.Abstractions": "9.0.1",
+          "Microsoft.Extensions.Diagnostics": "9.0.1",
+          "Microsoft.Extensions.Logging": "9.0.1",
+          "Microsoft.Extensions.Logging.Abstractions": "9.0.1",
+          "Microsoft.Extensions.Options": "9.0.1"
+        },
+        "runtime": {
+          "lib/net9.0/Microsoft.Extensions.Http.dll": {
             "assemblyVersion": "9.0.0.0",
             "fileVersion": "9.0.124.61010"
           }
@@ -1015,6 +1057,20 @@
       "path": "microsoft.extensions.dependencymodel/9.0.1",
       "hashPath": "microsoft.extensions.dependencymodel.9.0.1.nupkg.sha512"
     },
+    "Microsoft.Extensions.Diagnostics/9.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-4ZmP6turxMFsNwK/MCko2fuIITaYYN/eXyyIRq1FjLDKnptdbn6xMb7u0zfSMzCGpzkx4RxH/g1jKN2IchG7uA==",
+      "path": "microsoft.extensions.diagnostics/9.0.1",
+      "hashPath": "microsoft.extensions.diagnostics.9.0.1.nupkg.sha512"
+    },
+    "Microsoft.Extensions.Diagnostics.Abstractions/9.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-pfAPuVtHvG6dvZtAa0OQbXdDqq6epnr8z0/IIUjdmV0tMeI8Aj9KxDXvdDvqr+qNHTkmA7pZpChNxwNZt4GXVg==",
+      "path": "microsoft.extensions.diagnostics.abstractions/9.0.1",
+      "hashPath": "microsoft.extensions.diagnostics.abstractions.9.0.1.nupkg.sha512"
+    },
     "Microsoft.Extensions.FileProviders.Abstractions/9.0.1": {
       "type": "package",
       "serviceable": true,
@@ -1035,6 +1091,13 @@
       "sha512": "sha512-Mxcp9NXuQMvAnudRZcgIb5SqlWrlullQzntBLTwuv0MPIJ5LqiGwbRqiyxgdk+vtCoUkplb0oXy5kAw1t469Ug==",
       "path": "microsoft.extensions.filesystemglobbing/9.0.1",
       "hashPath": "microsoft.extensions.filesystemglobbing.9.0.1.nupkg.sha512"
+    },
+    "Microsoft.Extensions.Http/9.0.1": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-j1UmqmTRIc0OJhv8feVFmXhPS/Z+82o/JLF3WKlydC3esolPVVJPJ0oq/MSECXFZMBKVVpxUBJnR6dJH1hTWzQ==",
+      "path": "microsoft.extensions.http/9.0.1",
+      "hashPath": "microsoft.extensions.http.9.0.1.nupkg.sha512"
     },
     "Microsoft.Extensions.Logging/9.0.1": {
       "type": "package",
