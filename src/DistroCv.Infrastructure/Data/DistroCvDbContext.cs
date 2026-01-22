@@ -28,10 +28,46 @@ public class DistroCvDbContext : DbContext
     public DbSet<SkillGapAnalysis> SkillGapAnalyses { get; set; }
     public DbSet<LinkedInProfileOptimization> LinkedInProfileOptimizations { get; set; }
 
+    public DbSet<AuditLog> AuditLogs { get; set; }
+    public DbSet<UserConsent> UserConsents { get; set; }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         base.OnModelCreating(modelBuilder);
 
+        // ... existing configurations ...
+
+        // AuditLog Configuration
+        modelBuilder.Entity<AuditLog>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.Action).IsRequired().HasMaxLength(100);
+            entity.Property(e => e.Resource).HasMaxLength(200);
+            entity.Property(e => e.Details).HasMaxLength(2000);
+            entity.Property(e => e.IpAddress).HasMaxLength(45);
+            entity.Property(e => e.UserAgent).HasMaxLength(500);
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.SetNull); // Keep logs even if user deleted
+            entity.HasIndex(e => new { e.UserId, e.Action, e.Timestamp });
+            entity.HasIndex(e => e.Timestamp);
+        });
+
+        // UserConsent Configuration
+        modelBuilder.Entity<UserConsent>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.ConsentType).IsRequired().HasMaxLength(50);
+            entity.Property(e => e.IpAddress).HasMaxLength(45);
+            entity.Property(e => e.UserAgent).HasMaxLength(500);
+            entity.HasOne(e => e.User)
+                .WithMany()
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => new { e.UserId, e.ConsentType });
+        });
+        
         // Enable pgvector extension
         modelBuilder.HasPostgresExtension("vector");
 
@@ -42,9 +78,12 @@ public class DistroCvDbContext : DbContext
             entity.Property(e => e.Email).IsRequired().HasMaxLength(255);
             entity.Property(e => e.FullName).IsRequired().HasMaxLength(200);
             entity.Property(e => e.PreferredLanguage).HasMaxLength(5).HasDefaultValue("tr");
+            entity.Property(e => e.Role).HasMaxLength(20).HasDefaultValue("User"); // Added Role max length
             entity.HasIndex(e => e.Email).IsUnique();
             entity.HasIndex(e => e.CognitoUserId);
         });
+        
+        // ... rest of existing configurations ...
 
         // DigitalTwin Configuration
         modelBuilder.Entity<DigitalTwin>(entity =>

@@ -655,3 +655,60 @@ export const applicationsApi = {
         return api.get<ApplicationDto>(`/applications/${id}`);
     }
 };
+
+// Task 20: Sector & Geographic Filtering Types
+
+export interface SectorDto {
+    id: number;
+    nameTr: string;
+    nameEn: string;
+}
+
+export interface CityDto {
+    id: number;
+    name: string;
+    isMajorCity: boolean;
+}
+
+export interface SectorListResponse {
+    sectors: SectorDto[];
+}
+
+export interface CityListResponse {
+    cities: CityDto[];
+    majorCities: CityDto[];
+}
+
+export interface FilterPreferencesResponse {
+    preferredSectors: SectorDto[];
+    preferredCities: CityDto[];
+    minSalary?: number;
+    maxSalary?: number;
+    isRemotePreferred: boolean;
+}
+
+export interface UpdateFilterPreferencesRequest {
+    preferredSectors?: number[];
+    preferredCities?: number[];
+    minSalary?: number;
+    maxSalary?: number;
+    isRemotePreferred?: boolean;
+}
+
+export const filterApi = {
+    getSectors: async (): Promise<SectorListResponse> => {
+        return api.get<SectorListResponse>('/profile/filters/sectors');
+    },
+
+    getCities: async (majorOnly: boolean = false): Promise<CityListResponse> => {
+        return api.get<CityListResponse>(`/profile/filters/cities?majorOnly=${majorOnly}`);
+    },
+
+    getPreferences: async (): Promise<FilterPreferencesResponse> => {
+        return api.get<FilterPreferencesResponse>('/profile/filters/preferences');
+    },
+
+    updatePreferences: async (request: UpdateFilterPreferencesRequest): Promise<{ message: string; updatedAt: string }> => {
+        return api.put<{ message: string; updatedAt: string }>('/profile/filters/preferences', request);
+    }
+};

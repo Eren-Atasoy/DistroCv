@@ -821,4 +821,44 @@ public class ProfileService : IProfileService
 
         return educationEntries;
     }
+
+    #region Task 20: Sector & Geographic Filtering
+
+    /// <summary>
+    /// Gets the digital twin by user ID
+    /// Task 20.4: Support for filter preferences
+    /// </summary>
+    public async Task<DigitalTwin?> GetDigitalTwinByUserIdAsync(Guid userId)
+    {
+        return await _context.DigitalTwins
+            .FirstOrDefaultAsync(dt => dt.UserId == userId);
+    }
+
+    /// <summary>
+    /// Updates the digital twin filter preferences
+    /// Task 20.4: Update filter preferences
+    /// </summary>
+    public async Task UpdateDigitalTwinFilterPreferencesAsync(Guid userId, DigitalTwin updatedTwin)
+    {
+        var existingTwin = await _context.DigitalTwins
+            .FirstOrDefaultAsync(dt => dt.UserId == userId);
+
+        if (existingTwin == null)
+        {
+            throw new InvalidOperationException($"Digital twin not found for user {userId}");
+        }
+
+        existingTwin.PreferredSectors = updatedTwin.PreferredSectors;
+        existingTwin.PreferredCities = updatedTwin.PreferredCities;
+        existingTwin.MinSalary = updatedTwin.MinSalary;
+        existingTwin.MaxSalary = updatedTwin.MaxSalary;
+        existingTwin.IsRemotePreferred = updatedTwin.IsRemotePreferred;
+        existingTwin.UpdatedAt = DateTime.UtcNow;
+
+        await _context.SaveChangesAsync();
+
+        _logger.LogInformation("Updated filter preferences for user {UserId}", userId);
+    }
+
+    #endregion
 }

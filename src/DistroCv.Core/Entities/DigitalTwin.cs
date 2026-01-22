@@ -17,6 +17,14 @@ public class DigitalTwin
     public string? Education { get; set; } // JSON array
     public string? CareerGoals { get; set; }
     public string? Preferences { get; set; } // JSON: sectors, locations, salary range
+    
+    // Task 20.2: Sector & Geographic Filtering fields
+    public string? PreferredSectors { get; set; } // JSON array of Sector enum values
+    public string? PreferredCities { get; set; } // JSON array of TurkeyCity enum values
+    public decimal? MinSalary { get; set; }
+    public decimal? MaxSalary { get; set; }
+    public bool IsRemotePreferred { get; set; } = false;
+    
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime UpdatedAt { get; set; } = DateTime.UtcNow;
 

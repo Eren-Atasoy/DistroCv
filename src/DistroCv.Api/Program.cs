@@ -12,7 +12,30 @@ using Hangfire.PostgreSql;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
-builder.Services.AddControllers();
+builder.Services.AddControllers()
+    .ConfigureApiBehaviorOptions(options =>
+    {
+        // Customize model validation error responses
+        options.InvalidModelStateResponseFactory = context =>
+        {
+            var errors = context.ModelState
+                .Where(e => e.Value?.Errors.Count > 0)
+                .Select(e => new
+                {
+                    Field = e.Key,
+                    Errors = e.Value?.Errors.Select(x => x.ErrorMessage).ToArray()
+                })
+                .ToList();
+
+            var result = new
+            {
+                Message = "Validation failed",
+                Errors = errors
+            };
+
+            return new Microsoft.AspNetCore.Mvc.BadRequestObjectResult(result);
+        };
+    });
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddOpenApi();
 
@@ -55,7 +78,12 @@ builder.Services.AddScoped<DistroCv.Core.Interfaces.ISkillGapRepository, DistroC
 builder.Services.AddScoped<DistroCv.Core.Interfaces.ISkillGapService, DistroCv.Infrastructure.Services.SkillGapService>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.ILinkedInProfileRepository, DistroCv.Infrastructure.Data.LinkedInProfileRepository>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.ILinkedInProfileService, DistroCv.Infrastructure.Services.LinkedInProfileService>();
+builder.Services.AddScoped<DistroCv.Core.Interfaces.IJobPostingRepository, DistroCv.Infrastructure.Data.JobPostingRepository>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IFeedbackService, DistroCv.Infrastructure.Services.FeedbackService>();
+builder.Services.AddScoped<DistroCv.Core.Interfaces.IEncryptionService, DistroCv.Infrastructure.Services.EncryptionService>();
+builder.Services.AddScoped<DistroCv.Core.Interfaces.IAuditLogService, DistroCv.Infrastructure.Services.AuditLogService>();
+builder.Services.AddScoped<DistroCv.Core.Interfaces.IConsentService, DistroCv.Infrastructure.Services.ConsentService>();
+builder.Services.AddScoped<DistroCv.Core.Interfaces.IGDPRService, DistroCv.Infrastructure.Services.GDPRService>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IApplicationRepository, DistroCv.Infrastructure.Data.ApplicationRepository>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IInterviewPreparationRepository, DistroCv.Infrastructure.Data.InterviewPreparationRepository>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IInterviewCoachService, DistroCv.Infrastructure.Services.InterviewCoachService>();
@@ -160,6 +188,16 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
 
 builder.Services.AddAuthorization();
 
+// Add Anti-forgery services for CSRF protection
+builder.Services.AddAntiforgery(options =>
+{
+    options.HeaderName = "X-CSRF-TOKEN";
+    options.Cookie.Name = "X-CSRF-TOKEN";
+    options.Cookie.HttpOnly = true;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.SameSite = SameSiteMode.Strict;
+});
+
 // Configure CORS
 var corsOrigins = builder.Configuration.GetSection("Cors:Origins").Get<string[]>() ?? new[] { "http://localhost:3000" };
 builder.Services.AddCors(options =>
@@ -196,9 +234,19 @@ if (app.Environment.IsDevelopment())
 }
 
 app.UseHttpsRedirection();
+
+// Add security middleware (order matters!)
+app.UseSecurityHeaders(); // Add security headers first
+app.UseRateLimiting(); // Rate limiting before authentication
+
 app.UseCors("AllowFrontend");
 app.UseAuthentication();
 app.UseAuthorization();
+
+// CSRF protection (after authentication, before endpoints)
+// Note: JWT-authenticated requests are exempt from CSRF
+app.UseCsrfProtection();
+
 app.UseSessionTracking(); // Add session tracking middleware
 
 app.MapControllers();

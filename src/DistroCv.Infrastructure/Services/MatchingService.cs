@@ -1,4 +1,5 @@
 using DistroCv.Core.Entities;
+using DistroCv.Core.Enums;
 using DistroCv.Core.Interfaces;
 using DistroCv.Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
@@ -154,8 +155,69 @@ public class MatchingService : IMatchingService
             .Select(m => m.JobPostingId)
             .ToListAsync(cancellationToken);
 
-        var jobPostings = await _context.JobPostings
-            .Where(jp => jp.IsActive && !existingMatchJobIds.Contains(jp.Id))
+        // Task 20.7 & 20.8: Apply sector and location filters
+        var query = _context.JobPostings
+            .Where(jp => jp.IsActive && !existingMatchJobIds.Contains(jp.Id));
+
+        // Apply sector filter if user has preferences
+        var preferredSectors = !string.IsNullOrEmpty(digitalTwin.PreferredSectors)
+            ? JsonSerializer.Deserialize<List<int>>(digitalTwin.PreferredSectors)
+            : null;
+        
+        if (preferredSectors?.Any() == true)
+        {
+            query = query.Where(jp => 
+                jp.SectorId == null || // Include jobs without sector
+                preferredSectors.Contains(jp.SectorId.Value));
+            _logger.LogDebug("Filtering by {Count} preferred sectors", preferredSectors.Count);
+        }
+
+        // Apply city filter if user has preferences
+        var preferredCities = !string.IsNullOrEmpty(digitalTwin.PreferredCities)
+            ? JsonSerializer.Deserialize<List<int>>(digitalTwin.PreferredCities)
+            : null;
+        
+        if (preferredCities?.Any() == true && !preferredCities.Contains(999)) // 999 = All Cities
+        {
+            var cityNames = preferredCities
+                .Where(id => Enum.IsDefined(typeof(Core.Enums.TurkeyCity), id))
+                .Select(id => ((Core.Enums.TurkeyCity)id).GetDisplayName())
+                .ToList();
+            
+            // Include remote jobs if user prefers remote
+            if (digitalTwin.IsRemotePreferred || preferredCities.Contains(100)) // 100 = Remote
+            {
+                query = query.Where(jp => 
+                    jp.City == null || 
+                    jp.IsRemote ||
+                    cityNames.Any(c => jp.City != null && jp.City.Contains(c)));
+            }
+            else
+            {
+                query = query.Where(jp => 
+                    jp.City == null || 
+                    cityNames.Any(c => jp.City != null && jp.City.Contains(c)));
+            }
+            _logger.LogDebug("Filtering by {Count} preferred cities", preferredCities.Count);
+        }
+        else if (digitalTwin.IsRemotePreferred)
+        {
+            // Only remote jobs if user prefers remote without city selection
+            query = query.Where(jp => jp.IsRemote);
+            _logger.LogDebug("Filtering for remote jobs only");
+        }
+
+        // Apply salary filter if user has preferences
+        if (digitalTwin.MinSalary.HasValue)
+        {
+            query = query.Where(jp => jp.MaxSalary == null || jp.MaxSalary >= digitalTwin.MinSalary);
+        }
+        if (digitalTwin.MaxSalary.HasValue)
+        {
+            query = query.Where(jp => jp.MinSalary == null || jp.MinSalary <= digitalTwin.MaxSalary);
+        }
+
+        var jobPostings = await query
             .Take(50) // Limit to 50 jobs per batch to avoid overwhelming the system
             .ToListAsync(cancellationToken);
 

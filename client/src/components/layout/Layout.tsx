@@ -10,18 +10,21 @@ import {
     X,
     Building2,
     GraduationCap,
-    Linkedin
+    Linkedin,
+    SlidersHorizontal
 } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import LanguageSwitcher from '../LanguageSwitcher'
 
 const useNavItems = () => {
-    const { t } = useTranslation()
+    const { t, i18n } = useTranslation()
+    const isEn = i18n.language === 'en'
     return [
         { path: '/dashboard', icon: LayoutDashboard, label: t('nav.dashboard') },
         { path: '/discover', icon: Compass, label: t('nav.discover') },
         { path: '/applications', icon: FileText, label: t('nav.applications') },
+        { path: '/preferences', icon: SlidersHorizontal, label: isEn ? 'Preferences' : 'Tercihler' },
         { path: '/skills', icon: GraduationCap, label: t('nav.skills') },
         { path: '/linkedin-optimizer', icon: Linkedin, label: t('nav.linkedin') },
         { path: '/admin/companies', icon: Building2, label: t('nav.companies') },

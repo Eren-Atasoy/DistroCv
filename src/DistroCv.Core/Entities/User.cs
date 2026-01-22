@@ -13,6 +13,8 @@ public class User
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? LastLoginAt { get; set; }
     public bool IsActive { get; set; } = true;
+    public string Role { get; set; } = "User"; // Task 21.3: RBAC
+    public string? EncryptedApiKey { get; set; } // Task 21.5: Secure API Key Storage
 
     // Navigation
     public DigitalTwin? DigitalTwin { get; set; }

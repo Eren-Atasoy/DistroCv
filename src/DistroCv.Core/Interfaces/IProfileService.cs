@@ -32,4 +32,20 @@ public interface IProfileService
     /// Parses resume and extracts structured data
     /// </summary>
     Task<string> ParseResumeAsync(Stream resumeStream, string fileName);
+
+    /// <summary>
+    /// Gets the digital twin by user ID
+    /// Task 20.4: Support for filter preferences
+    /// </summary>
+    Task<DigitalTwin?> GetDigitalTwinByUserIdAsync(Guid userId);
+
+    /// <summary>
+    /// Updates the digital twin filter preferences (sectors, cities, salary, remote)
+    /// Task 20.4: Update filter preferences
+    /// </summary>
+    Task UpdateDigitalTwinFilterPreferencesAsync(Guid userId, DigitalTwin digitalTwin);
+    /// <summary>
+    /// Updates the user's encrypted API key (Task 21.5)
+    /// </summary>
+    Task UpdateUserApiKeyAsync(Guid userId, string encryptedApiKey);
 }
