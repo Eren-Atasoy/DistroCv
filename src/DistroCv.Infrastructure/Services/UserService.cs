@@ -7,9 +7,6 @@ using Microsoft.Extensions.Logging;
 
 namespace DistroCv.Infrastructure.Services;
 
-/// <summary>
-/// Service for managing users in the database
-/// </summary>
 public class UserService : IUserService
 {
     private readonly DistroCvDbContext _context;
@@ -22,35 +19,31 @@ public class UserService : IUserService
     }
 
     public async Task<User?> GetByIdAsync(Guid id)
-    {
-        return await _context.Users
+        => await _context.Users
             .Include(u => u.DigitalTwin)
             .FirstOrDefaultAsync(u => u.Id == id);
-    }
 
     public async Task<User?> GetByEmailAsync(string email)
-    {
-        return await _context.Users
+        => await _context.Users
             .Include(u => u.DigitalTwin)
-            .FirstOrDefaultAsync(u => u.Email == email);
-    }
+            .FirstOrDefaultAsync(u => u.Email == email.ToLowerInvariant());
 
-    public async Task<User?> GetByCognitoUserIdAsync(string cognitoUserId)
-    {
-        return await _context.Users
-            .Include(u => u.DigitalTwin)
-            .FirstOrDefaultAsync(u => u.CognitoUserId == cognitoUserId);
-    }
+    public async Task<User?> GetByGoogleIdAsync(string googleId)
+        => await _context.Users
+            .FirstOrDefaultAsync(u => u.GoogleId == googleId);
 
     public async Task<User> CreateAsync(CreateUserDto dto)
     {
         var user = new User
         {
             Id = Guid.NewGuid(),
-            Email = dto.Email,
+            Email = dto.Email.ToLowerInvariant(),
             FullName = dto.FullName,
-            CognitoUserId = dto.CognitoUserId ?? string.Empty,
+            PasswordHash = dto.PasswordHash,
+            GoogleId = dto.GoogleId,
+            AuthProvider = dto.AuthProvider,
             PreferredLanguage = dto.PreferredLanguage,
+            EmailVerified = dto.EmailVerified,
             CreatedAt = DateTime.UtcNow,
             IsActive = true
         };
@@ -58,33 +51,23 @@ public class UserService : IUserService
         _context.Users.Add(user);
         await _context.SaveChangesAsync();
 
-        _logger.LogInformation("Created user {UserId} with email {Email}", user.Id, user.Email);
-
+        _logger.LogInformation("Created user {UserId} ({Email})", user.Id, user.Email);
         return user;
     }
 
     public async Task<User> UpdateAsync(Guid id, UpdateUserDto dto)
     {
-        var user = await GetByIdAsync(id);
-        if (user == null)
-        {
-            throw new InvalidOperationException($"User with ID {id} not found");
-        }
+        var user = await GetByIdAsync(id)
+            ?? throw new InvalidOperationException($"User {id} not found");
 
         if (!string.IsNullOrEmpty(dto.FullName))
-        {
             user.FullName = dto.FullName;
-        }
 
         if (!string.IsNullOrEmpty(dto.PreferredLanguage))
-        {
             user.PreferredLanguage = dto.PreferredLanguage;
-        }
 
         await _context.SaveChangesAsync();
-
-        _logger.LogInformation("Updated user {UserId}", user.Id);
-
+        _logger.LogInformation("Updated user {UserId}", id);
         return user;
     }
 
@@ -101,29 +84,23 @@ public class UserService : IUserService
     public async Task<bool> DeleteAsync(Guid id)
     {
         var user = await GetByIdAsync(id);
-        if (user == null)
-        {
-            return false;
-        }
+        if (user == null) return false;
 
         user.IsActive = false;
         await _context.SaveChangesAsync();
-
-        _logger.LogInformation("Soft deleted user {UserId}", user.Id);
-
+        _logger.LogInformation("Soft deleted user {UserId}", id);
         return true;
     }
 
-    public UserDto ToDto(User user)
-    {
-        return new UserDto(
-            user.Id,
-            user.Email,
-            user.FullName,
-            user.PreferredLanguage,
-            user.CreatedAt,
-            user.LastLoginAt,
-            user.IsActive
-        );
-    }
+    public UserDto ToDto(User user) => new(
+        user.Id,
+        user.Email,
+        user.FullName,
+        user.PreferredLanguage,
+        user.AuthProvider,
+        user.CreatedAt,
+        user.LastLoginAt,
+        user.IsActive,
+        user.EmailVerified
+    );
 }

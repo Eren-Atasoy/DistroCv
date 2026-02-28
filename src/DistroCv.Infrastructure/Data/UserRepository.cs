@@ -41,13 +41,13 @@ public class UserRepository : IUserRepository
     }
 
     /// <summary>
-    /// Gets a user by their AWS Cognito user ID
+    /// Gets a user by their Google OAuth ID
     /// </summary>
-    public async Task<User?> GetByCognitoIdAsync(string cognitoUserId)
+    public async Task<User?> GetByGoogleIdAsync(string googleId)
     {
         return await _context.Users
             .Include(u => u.DigitalTwin)
-            .FirstOrDefaultAsync(u => u.CognitoUserId == cognitoUserId);
+            .FirstOrDefaultAsync(u => u.GoogleId == googleId);
     }
 
     /// <summary>

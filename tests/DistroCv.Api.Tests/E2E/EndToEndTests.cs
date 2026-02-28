@@ -89,7 +89,7 @@ public class EndToEndTests : IClassFixture<Integration.TestWebApplicationFactory
     [Fact]
     public async Task UserRegistrationFlow_ShouldCreateUserAndDigitalTwin()
     {
-        // Step 1: Create user (simulating Cognito registration)
+        // Step 1: Create user (simulating registration)
         var user = await _factory.CreateTestUserAsync("newuser@example.com", "New User");
         Assert.NotNull(user);
         Assert.Equal("newuser@example.com", user.Email);

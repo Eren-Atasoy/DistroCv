@@ -1,0 +1,76 @@
+services:
+  postgres:
+    ports:
+      - "5432:5432"
+
+  redis:
+    ports:
+      - "6380:6379"   # 6380 — sistemdeki redis ile çakışmamak için
+
+  # Backend API — Development modunda çalışır, hot-reload yok (Docker)
+  api:
+    build:
+      context: .
+      dockerfile: src/DistroCv.Api/Dockerfile
+    container_name: distrocv-api
+    env_file:
+      - .env.local
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Development
+      - ConnectionStrings__DefaultConnection=${CONNECTION_STRING}
+      - AWS__Region=${AWS_REGION}
+      - AWS__S3BucketName=${AWS_S3_BUCKET_NAME}
+      - Jwt__Secret=${JWT_SECRET}
+      - Jwt__Audience=${JWT_AUDIENCE}
+      - Gemini__ApiKey=${GEMINI_API_KEY}
+    ports:
+      - "5000:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - distrocv-network
+    restart: unless-stopped
+
+  # Frontend — Vite dev server
+  frontend:
+    image: node:20-alpine
+    container_name: distrocv-frontend
+    working_dir: /app
+    volumes:
+      - ./client:/app
+      - /app/node_modules
+    command: sh -c "npm install && npm run dev -- --host"
+    env_file:
+      - .env.local
+    environment:
+      - VITE_API_URL=${VITE_API_URL:-http://localhost:5000/api}
+    ports:
+      - "5173:5173"
+    networks:
+      - distrocv-network
+    restart: unless-stopped
+
+  # pgAdmin — sadece local'de
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: distrocv-pgadmin
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@distrocv.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+    ports:
+      - "5050:80"
+    volumes:
+      - pgadmin_data:/var/lib/pgadmin
+    depends_on:
+      - postgres
+    networks:
+      - distrocv-network
+    restart: unless-stopped
+
+volumes:
+  pgadmin_data:
+    driver: local

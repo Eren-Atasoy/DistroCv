@@ -1,5 +1,17 @@
 using DistroCv.Infrastructure.Data;
+using Scalar.AspNetCore;
 using DistroCv.Infrastructure.AWS;
+using DistroCv.Infrastructure.Gemini;
+using DistroCv.Infrastructure.Gmail;
+using DistroCv.Infrastructure.Caching;
+using DistroCv.Api.Middleware;
+using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
+using Microsoft.IdentityModel.Tokens;
+using System.Text;
+using Hangfire;
+using Hangfire.PostgreSql;
+using Serilog;
 using DistroCv.Infrastructure.Gemini;
 using DistroCv.Infrastructure.Gmail;
 using DistroCv.Infrastructure.Caching;
@@ -66,7 +78,8 @@ builder.Services.AddGmailServices();
 builder.Services.AddCachingServices(builder.Configuration);
 
 // Register application services
-builder.Services.AddScoped<DistroCv.Core.Interfaces.IUserRepository, DistroCv.Infrastructure.Data.UserRepository>(); // Task 2.12
+builder.Services.AddScoped<DistroCv.Core.Interfaces.IAuthService, DistroCv.Infrastructure.Services.AuthService>();
+builder.Services.AddScoped<DistroCv.Core.Interfaces.IUserRepository, DistroCv.Infrastructure.Data.UserRepository>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IDigitalTwinRepository, DistroCv.Infrastructure.Data.DigitalTwinRepository>(); // Task 2.13
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IUserService, DistroCv.Infrastructure.Services.UserService>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.ISessionRepository, DistroCv.Infrastructure.Data.SessionRepository>();
@@ -132,19 +145,15 @@ builder.Services.AddHangfireServer(options =>
     options.SchedulePollingInterval = TimeSpan.FromSeconds(15);
 });
 
-// Configure JWT Authentication
-// AWS Cognito uses the User Pool as the issuer
-var awsRegion = builder.Configuration["AWS:Region"] ?? "eu-west-1";
-var cognitoUserPoolId = builder.Configuration["AWS:CognitoUserPoolId"];
-var cognitoClientId = builder.Configuration["AWS:CognitoClientId"];
-
-var jwtIssuer = $"https://cognito-idp.{awsRegion}.amazonaws.com/{cognitoUserPoolId}";
-var jwtAudience = cognitoClientId;
+// Configure JWT Authentication (kendi secret key ile)
+var jwtSecret = builder.Configuration["Jwt:Secret"]
+    ?? throw new InvalidOperationException("Jwt:Secret is not configured in appsettings");
+var jwtIssuer = builder.Configuration["Jwt:Issuer"] ?? "distrocv-api";
+var jwtAudience = builder.Configuration["Jwt:Audience"] ?? "distrocv-client";
 
 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
-        options.Authority = jwtIssuer;
         options.TokenValidationParameters = new TokenValidationParameters
         {
             ValidateIssuer = true,
@@ -153,54 +162,8 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
             ValidAudience = jwtAudience,
             ValidateLifetime = true,
             ValidateIssuerSigningKey = true,
-            // Cognito uses 'client_id' claim for audience
-            AudienceValidator = (audiences, securityToken, validationParameters) =>
-            {
-                // Cognito ID tokens use 'aud' claim, Access tokens use 'client_id'
-                var token = securityToken as System.IdentityModel.Tokens.Jwt.JwtSecurityToken;
-                if (token == null) return false;
-                
-                var clientId = token.Claims.FirstOrDefault(c => c.Type == "client_id")?.Value;
-                var aud = token.Claims.FirstOrDefault(c => c.Type == "aud")?.Value;
-                
-                return clientId == jwtAudience || aud == jwtAudience;
-            }
-        };
-        
-        // Map Cognito claims to standard claims
-        options.Events = new JwtBearerEvents
-        {
-            OnTokenValidated = context =>
-            {
-                var claimsIdentity = context.Principal?.Identity as System.Security.Claims.ClaimsIdentity;
-                if (claimsIdentity != null)
-                {
-                    // Add email claim if not present
-                    if (!claimsIdentity.HasClaim(c => c.Type == System.Security.Claims.ClaimTypes.Email))
-                    {
-                        var emailClaim = claimsIdentity.FindFirst("email");
-                        if (emailClaim != null)
-                        {
-                            claimsIdentity.AddClaim(new System.Security.Claims.Claim(
-                                System.Security.Claims.ClaimTypes.Email, 
-                                emailClaim.Value));
-                        }
-                    }
-                    
-                    // Add name identifier claim if not present
-                    if (!claimsIdentity.HasClaim(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier))
-                    {
-                        var subClaim = claimsIdentity.FindFirst("sub");
-                        if (subClaim != null)
-                        {
-                            claimsIdentity.AddClaim(new System.Security.Claims.Claim(
-                                System.Security.Claims.ClaimTypes.NameIdentifier, 
-                                subClaim.Value));
-                        }
-                    }
-                }
-                return Task.CompletedTask;
-            }
+            IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwtSecret)),
+            ClockSkew = TimeSpan.FromMinutes(1)
         };
     });
 
@@ -242,6 +205,12 @@ var app = builder.Build();
 if (app.Environment.IsDevelopment())
 {
     app.MapOpenApi();
+    app.MapScalarApiReference(options =>
+    {
+        options.Title = "DistroCv API";
+        options.Theme = ScalarTheme.DeepSpace;
+        options.DefaultHttpClient = new(ScalarTarget.Http, ScalarClient.HttpClient);
+    });
     app.UseDeveloperExceptionPage();
     
     // Enable Hangfire Dashboard in development

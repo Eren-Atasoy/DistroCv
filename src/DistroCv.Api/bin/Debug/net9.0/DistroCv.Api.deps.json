@@ -9,10 +9,7 @@
       "DistroCv.Api/1.0.0": {
         "dependencies": {
           "AWS.Logger.SeriLog": "3.4.0",
-          "AWSSDK.CognitoIdentityProvider": "3.7.401",
           "AWSSDK.Extensions.NETCore.Setup": "3.7.301",
-          "AWSSDK.Lambda": "3.7.408",
-          "AWSSDK.S3": "3.7.408",
           "DistroCv.Core": "1.0.0",
           "DistroCv.Infrastructure": "1.0.0",
           "Hangfire.AspNetCore": "1.8.22",
@@ -21,6 +18,7 @@
           "Microsoft.AspNetCore.OpenApi": "9.0.12",
           "Microsoft.EntityFrameworkCore.Design": "9.0.1",
           "Microsoft.Extensions.Diagnostics.HealthChecks.EntityFrameworkCore": "9.0.1",
+          "Scalar.AspNetCore": "2.5.5",
           "Serilog.AspNetCore": "10.0.0",
           "Serilog.Sinks.Console": "6.1.1"
         },
@@ -74,17 +72,6 @@
           }
         }
       },
-      "AWSSDK.CognitoIdentityProvider/3.7.401": {
-        "dependencies": {
-          "AWSSDK.Core": "3.7.400.57"
-        },
-        "runtime": {
-          "lib/net8.0/AWSSDK.CognitoIdentityProvider.dll": {
-            "assemblyVersion": "3.3.0.0",
-            "fileVersion": "3.7.401.0"
-          }
-        }
-      },
       "AWSSDK.Core/3.7.400.57": {
         "runtime": {
           "lib/net8.0/AWSSDK.Core.dll": {
@@ -107,17 +94,6 @@
           }
         }
       },
-      "AWSSDK.Lambda/3.7.408": {
-        "dependencies": {
-          "AWSSDK.Core": "3.7.400.57"
-        },
-        "runtime": {
-          "lib/net8.0/AWSSDK.Lambda.dll": {
-            "assemblyVersion": "3.3.0.0",
-            "fileVersion": "3.7.408.0"
-          }
-        }
-      },
       "AWSSDK.S3/3.7.408": {
         "dependencies": {
           "AWSSDK.Core": "3.7.400.57"
@@ -126,6 +102,14 @@
           "lib/net8.0/AWSSDK.S3.dll": {
             "assemblyVersion": "3.3.0.0",
             "fileVersion": "3.7.408.0"
+          }
+        }
+      },
+      "BCrypt.Net-Next/4.0.3": {
+        "runtime": {
+          "lib/net6.0/BCrypt.Net-Next.dll": {
+            "assemblyVersion": "4.0.3.0",
+            "fileVersion": "4.0.3.0"
           }
         }
       },
@@ -213,7 +197,7 @@
         "runtime": {
           "lib/netcoreapp3.0/Hangfire.AspNetCore.dll": {
             "assemblyVersion": "1.8.22.0",
-            "fileVersion": "1.8.22.0"
+            "fileVersion": "0.0.0.0"
           }
         }
       },
@@ -224,7 +208,7 @@
         "runtime": {
           "lib/netstandard2.0/Hangfire.Core.dll": {
             "assemblyVersion": "1.8.22.0",
-            "fileVersion": "1.8.22.0"
+            "fileVersion": "0.0.0.0"
           }
         },
         "resources": {
@@ -282,7 +266,7 @@
         "runtime": {
           "lib/netstandard2.1/Hangfire.NetCore.dll": {
             "assemblyVersion": "1.8.22.0",
-            "fileVersion": "1.8.22.0"
+            "fileVersion": "0.0.0.0"
           }
         }
       },
@@ -1199,6 +1183,14 @@
           }
         }
       },
+      "Scalar.AspNetCore/2.5.5": {
+        "runtime": {
+          "lib/net9.0/Scalar.AspNetCore.dll": {
+            "assemblyVersion": "2.5.5.0",
+            "fileVersion": "2.5.5.0"
+          }
+        }
+      },
       "Serilog/4.3.0": {
         "runtime": {
           "lib/net9.0/Serilog.dll": {
@@ -1558,13 +1550,14 @@
       "DistroCv.Infrastructure/1.0.0": {
         "dependencies": {
           "AWSSDK.CloudWatch": "3.7.300",
-          "AWSSDK.CognitoIdentityProvider": "3.7.401",
           "AWSSDK.Extensions.NETCore.Setup": "3.7.301",
-          "AWSSDK.Lambda": "3.7.408",
           "AWSSDK.S3": "3.7.408",
+          "BCrypt.Net-Next": "4.0.3",
           "DistroCv.Core": "1.0.0",
           "DocumentFormat.OpenXml": "3.4.1",
+          "Google.Apis.Auth": "1.73.0",
           "Google.Apis.Gmail.v1": "1.73.0.4029",
+          "Microsoft.AspNetCore.Authentication.JwtBearer": "9.0.1",
           "Microsoft.Extensions.Caching.StackExchangeRedis": "9.0.1",
           "Microsoft.Extensions.Configuration.Binder": "10.0.0",
           "Microsoft.Extensions.Configuration.Json": "9.0.1",
@@ -1621,13 +1614,6 @@
       "path": "awssdk.cloudwatchlogs/3.7.0.5",
       "hashPath": "awssdk.cloudwatchlogs.3.7.0.5.nupkg.sha512"
     },
-    "AWSSDK.CognitoIdentityProvider/3.7.401": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-4/ShB7IHcGrMmNAopuwDXZxg1HBzhIgePXRIYKLfocflYpDUvGW1fKPmj2KvpzjFnpqFIePc/2mCgSoYEpXNRg==",
-      "path": "awssdk.cognitoidentityprovider/3.7.401",
-      "hashPath": "awssdk.cognitoidentityprovider.3.7.401.nupkg.sha512"
-    },
     "AWSSDK.Core/3.7.400.57": {
       "type": "package",
       "serviceable": true,
@@ -1642,19 +1628,19 @@
       "path": "awssdk.extensions.netcore.setup/3.7.301",
       "hashPath": "awssdk.extensions.netcore.setup.3.7.301.nupkg.sha512"
     },
-    "AWSSDK.Lambda/3.7.408": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-gIBIB0wND5rAocQYeZ1ym/23f1mKXr4/8urH3SID2smkknATz97EpxbB73ls++R5C637boz8aluiBwE76aJNOQ==",
-      "path": "awssdk.lambda/3.7.408",
-      "hashPath": "awssdk.lambda.3.7.408.nupkg.sha512"
-    },
     "AWSSDK.S3/3.7.408": {
       "type": "package",
       "serviceable": true,
       "sha512": "sha512-hOW+UgrpXfcxQctCDnrI6pANtWEADBS2XDKK/yJR0xDQAUuYVTOLNHffrvGWfePuKUyk7L7YsM7jzSt3TFudpQ==",
       "path": "awssdk.s3/3.7.408",
       "hashPath": "awssdk.s3.3.7.408.nupkg.sha512"
+    },
+    "BCrypt.Net-Next/4.0.3": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-W+U9WvmZQgi5cX6FS5GDtDoPzUCV4LkBLkywq/kRZhuDwcbavOzcDAr3LXJFqHUi952Yj3LEYoWW0jbEUQChsA==",
+      "path": "bcrypt.net-next/4.0.3",
+      "hashPath": "bcrypt.net-next.4.0.3.nupkg.sha512"
     },
     "Dapper/2.0.123": {
       "type": "package",
@@ -2166,6 +2152,13 @@
       "sha512": "sha512-w9/oEME3spddIKjh8C3sMxQziJe6lcdsTtQCnG3GevupZYQPx243dz1znh9YIE9otulXa9lg+Pnf/SMUCq4/Gw==",
       "path": "puppeteersharp/20.2.5",
       "hashPath": "puppeteersharp.20.2.5.nupkg.sha512"
+    },
+    "Scalar.AspNetCore/2.5.5": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-0LTfeypcNYxE4j0NidUOswdKPWCkEk8mGs9Z/rexH7aHFS/7NqxALlQ3mOLLPQvhmLPIztCIShw0j4D6KYJ24w==",
+      "path": "scalar.aspnetcore/2.5.5",
+      "hashPath": "scalar.aspnetcore.2.5.5.nupkg.sha512"
     },
     "Serilog/4.3.0": {
       "type": "package",

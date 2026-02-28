@@ -8,13 +8,23 @@ public class User
     public Guid Id { get; set; }
     public string Email { get; set; } = string.Empty;
     public string FullName { get; set; } = string.Empty;
-    public string? CognitoUserId { get; set; }
+
+    // Kendi auth sistemi için — null ise sadece Google ile giriş yapıyor
+    public string? PasswordHash { get; set; }
+
+    // Google OAuth — Google'ın user sub değeri
+    public string? GoogleId { get; set; }
+
+    // Auth provider: "local" | "google"
+    public string AuthProvider { get; set; } = "local";
+
     public string PreferredLanguage { get; set; } = "tr"; // "tr" or "en"
     public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
     public DateTime? LastLoginAt { get; set; }
     public bool IsActive { get; set; } = true;
-    public string Role { get; set; } = "User"; // Task 21.3: RBAC
-    public string? EncryptedApiKey { get; set; } // Task 21.5: Secure API Key Storage
+    public bool EmailVerified { get; set; } = false;
+    public string Role { get; set; } = "User";
+    public string? EncryptedApiKey { get; set; }
 
     // Navigation
     public DigitalTwin? DigitalTwin { get; set; }

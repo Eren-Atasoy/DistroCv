@@ -1,9 +1,7 @@
 using Amazon;
-using Amazon.CognitoIdentityProvider;
 using Amazon.S3;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
 
 namespace DistroCv.Infrastructure.AWS;
 
@@ -13,37 +11,32 @@ public static class AwsServiceExtensions
     {
         // Bind AWS configuration
         services.Configure<AwsConfiguration>(configuration.GetSection("AWS"));
-        
+
         var awsConfigSection = configuration.GetSection("AWS");
         var awsConfig = new AwsConfiguration();
         awsConfigSection.Bind(awsConfig);
-        
+
         var region = RegionEndpoint.GetBySystemName(awsConfig.Region ?? "eu-west-1");
 
-        // Register HttpClient for external API calls
+        // Register HttpClient
         services.AddHttpClient();
 
-        // Register AWS S3 client
+        // Register AWS S3 (dosya yükleme için)
         services.AddAWSService<IAmazonS3>(new Amazon.Extensions.NETCore.Setup.AWSOptions
         {
             Region = region
         });
 
-        // Register AWS Cognito client
-        services.AddAWSService<IAmazonCognitoIdentityProvider>(new Amazon.Extensions.NETCore.Setup.AWSOptions
-        {
-            Region = region
-        });
-
-        // Register AWS CloudWatch client
+        // Register AWS CloudWatch (metrics)
         services.AddAWSService<Amazon.CloudWatch.IAmazonCloudWatch>(new Amazon.Extensions.NETCore.Setup.AWSOptions
         {
             Region = region
         });
 
-        // Register custom services
+        // Register S3 service
         services.AddScoped<IS3Service, S3Service>();
-        services.AddScoped<ICognitoService, CognitoService>();
+
+        // NOT: ICognitoService kaldırıldı. Auth için IAuthService kullanın.
 
         return services;
     }

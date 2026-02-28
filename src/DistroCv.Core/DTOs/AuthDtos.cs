@@ -160,3 +160,32 @@ public record RefreshTokenResponseDto(
     int ExpiresIn,
     string TokenType = "Bearer"
 );
+
+// =========================================================
+// Kendi auth sistemi için — Cognito bağımlılığı yok
+// =========================================================
+
+public record RegisterRequestDto(
+    string Email,
+    string FullName,
+    string Password,
+    string PreferredLanguage = "tr"
+);
+
+public record LoginRequestDto(
+    string Email,
+    string Password
+);
+
+public record TokenPairDto(
+    string AccessToken,
+    string RefreshToken,
+    int ExpiresIn
+);
+
+public record AuthResultDto(
+    string AccessToken,
+    string RefreshToken,
+    int ExpiresIn,
+    UserDto User
+);

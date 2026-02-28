@@ -21,7 +21,6 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
     // Mocks for external services
     public Mock<IGeminiService> GeminiServiceMock { get; } = new();
     public Mock<IS3Service> S3ServiceMock { get; } = new();
-    public Mock<ICognitoService> CognitoServiceMock { get; } = new();
     public Mock<IGmailService> GmailServiceMock { get; } = new();
 
     private readonly string _databaseName = Guid.NewGuid().ToString();
@@ -60,7 +59,6 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
             // Replace external services with mocks
             ReplaceService<IGeminiService>(services, GeminiServiceMock.Object);
             ReplaceService<IS3Service>(services, S3ServiceMock.Object);
-            ReplaceService<ICognitoService>(services, CognitoServiceMock.Object);
             ReplaceService<IGmailService>(services, GmailServiceMock.Object);
 
             // Register all application services (these are normally registered in Program.cs)
@@ -185,7 +183,7 @@ public class TestWebApplicationFactory : WebApplicationFactory<Program>
             Id = Guid.NewGuid(),
             Email = email,
             FullName = fullName,
-            CognitoUserId = Guid.NewGuid().ToString(),
+            GoogleId = Guid.NewGuid().ToString(),
             PreferredLanguage = "en",
             CreatedAt = DateTime.UtcNow
         };

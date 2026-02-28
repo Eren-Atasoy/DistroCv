@@ -55,7 +55,7 @@ public class ProfileServiceTests
             Id = userId,
             Email = "test@example.com",
             FullName = "Test User",
-            CognitoUserId = "cognito-123",
+            GoogleId = "google-123",
             PreferredLanguage = "en",
             CreatedAt = DateTime.UtcNow,
             IsActive = true
@@ -117,7 +117,7 @@ public class ProfileServiceTests
             Id = userId,
             Email = "test@example.com",
             FullName = "Test User",
-            CognitoUserId = "cognito-123",
+            GoogleId = "google-123",
             PreferredLanguage = "en",
             CreatedAt = DateTime.UtcNow,
             IsActive = true
@@ -268,7 +268,7 @@ public class ProfileServiceTests
             Id = userId,
             Email = "test@example.com",
             FullName = "Test User",
-            CognitoUserId = "cognito-123",
+            GoogleId = "google-123",
             PreferredLanguage = "en",
             CreatedAt = DateTime.UtcNow,
             IsActive = true
@@ -420,7 +420,7 @@ startxref
             Id = userId,
             Email = "test@example.com",
             FullName = "Test User",
-            CognitoUserId = "cognito-123",
+            GoogleId = "google-123",
             PreferredLanguage = "en",
             CreatedAt = DateTime.UtcNow,
             IsActive = true

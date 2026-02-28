@@ -1,0 +1,50 @@
+# docker-compose.prod.yml
+# ============================================================
+# Production ortamı için REFERANS dosyadır.
+# Koyeb'de bu dosya kullanılmaz — Koyeb kendi orchestration'ını yapar.
+# Bu dosya sadece local prod-sim testi içindir:
+#   docker compose -f docker-compose.yml -f docker-compose.prod.yml --env-file .env.prod up
+# ============================================================
+
+services:
+  postgres:
+    # NOT: Production'da Koyeb Managed Postgres (Neon) kullanılır.
+    # Bu sadece local prod-sim için.
+    environment:
+      POSTGRES_DB: ${POSTGRES_DB:-distrocv}
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    # portları dışarıya açma (production sim)
+    ports: []
+
+  redis:
+    # NOT: Production'da Upstash Redis kullanılır.
+    ports: []
+
+  # Backend API — Production konfigürasyonuyla
+  api:
+    build:
+      context: .
+      dockerfile: src/DistroCv.Api/Dockerfile
+    container_name: distrocv-api-prod
+    env_file:
+      - .env.prod
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ConnectionStrings__DefaultConnection=${CONNECTION_STRING}
+      - AWS__Region=${AWS_REGION}
+      - AWS__S3BucketName=${AWS_S3_BUCKET}
+      - Jwt__Secret=${JWT_SECRET}
+      - Jwt__Issuer=${JWT_ISSUER}
+      - Jwt__Audience=${JWT_AUDIENCE}
+      - Gemini__ApiKey=${GEMINI_API_KEY}
+    ports:
+      - "8080:8080"
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    networks:
+      - distrocv-network
+    restart: always

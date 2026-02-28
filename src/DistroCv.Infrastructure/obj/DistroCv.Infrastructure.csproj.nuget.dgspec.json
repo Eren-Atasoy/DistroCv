@@ -1,31 +1,25 @@
 {
   "format": 1,
   "restore": {
-    "D:\\Portfolio\\DistroCv\\src\\DistroCv.Infrastructure\\DistroCv.Infrastructure.csproj": {}
+    "/app/src/DistroCv.Infrastructure/DistroCv.Infrastructure.csproj": {}
   },
   "projects": {
-    "D:\\Portfolio\\DistroCv\\src\\DistroCv.Core\\DistroCv.Core.csproj": {
+    "/app/src/DistroCv.Core/DistroCv.Core.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Portfolio\\DistroCv\\src\\DistroCv.Core\\DistroCv.Core.csproj",
+        "projectUniqueName": "/app/src/DistroCv.Core/DistroCv.Core.csproj",
         "projectName": "DistroCv.Core",
-        "projectPath": "D:\\Portfolio\\DistroCv\\src\\DistroCv.Core\\DistroCv.Core.csproj",
-        "packagesPath": "C:\\Users\\erena\\.nuget\\packages\\",
-        "outputPath": "D:\\Portfolio\\DistroCv\\src\\DistroCv.Core\\obj\\",
+        "projectPath": "/app/src/DistroCv.Core/DistroCv.Core.csproj",
+        "packagesPath": "/root/.nuget/packages/",
+        "outputPath": "/app/src/DistroCv.Core/obj/",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
-          "C:\\Users\\erena\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "/root/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
@@ -71,40 +65,34 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.309/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/9.0.311/PortableRuntimeIdentifierGraph.json"
         }
       }
     },
-    "D:\\Portfolio\\DistroCv\\src\\DistroCv.Infrastructure\\DistroCv.Infrastructure.csproj": {
+    "/app/src/DistroCv.Infrastructure/DistroCv.Infrastructure.csproj": {
       "version": "1.0.0",
       "restore": {
-        "projectUniqueName": "D:\\Portfolio\\DistroCv\\src\\DistroCv.Infrastructure\\DistroCv.Infrastructure.csproj",
+        "projectUniqueName": "/app/src/DistroCv.Infrastructure/DistroCv.Infrastructure.csproj",
         "projectName": "DistroCv.Infrastructure",
-        "projectPath": "D:\\Portfolio\\DistroCv\\src\\DistroCv.Infrastructure\\DistroCv.Infrastructure.csproj",
-        "packagesPath": "C:\\Users\\erena\\.nuget\\packages\\",
-        "outputPath": "D:\\Portfolio\\DistroCv\\src\\DistroCv.Infrastructure\\obj\\",
+        "projectPath": "/app/src/DistroCv.Infrastructure/DistroCv.Infrastructure.csproj",
+        "packagesPath": "/root/.nuget/packages/",
+        "outputPath": "/app/src/DistroCv.Infrastructure/obj/",
         "projectStyle": "PackageReference",
-        "fallbackFolders": [
-          "C:\\Program Files (x86)\\Microsoft Visual Studio\\Shared\\NuGetPackages"
-        ],
         "configFilePaths": [
-          "C:\\Users\\erena\\AppData\\Roaming\\NuGet\\NuGet.Config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.FallbackLocation.config",
-          "C:\\Program Files (x86)\\NuGet\\Config\\Microsoft.VisualStudio.Offline.config"
+          "/root/.nuget/NuGet/NuGet.Config"
         ],
         "originalTargetFrameworks": [
           "net9.0"
         ],
         "sources": {
-          "C:\\Program Files (x86)\\Microsoft SDKs\\NuGetPackages\\": {},
           "https://api.nuget.org/v3/index.json": {}
         },
         "frameworks": {
           "net9.0": {
             "targetAlias": "net9.0",
             "projectReferences": {
-              "D:\\Portfolio\\DistroCv\\src\\DistroCv.Core\\DistroCv.Core.csproj": {
-                "projectPath": "D:\\Portfolio\\DistroCv\\src\\DistroCv.Core\\DistroCv.Core.csproj"
+              "/app/src/DistroCv.Core/DistroCv.Core.csproj": {
+                "projectPath": "/app/src/DistroCv.Core/DistroCv.Core.csproj"
               }
             }
           }
@@ -129,29 +117,33 @@
               "target": "Package",
               "version": "[3.7.300, )"
             },
-            "AWSSDK.CognitoIdentityProvider": {
-              "target": "Package",
-              "version": "[3.7.400.57, )"
-            },
             "AWSSDK.Extensions.NETCore.Setup": {
               "target": "Package",
               "version": "[3.7.301, )"
-            },
-            "AWSSDK.Lambda": {
-              "target": "Package",
-              "version": "[3.7.407.7, )"
             },
             "AWSSDK.S3": {
               "target": "Package",
               "version": "[3.7.407.7, )"
             },
+            "BCrypt.Net-Next": {
+              "target": "Package",
+              "version": "[4.0.3, )"
+            },
             "DocumentFormat.OpenXml": {
               "target": "Package",
               "version": "[3.4.1, )"
             },
+            "Google.Apis.Auth": {
+              "target": "Package",
+              "version": "[1.73.0, )"
+            },
             "Google.Apis.Gmail.v1": {
               "target": "Package",
               "version": "[1.73.0.4029, )"
+            },
+            "Microsoft.AspNetCore.Authentication.JwtBearer": {
+              "target": "Package",
+              "version": "[9.0.1, )"
             },
             "Microsoft.EntityFrameworkCore.Design": {
               "include": "Runtime, Build, Native, ContentFiles, Analyzers, BuildTransitive",
@@ -224,7 +216,7 @@
               "privateAssets": "all"
             }
           },
-          "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.309/PortableRuntimeIdentifierGraph.json"
+          "runtimeIdentifierGraphPath": "/usr/share/dotnet/sdk/9.0.311/PortableRuntimeIdentifierGraph.json"
         }
       }
     }

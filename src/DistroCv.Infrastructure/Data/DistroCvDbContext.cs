@@ -91,8 +91,11 @@ public class DistroCvDbContext : DbContext
             entity.Property(e => e.FullName).IsRequired().HasMaxLength(200);
             entity.Property(e => e.PreferredLanguage).HasMaxLength(5).HasDefaultValue("tr");
             entity.Property(e => e.Role).HasMaxLength(20).HasDefaultValue("User"); // Added Role max length
+            entity.Property(e => e.AuthProvider).HasMaxLength(20).HasDefaultValue("local");
+            entity.Property(e => e.PasswordHash).HasMaxLength(255);
+            entity.Property(e => e.GoogleId).HasMaxLength(128);
+            entity.HasIndex(e => e.GoogleId);
             entity.HasIndex(e => e.Email).IsUnique();
-            entity.HasIndex(e => e.CognitoUserId);
         });
         
         // ... rest of existing configurations ...

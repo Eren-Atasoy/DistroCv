@@ -5,16 +5,21 @@ public record UserDto(
     string Email,
     string FullName,
     string PreferredLanguage,
+    string AuthProvider,
     DateTime CreatedAt,
     DateTime? LastLoginAt,
-    bool IsActive
+    bool IsActive,
+    bool EmailVerified
 );
 
 public record CreateUserDto(
     string Email,
     string FullName,
-    string? CognitoUserId,
-    string PreferredLanguage = "tr"
+    string PreferredLanguage = "tr",
+    string? PasswordHash = null,
+    string? GoogleId = null,
+    string AuthProvider = "local",
+    bool EmailVerified = false
 );
 
 public record UpdateUserDto(
