@@ -242,6 +242,11 @@ if (app.Environment.IsDevelopment())
 
 app.UseHttpsRedirection();
 
+// Serve static files from wwwroot (Frontend React/Vite build)
+app.UseDefaultFiles();
+app.UseStaticFiles();
+
+
 // Add security middleware (order matters!)
 app.UseSecurityHeaders(); // Add security headers first
 app.UseRateLimiting(); // Rate limiting before authentication
@@ -261,14 +266,8 @@ app.MapControllers();
 app.MapHub<DistroCv.Api.Hubs.NotificationHub>("/hubs/notifications");
 app.MapHealthChecks("/health");
 
-// Welcome endpoint
-app.MapGet("/", () => Results.Ok(new
-{
-    Name = "DistroCV API",
-    Version = "2.0.0",
-    Status = "Running",
-    Documentation = "/swagger"
-}));
+// SPA Fallback: Any other request falls back to the frontend's index.html
+app.MapFallbackToFile("index.html");
 
 app.Run();
 
