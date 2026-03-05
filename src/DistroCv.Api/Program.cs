@@ -109,6 +109,18 @@ builder.Services.AddScoped<DistroCv.Core.Interfaces.IInterviewPreparationReposit
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IInterviewCoachService, DistroCv.Infrastructure.Services.InterviewCoachService>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IBetaTestingService, DistroCv.Infrastructure.Services.BetaTestingService>(); // Task 31
 
+// Smart Email Automation Engine services
+builder.Services.AddScoped<DistroCv.Core.Interfaces.ICvAnalyzerService, DistroCv.Infrastructure.Services.CvAnalyzerService>();
+builder.Services.AddScoped<DistroCv.Core.Interfaces.IEmailGeneratorService, DistroCv.Infrastructure.Services.EmailGeneratorService>();
+builder.Services.AddScoped<DistroCv.Core.Interfaces.IEmailQueueService, DistroCv.Infrastructure.Services.EmailQueueService>();
+builder.Services.AddScoped<DistroCv.Core.Interfaces.IGmailDeliveryService, DistroCv.Infrastructure.Services.GmailDeliveryService>();
+builder.Services.AddScoped<DistroCv.Core.Interfaces.IEmailDeliveryJob, DistroCv.Infrastructure.Services.EmailDeliveryJob>();
+builder.Services.AddScoped<DistroCv.Core.Interfaces.ISmartEmailAutomationService, DistroCv.Infrastructure.Services.SmartEmailAutomationService>();
+builder.Services.AddScoped<DistroCv.Api.BackgroundServices.IEmailJobRescueTask, DistroCv.Api.BackgroundServices.EmailJobRescueTask>();
+
+// Register HttpClient for GmailDeliveryService
+builder.Services.AddHttpClient<DistroCv.Core.Interfaces.IGmailDeliveryService, DistroCv.Infrastructure.Services.GmailDeliveryService>();
+
 // Configure Serilog
 builder.Host.UseSerilog((context, services, configuration) => configuration
     .ReadFrom.Configuration(context.Configuration)
@@ -127,6 +139,7 @@ builder.Services.Configure<DistroCv.Core.DTOs.PlaywrightSettings>(
 // Register background services
 builder.Services.AddHostedService<DistroCv.Api.BackgroundServices.SessionCleanupService>();
 builder.Services.AddHostedService<DistroCv.Api.BackgroundServices.JobScrapingBackgroundService>();
+builder.Services.AddHostedService<DistroCv.Api.BackgroundServices.EmailAutomationBackgroundService>();
 
 // Configure Hangfire for background job processing
 builder.Services.AddHangfire(configuration => configuration
@@ -175,7 +188,7 @@ builder.Services.AddAntiforgery(options =>
     options.HeaderName = "X-CSRF-TOKEN";
     options.Cookie.Name = "X-CSRF-TOKEN";
     options.Cookie.HttpOnly = true;
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+    options.Cookie.SecurePolicy = builder.Environment.IsDevelopment() ? CookieSecurePolicy.SameAsRequest : CookieSecurePolicy.Always;
     options.Cookie.SameSite = SameSiteMode.Strict;
 });
 

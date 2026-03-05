@@ -40,7 +40,9 @@ class ApiClient {
                     // event bus or redirect could go here
                 }
 
-                throw new Error(error.message || 'API request failed');
+                const err = new Error(error.message || 'API request failed') as any;
+                err.details = error.errors;
+                throw err;
             }
 
             return await response.json();
@@ -74,6 +76,15 @@ class ApiClient {
 }
 
 export const api = new ApiClient(API_BASE_URL);
+
+// Auth Methods
+export const authApi = {
+    login: (data: any) => api.post<{ token: string; user: any }>('/Auth/login', data),
+    register: (data: any) => api.post<{ token: string; user: any }>('/Auth/register', data),
+    google: (data: { idToken: string; preferredLanguage?: string }) => api.post<{ token: string; user: any }>('/Auth/google', data),
+    logout: () => api.post('/Auth/logout-all'),
+    me: () => api.get<{ user: any }>('/Profile/me') // Assuming there is a profile/me endpoint or similar
+};
 
 // Types
 export interface JobMatch {

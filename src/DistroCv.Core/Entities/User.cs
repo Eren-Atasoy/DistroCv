@@ -26,6 +26,16 @@ public class User
     public string Role { get; set; } = "User";
     public string? EncryptedApiKey { get; set; }
 
+    // Gmail OAuth2 — kullanıcının kendi hesabından mail göndermek için
+    /// <summary>Encrypted Gmail OAuth2 Refresh Token</summary>
+    public string? GmailRefreshToken { get; set; }
+
+    /// <summary>Gmail OAuth2 scopes granted by user (JSON array)</summary>
+    public string? GmailScopes { get; set; }
+
+    /// <summary>When the Gmail OAuth2 token was last refreshed</summary>
+    public DateTime? GmailTokenGrantedAtUtc { get; set; }
+
     // Navigation
     public DigitalTwin? DigitalTwin { get; set; }
     public ICollection<Application> Applications { get; set; } = new List<Application>();
@@ -33,4 +43,5 @@ public class User
     public ICollection<UserFeedback> Feedbacks { get; set; } = new List<UserFeedback>();
     public ICollection<ThrottleLog> ThrottleLogs { get; set; } = new List<ThrottleLog>();
     public ICollection<UserSession> Sessions { get; set; } = new List<UserSession>();
+    public ICollection<EmailJob> EmailJobs { get; set; } = new List<EmailJob>();
 }

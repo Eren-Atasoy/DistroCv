@@ -31,6 +31,9 @@ public class DistroCvDbContext : DbContext
     public DbSet<AuditLog> AuditLogs { get; set; }
     public DbSet<UserConsent> UserConsents { get; set; }
 
+    // Email Automation Engine
+    public DbSet<EmailJob> EmailJobs { get; set; }
+
     // Beta Testing Entities
     public DbSet<BetaTester> BetaTesters { get; set; }
     public DbSet<BugReport> BugReports { get; set; }
@@ -79,6 +82,41 @@ public class DistroCvDbContext : DbContext
                 .OnDelete(DeleteBehavior.Cascade);
             entity.HasIndex(e => new { e.UserId, e.ConsentType });
         });
+
+        // EmailJob Configuration (Smart Email Automation Engine)
+        modelBuilder.Entity<EmailJob>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.Property(e => e.RecipientEmail).IsRequired().HasMaxLength(255);
+            entity.Property(e => e.RecipientName).HasMaxLength(200);
+            entity.Property(e => e.Subject).IsRequired().HasMaxLength(500);
+            entity.Property(e => e.Body).IsRequired();
+            entity.Property(e => e.CvPresignedUrl).HasMaxLength(2048);
+            entity.Property(e => e.Status)
+                .IsRequired()
+                .HasConversion<string>()
+                .HasMaxLength(20)
+                .HasDefaultValue(Core.Enums.EmailJobStatus.Pending);
+            entity.Property(e => e.HangfireJobId).HasMaxLength(100);
+            entity.Property(e => e.LastError).HasMaxLength(2000);
+            entity.Property(e => e.GmailMessageId).HasMaxLength(200);
+            entity.HasOne(e => e.User)
+                .WithMany(u => u.EmailJobs)
+                .HasForeignKey(e => e.UserId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(e => e.Application)
+                .WithMany()
+                .HasForeignKey(e => e.ApplicationId)
+                .OnDelete(DeleteBehavior.SetNull);
+            entity.HasOne(e => e.JobPosting)
+                .WithMany()
+                .HasForeignKey(e => e.JobPostingId)
+                .OnDelete(DeleteBehavior.Cascade);
+            entity.HasIndex(e => new { e.UserId, e.Status });
+            entity.HasIndex(e => new { e.UserId, e.CreatedAtUtc });
+            entity.HasIndex(e => e.ScheduledAtUtc);
+            entity.HasIndex(e => e.Status);
+        });
         
         // Enable pgvector extension
         modelBuilder.HasPostgresExtension("vector");
@@ -95,6 +133,8 @@ public class DistroCvDbContext : DbContext
             entity.Property(e => e.PasswordHash).HasMaxLength(255);
             entity.Property(e => e.GoogleId).HasMaxLength(128);
             entity.HasIndex(e => e.GoogleId);
+            entity.Property(e => e.GmailRefreshToken).HasMaxLength(2048);
+            entity.Property(e => e.GmailScopes).HasMaxLength(1000);
             entity.HasIndex(e => e.Email).IsUnique();
         });
         

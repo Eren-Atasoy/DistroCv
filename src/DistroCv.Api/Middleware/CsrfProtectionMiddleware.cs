@@ -21,8 +21,8 @@ public class CsrfProtectionMiddleware
     // Paths that are exempt from CSRF protection (e.g., API endpoints using JWT)
     private static readonly HashSet<string> ExemptPaths = new(StringComparer.OrdinalIgnoreCase)
     {
-        "/api/auth/signin",
-        "/api/auth/signup",
+        "/api/auth/login",
+        "/api/auth/register",
         "/api/auth/refresh",
         "/api/auth/google",
         "/health",

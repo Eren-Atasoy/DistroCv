@@ -74,7 +74,7 @@ export default function LandingPage() {
             setIsUploading(true)
             setTimeout(() => {
                 setIsUploading(false)
-                navigate('/dashboard')
+                navigate('/register')
             }, 2000)
         }
     }, [navigate])
@@ -115,7 +115,7 @@ export default function LandingPage() {
                         </button>
                         <LanguageSwitcher variant="minimal" />
                         <button
-                            onClick={() => navigate('/dashboard')}
+                            onClick={() => navigate('/login')}
                             className="px-4 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-all"
                         >
                             {isEn ? 'Login' : 'Giriş Yap'}
@@ -196,8 +196,8 @@ export default function LandingPage() {
                                     <Upload size={36} className="text-primary-400" />
                                 </div>
                                 <h3 className="text-xl font-semibold text-white mb-2">
-                                    {isDragActive 
-                                        ? (isEn ? 'Drop your resume here!' : "CV'yi buraya bırak!") 
+                                    {isDragActive
+                                        ? (isEn ? 'Drop your resume here!' : "CV'yi buraya bırak!")
                                         : t('landing.uploadResume')}
                                 </h3>
                                 <p className="text-surface-400 mb-4">

@@ -1,4 +1,4 @@
-import { Outlet, Link, useLocation } from 'react-router-dom'
+import { Outlet, Link, useLocation, useNavigate } from 'react-router-dom'
 import { motion } from 'framer-motion'
 import {
     LayoutDashboard,
@@ -16,6 +16,7 @@ import {
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import LanguageSwitcher from '../LanguageSwitcher'
+import { useAuth } from '../../contexts/AuthContext'
 
 const useNavItems = () => {
     const { t, i18n } = useTranslation()
@@ -33,9 +34,16 @@ const useNavItems = () => {
 
 export default function Layout() {
     const location = useLocation()
+    const navigate = useNavigate()
     const [sidebarOpen, setSidebarOpen] = useState(false)
     const { t } = useTranslation()
     const navItems = useNavItems()
+    const { logout } = useAuth()
+
+    const handleLogout = async () => {
+        await logout()
+        navigate('/login')
+    }
 
     return (
         <div className="min-h-screen bg-surface-950 flex">
@@ -116,6 +124,7 @@ export default function Layout() {
                             <span className="font-medium">{t('nav.settings')}</span>
                         </Link>
                         <button
+                            onClick={handleLogout}
                             className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-surface-400 hover:text-error hover:bg-error/10 transition-all duration-200"
                         >
                             <LogOut size={20} />

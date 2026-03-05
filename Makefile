@@ -90,11 +90,11 @@ local-status:
 # .env.prod dosyasındaki KOYEB_* değişkenleri kullanılır.
 # =============================================================================
 
-# .env.prod yükle (varsa)
-ifneq (,$(wildcard .env.prod))
-  include .env.prod
-  export
-endif
+# .env.prod load is deferred to individual prod commands to avoid conflicting with local environment
+# ifneq (,$(wildcard .env.prod))
+#   include .env.prod
+#   export
+# endif
 
 prod-deploy: prod-deploy-api prod-deploy-frontend
 	@echo ""
