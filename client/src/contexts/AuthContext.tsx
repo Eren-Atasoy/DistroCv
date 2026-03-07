@@ -1,11 +1,13 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { ReactNode } from 'react';
-import { authApi } from '../services/api';
+import { authApi, type AuthResult } from '../services/api';
 
 interface User {
     id: string;
     email: string;
     fullName: string;
+    preferredLanguage?: string;
+    emailVerified?: boolean;
 }
 
 interface AuthContextType {
@@ -25,40 +27,41 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [isLoading, setIsLoading] = useState(true);
 
     useEffect(() => {
-        // Check if user is logged in
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('accessToken');
         const storedUser = localStorage.getItem('user');
 
         if (token && storedUser) {
             try {
                 setUser(JSON.parse(storedUser));
             } catch (e) {
-                localStorage.removeItem('token');
+                localStorage.removeItem('accessToken');
+                localStorage.removeItem('refreshToken');
                 localStorage.removeItem('user');
             }
         }
         setIsLoading(false);
     }, []);
 
+    const saveAuth = (response: AuthResult) => {
+        localStorage.setItem('accessToken', response.accessToken);
+        localStorage.setItem('refreshToken', response.refreshToken);
+        localStorage.setItem('user', JSON.stringify(response.user));
+        setUser(response.user);
+    };
+
     const login = async (data: any) => {
         const response = await authApi.login(data);
-        localStorage.setItem('token', response.token);
-        localStorage.setItem('user', JSON.stringify({ email: data.email, fullName: "User" })); // Placeholder till real user object is mapped
-        setUser({ id: '1', email: data.email, fullName: 'User' });
+        saveAuth(response);
     };
 
     const register = async (data: any) => {
         const response = await authApi.register(data);
-        localStorage.setItem('token', response.token);
-        localStorage.setItem('user', JSON.stringify({ email: data.email, fullName: data.fullName }));
-        setUser({ id: '1', email: data.email, fullName: data.fullName });
+        saveAuth(response);
     };
 
     const googleLogin = async (credential: string) => {
         const response = await authApi.google({ idToken: credential, preferredLanguage: 'tr' });
-        localStorage.setItem('token', response.token);
-        localStorage.setItem('user', JSON.stringify(response.user || { email: 'google-user@example.com', fullName: 'Google User' }));
-        setUser(response.user || { id: '1', email: 'google-user@example.com', fullName: 'Google User' });
+        saveAuth(response);
     };
 
     const logout = async () => {
@@ -67,7 +70,8 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         } catch (error) {
             console.error('Logout failed:', error);
         } finally {
-            localStorage.removeItem('token');
+            localStorage.removeItem('accessToken');
+            localStorage.removeItem('refreshToken');
             localStorage.removeItem('user');
             setUser(null);
         }

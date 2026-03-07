@@ -2,6 +2,7 @@ using DistroCv.Core.DTOs;
 using DistroCv.Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Net.Http.Headers;
 
 namespace DistroCv.Api.Controllers;
 
@@ -41,6 +42,8 @@ public class AuthController : BaseApiController
                 request.Password,
                 request.PreferredLanguage
             ));
+
+            await CreateSessionFromResultAsync(result);
             return Ok(result);
         }
         catch (InvalidOperationException ex)
@@ -66,6 +69,8 @@ public class AuthController : BaseApiController
                 request.Email,
                 request.Password
             ));
+
+            await CreateSessionFromResultAsync(result);
             return Ok(result);
         }
         catch (InvalidOperationException ex)
@@ -91,6 +96,8 @@ public class AuthController : BaseApiController
                 request.IdToken,
                 request.PreferredLanguage
             );
+
+            await CreateSessionFromResultAsync(result);
             return Ok(result);
         }
         catch (InvalidOperationException ex)
@@ -259,6 +266,36 @@ public class AuthController : BaseApiController
         {
             _logger.LogError(ex, "Logout all error");
             return StatusCode(500, new { message = "Bir hata oluştu." });
+        }
+    }
+
+    // =========================================================
+    // HELPER — auth sonucu ile UserSession kaydı oluşturur
+    // =========================================================
+    private async Task CreateSessionFromResultAsync(AuthResultDto result)
+    {
+        try
+        {
+            var ip = HttpContext.Connection.RemoteIpAddress?.ToString() ?? "unknown";
+            var ua = Request.Headers[HeaderNames.UserAgent].ToString();
+            var device = string.IsNullOrWhiteSpace(ua)
+                ? "Unknown Device"
+                : ua.Length > 200 ? ua[..200] : ua;
+
+            await _sessionService.CreateSessionAsync(new CreateSessionDto(
+                UserId: result.User.Id,
+                AccessToken: result.AccessToken,
+                RefreshToken: result.RefreshToken,
+                ExpiresIn: result.ExpiresIn,
+                DeviceInfo: device,
+                IpAddress: ip,
+                UserAgent: ua
+            ));
+        }
+        catch (Exception ex)
+        {
+            // Session oluşturulamazsa auth akışını bozma
+            _logger.LogWarning(ex, "Session oluşturulamadı — userId: {UserId}", result.User.Id);
         }
     }
 }

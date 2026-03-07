@@ -10,17 +10,17 @@ public record SignUpRequestDto(
     [EmailAddress(ErrorMessage = "Invalid email format")]
     [StringLength(255, ErrorMessage = "Email cannot exceed 255 characters")]
     string Email,
-    
+
     [Required(ErrorMessage = "Password is required")]
     [StringLength(100, MinimumLength = 8, ErrorMessage = "Password must be between 8 and 100 characters")]
-    [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$", 
+    [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$",
         ErrorMessage = "Password must contain at least one uppercase letter, one lowercase letter, one number and one special character")]
     string Password,
-    
+
     [Required(ErrorMessage = "Full name is required")]
     [StringLength(200, MinimumLength = 2, ErrorMessage = "Full name must be between 2 and 200 characters")]
     string FullName,
-    
+
     [Required(ErrorMessage = "Preferred language is required")]
     [RegularExpression(@"^(tr|en)$", ErrorMessage = "Preferred language must be 'tr' or 'en'")]
     string PreferredLanguage = "tr"
@@ -33,7 +33,7 @@ public record ConfirmSignUpRequestDto(
     [Required(ErrorMessage = "Email is required")]
     [EmailAddress(ErrorMessage = "Invalid email format")]
     string Email,
-    
+
     [Required(ErrorMessage = "Confirmation code is required")]
     [StringLength(10, MinimumLength = 6, ErrorMessage = "Confirmation code must be between 6 and 10 characters")]
     string ConfirmationCode
@@ -46,7 +46,7 @@ public record SignInRequestDto(
     [Required(ErrorMessage = "Email is required")]
     [EmailAddress(ErrorMessage = "Invalid email format")]
     string Email,
-    
+
     [Required(ErrorMessage = "Password is required")]
     [StringLength(100, MinimumLength = 8, ErrorMessage = "Password must be between 8 and 100 characters")]
     string Password
@@ -79,14 +79,14 @@ public record ConfirmForgotPasswordRequestDto(
     [Required(ErrorMessage = "Email is required")]
     [EmailAddress(ErrorMessage = "Invalid email format")]
     string Email,
-    
+
     [Required(ErrorMessage = "Confirmation code is required")]
     [StringLength(10, MinimumLength = 6, ErrorMessage = "Confirmation code must be between 6 and 10 characters")]
     string ConfirmationCode,
-    
+
     [Required(ErrorMessage = "New password is required")]
     [StringLength(100, MinimumLength = 8, ErrorMessage = "Password must be between 8 and 100 characters")]
-    [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$", 
+    [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$",
         ErrorMessage = "Password must contain at least one uppercase letter, one lowercase letter, one number and one special character")]
     string NewPassword
 );
@@ -98,10 +98,10 @@ public record ChangePasswordRequestDto(
     [Required(ErrorMessage = "Old password is required")]
     [StringLength(100, MinimumLength = 8, ErrorMessage = "Password must be between 8 and 100 characters")]
     string OldPassword,
-    
+
     [Required(ErrorMessage = "New password is required")]
     [StringLength(100, MinimumLength = 8, ErrorMessage = "Password must be between 8 and 100 characters")]
-    [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d])(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$", 
+    [RegularExpression(@"^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$",
         ErrorMessage = "Password must contain at least one uppercase letter, one lowercase letter, one number and one special character")]
     string NewPassword
 );
@@ -129,7 +129,7 @@ public record GoogleOAuthRequestDto(
     [Required(ErrorMessage = "ID token is required")]
     [StringLength(2048, ErrorMessage = "ID token cannot exceed 2048 characters")]
     string IdToken,
-    
+
     [RegularExpression(@"^(tr|en)$", ErrorMessage = "Preferred language must be 'tr' or 'en'")]
     string? PreferredLanguage = "tr"
 );

@@ -2,38 +2,65 @@ import { useState } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { GoogleLogin } from '@react-oauth/google';
-import { Mail, Lock, ArrowRight } from 'lucide-react';
+import { Mail, Lock, ArrowRight, Eye, EyeOff } from 'lucide-react';
+
+function validateEmail(email: string): string | null {
+    if (!email) return 'E-posta adresi zorunludur.';
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) return 'Geçerli bir e-posta adresi giriniz.';
+    if (email.length > 255) return 'E-posta adresi 255 karakterden uzun olamaz.';
+    return null;
+}
+
+function validatePassword(password: string): string | null {
+    if (!password) return 'Şifre zorunludur.';
+    if (password.length < 8) return 'Şifre en az 8 karakter olmalıdır.';
+    if (!/[A-Z]/.test(password)) return 'Şifre en az bir büyük harf içermelidir.';
+    if (!/[a-z]/.test(password)) return 'Şifre en az bir küçük harf içermelidir.';
+    if (!/\d/.test(password)) return 'Şifre en az bir rakam içermelidir.';
+    if (!/[@$!%*?&]/.test(password)) return 'Şifre en az bir özel karakter (@$!%*?&) içermelidir.';
+    return null;
+}
 
 export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');
+    const [showPassword, setShowPassword] = useState(false);
     const [error, setError] = useState('');
-    const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string[] }>({});
+    const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
     const [isLoading, setIsLoading] = useState(false);
 
     const { login, googleLogin } = useAuth();
     const navigate = useNavigate();
 
+    const validate = (): boolean => {
+        const errors: { [key: string]: string } = {};
+        const emailErr = validateEmail(email);
+        if (emailErr) errors.email = emailErr;
+        // Login: yalnızca boş kontrol — şifre kuralları sadece kayıt için geçerli
+        if (!password) errors.password = 'Şifre zorunludur.';
+        setFieldErrors(errors);
+        return Object.keys(errors).length === 0;
+    };
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setIsLoading(true);
         setError('');
-        setFieldErrors({});
+        if (!validate()) return;
+        setIsLoading(true);
 
         try {
             await login({ email, password });
             navigate('/dashboard');
         } catch (err: any) {
-            setError(err.message || 'Giriş yapılamadı.');
-            if (err.details && Array.isArray(err.details)) {
-                const fErrors: { [key: string]: string[] } = {};
-                err.details.forEach((d: any) => {
-                    if (d.field && d.errors) {
-                        fErrors[d.field.toLowerCase()] = d.errors;
-                    }
+            // Backend field-specific errors (ASP.NET ModelState: { FieldName: ["..."] })
+            if (err.details && typeof err.details === 'object') {
+                const fErrors: { [key: string]: string } = {};
+                Object.entries(err.details).forEach(([field, messages]) => {
+                    fErrors[field.toLowerCase()] = (messages as string[]).join(', ');
                 });
                 setFieldErrors(fErrors);
             }
+            setError(err.message || 'Giriş yapılamadı.');
         } finally {
             setIsLoading(false);
         }
@@ -75,15 +102,15 @@ export default function LoginPage() {
                                 <input
                                     type="email"
                                     value={email}
-                                    onChange={(e) => setEmail(e.target.value)}
-                                    className="w-full bg-surface-800 border border-surface-700 rounded-lg py-3 px-10 text-white placeholder:text-surface-500 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all font-mono"
+                                    onChange={(e) => { setEmail(e.target.value); setFieldErrors(prev => ({ ...prev, email: '' })); }}
+                                    className={`w-full bg-surface-800 border rounded-lg py-3 px-10 text-white placeholder:text-surface-500 focus:outline-none focus:ring-1 transition-all font-mono ${fieldErrors.email ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-surface-700 focus:border-primary-500 focus:ring-primary-500'}`}
                                     placeholder="isim@sirket.com"
-                                    required
+                                    autoComplete="email"
                                 />
                                 <Mail className="absolute left-3 top-3.5 text-surface-500" size={18} />
                             </div>
                             {fieldErrors.email && (
-                                <p className="text-red-500 text-xs mt-1">{fieldErrors.email.join(', ')}</p>
+                                <p className="text-red-500 text-xs mt-1">{fieldErrors.email}</p>
                             )}
                         </div>
 
@@ -91,17 +118,25 @@ export default function LoginPage() {
                             <label className="block text-sm font-medium text-surface-300 mb-2">Şifre</label>
                             <div className="relative">
                                 <input
-                                    type="password"
+                                    type={showPassword ? 'text' : 'password'}
                                     value={password}
-                                    onChange={(e) => setPassword(e.target.value)}
-                                    className="w-full bg-surface-800 border border-surface-700 rounded-lg py-3 px-10 text-white placeholder:text-surface-500 focus:outline-none focus:border-primary-500 focus:ring-1 focus:ring-primary-500 transition-all"
+                                    onChange={(e) => { setPassword(e.target.value); setFieldErrors(prev => ({ ...prev, password: '' })); }}
+                                    className={`w-full bg-surface-800 border rounded-lg py-3 px-10 text-white placeholder:text-surface-500 focus:outline-none focus:ring-1 transition-all ${fieldErrors.password ? 'border-red-500 focus:border-red-500 focus:ring-red-500' : 'border-surface-700 focus:border-primary-500 focus:ring-primary-500'}`}
                                     placeholder="••••••••"
-                                    required
+                                    autoComplete="current-password"
                                 />
                                 <Lock className="absolute left-3 top-3.5 text-surface-500" size={18} />
+                                <button
+                                    type="button"
+                                    onClick={() => setShowPassword(v => !v)}
+                                    className="absolute right-3 top-3.5 text-surface-500 hover:text-surface-300 transition-colors"
+                                    tabIndex={-1}
+                                >
+                                    {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
+                                </button>
                             </div>
                             {fieldErrors.password && (
-                                <p className="text-red-500 text-xs mt-1">{fieldErrors.password.join(', ')}</p>
+                                <p className="text-red-500 text-xs mt-1">{fieldErrors.password}</p>
                             )}
                         </div>
 

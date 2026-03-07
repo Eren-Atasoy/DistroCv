@@ -1,5 +1,6 @@
 using DistroCv.Core.DTOs;
 using DistroCv.Core.Interfaces;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Text.Json;
 
@@ -8,6 +9,7 @@ namespace DistroCv.Api.Controllers;
 /// <summary>
 /// Profile management controller for resume and digital twin
 /// </summary>
+[Authorize]
 public class ProfileController : BaseApiController
 {
     private readonly ILogger<ProfileController> _logger;
@@ -40,7 +42,7 @@ public class ProfileController : BaseApiController
 
             var allowedExtensions = new[] { ".pdf", ".docx", ".txt" };
             var extension = Path.GetExtension(file.FileName).ToLowerInvariant();
-            
+
             if (!allowedExtensions.Contains(extension))
             {
                 return BadRequest(new { message = "Invalid file type. Allowed: PDF, DOCX, TXT" });
@@ -52,7 +54,7 @@ public class ProfileController : BaseApiController
                 return BadRequest(new { message = "File size exceeds 10MB limit" });
             }
 
-            _logger.LogInformation("Resume upload started: {FileName}, Size: {Size} bytes", 
+            _logger.LogInformation("Resume upload started: {FileName}, Size: {Size} bytes",
                 file.FileName, file.Length);
 
             var userId = GetCurrentUserId();
@@ -60,8 +62,8 @@ public class ProfileController : BaseApiController
             // Create digital twin from uploaded resume
             using var stream = file.OpenReadStream();
             var digitalTwin = await _profileService.CreateDigitalTwinAsync(
-                userId, 
-                stream, 
+                userId,
+                stream,
                 file.FileName);
 
             var response = new ResumeUploadResponseDto(
@@ -70,7 +72,7 @@ public class ProfileController : BaseApiController
                 ParsedData: digitalTwin.ParsedResumeJson
             );
 
-            _logger.LogInformation("Resume upload completed successfully for user {UserId}, DigitalTwin {DigitalTwinId}", 
+            _logger.LogInformation("Resume upload completed successfully for user {UserId}, DigitalTwin {DigitalTwinId}",
                 userId, digitalTwin.Id);
 
             return Ok(response);
@@ -101,7 +103,7 @@ public class ProfileController : BaseApiController
         try
         {
             var userId = GetCurrentUserId();
-            
+
             _logger.LogInformation("Getting digital twin for user: {UserId}", userId);
 
             var digitalTwin = await _profileService.GetDigitalTwinAsync(userId);
@@ -142,7 +144,7 @@ public class ProfileController : BaseApiController
         try
         {
             var userId = GetCurrentUserId();
-            
+
             _logger.LogInformation("Updating preferences for user: {UserId}", userId);
 
             // Convert DTO to JSON string
@@ -156,8 +158,8 @@ public class ProfileController : BaseApiController
 
             var digitalTwin = await _profileService.UpdateDigitalTwinAsync(userId, preferencesJson);
 
-            return Ok(new 
-            { 
+            return Ok(new
+            {
                 message = "Preferences updated successfully",
                 digitalTwinId = digitalTwin.Id,
                 updatedAt = digitalTwin.UpdatedAt
@@ -199,7 +201,7 @@ public class ProfileController : BaseApiController
     public async Task<IActionResult> UpdateApiKey([FromBody] ApiKeyDto dto)
     {
         var userId = GetCurrentUserId();
-        
+
         if (string.IsNullOrWhiteSpace(dto.ApiKey))
         {
             return BadRequest("API Key cannot be empty");
@@ -218,6 +220,7 @@ public class ProfileController : BaseApiController
     /// Task 20.4: Sector selection endpoint
     /// </summary>
     [HttpGet("filters/sectors")]
+    [AllowAnonymous]
     public IActionResult GetAvailableSectors()
     {
         var sectors = FilterDtoHelper.GetAllSectors();
@@ -229,14 +232,15 @@ public class ProfileController : BaseApiController
     /// Task 20.4: City selection endpoint
     /// </summary>
     [HttpGet("filters/cities")]
+    [AllowAnonymous]
     public IActionResult GetAvailableCities([FromQuery] bool majorOnly = false)
     {
-        var cities = majorOnly 
-            ? FilterDtoHelper.GetMajorCities() 
+        var cities = majorOnly
+            ? FilterDtoHelper.GetMajorCities()
             : FilterDtoHelper.GetAllCities();
-        
+
         var majorCities = FilterDtoHelper.GetMajorCities();
-        
+
         return Ok(new CityListResponse(cities, majorCities));
     }
 
@@ -249,11 +253,11 @@ public class ProfileController : BaseApiController
     {
         try
         {
-            // TODO: Get actual user ID from JWT token
-            var userId = Guid.Parse("00000000-0000-0000-0000-000000000001"); // Mock user ID
+            var userId = GetCurrentUserId();
+            if (userId == Guid.Empty) return Unauthorized();
 
             var digitalTwin = await _profileService.GetDigitalTwinByUserIdAsync(userId);
-            
+
             if (digitalTwin == null)
             {
                 return NotFound(new { message = "Digital twin not found. Please upload your resume first." });
@@ -262,7 +266,7 @@ public class ProfileController : BaseApiController
             var sectorIds = !string.IsNullOrEmpty(digitalTwin.PreferredSectors)
                 ? JsonSerializer.Deserialize<List<int>>(digitalTwin.PreferredSectors)
                 : new List<int>();
-            
+
             var cityIds = !string.IsNullOrEmpty(digitalTwin.PreferredCities)
                 ? JsonSerializer.Deserialize<List<int>>(digitalTwin.PreferredCities)
                 : new List<int>();
@@ -293,13 +297,13 @@ public class ProfileController : BaseApiController
     {
         try
         {
-            // TODO: Get actual user ID from JWT token
-            var userId = Guid.Parse("00000000-0000-0000-0000-000000000001"); // Mock user ID
+            var userId = GetCurrentUserId();
+            if (userId == Guid.Empty) return Unauthorized();
 
             _logger.LogInformation("Updating filter preferences for user {UserId}", userId);
 
             var digitalTwin = await _profileService.GetDigitalTwinByUserIdAsync(userId);
-            
+
             if (digitalTwin == null)
             {
                 return NotFound(new { message = "Digital twin not found. Please upload your resume first." });
@@ -310,22 +314,22 @@ public class ProfileController : BaseApiController
             {
                 digitalTwin.PreferredSectors = JsonSerializer.Serialize(request.PreferredSectors);
             }
-            
+
             if (request.PreferredCities != null)
             {
                 digitalTwin.PreferredCities = JsonSerializer.Serialize(request.PreferredCities);
             }
-            
+
             if (request.MinSalary.HasValue)
             {
                 digitalTwin.MinSalary = request.MinSalary.Value;
             }
-            
+
             if (request.MaxSalary.HasValue)
             {
                 digitalTwin.MaxSalary = request.MaxSalary.Value;
             }
-            
+
             if (request.IsRemotePreferred.HasValue)
             {
                 digitalTwin.IsRemotePreferred = request.IsRemotePreferred.Value;
@@ -338,8 +342,8 @@ public class ProfileController : BaseApiController
 
             _logger.LogInformation("Filter preferences updated for user {UserId}", userId);
 
-            return Ok(new 
-            { 
+            return Ok(new
+            {
                 message = "Filter preferences updated successfully",
                 updatedAt = digitalTwin.UpdatedAt
             });

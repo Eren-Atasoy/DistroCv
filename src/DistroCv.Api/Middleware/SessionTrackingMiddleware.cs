@@ -10,41 +10,42 @@ public class SessionTrackingMiddleware
 {
     private readonly RequestDelegate _next;
     private readonly ILogger<SessionTrackingMiddleware> _logger;
+    private readonly IServiceScopeFactory _scopeFactory;
 
-    public SessionTrackingMiddleware(RequestDelegate next, ILogger<SessionTrackingMiddleware> logger)
+    public SessionTrackingMiddleware(
+        RequestDelegate next,
+        ILogger<SessionTrackingMiddleware> logger,
+        IServiceScopeFactory scopeFactory)
     {
         _next = next;
         _logger = logger;
+        _scopeFactory = scopeFactory;
     }
 
-    public async Task InvokeAsync(HttpContext context, ISessionService sessionService)
+    public async Task InvokeAsync(HttpContext context)
     {
         // Only track authenticated requests
         if (context.User.Identity?.IsAuthenticated == true)
         {
             var accessToken = context.Request.Headers["Authorization"].ToString().Replace("Bearer ", "");
-            
+
             if (!string.IsNullOrEmpty(accessToken))
             {
-                try
+                // Fire-and-forget with its own DI scope so it doesn't share
+                // the request-scoped DbContext with the controller pipeline.
+                _ = Task.Run(async () =>
                 {
-                    // Update session activity asynchronously without blocking the request
-                    _ = Task.Run(async () =>
+                    try
                     {
-                        try
-                        {
-                            await sessionService.UpdateSessionActivityAsync(accessToken);
-                        }
-                        catch (Exception ex)
-                        {
-                            _logger.LogError(ex, "Error updating session activity");
-                        }
-                    });
-                }
-                catch (Exception ex)
-                {
-                    _logger.LogError(ex, "Error in session tracking middleware");
-                }
+                        using var scope = _scopeFactory.CreateScope();
+                        var sessionService = scope.ServiceProvider.GetRequiredService<ISessionService>();
+                        await sessionService.UpdateSessionActivityAsync(accessToken);
+                    }
+                    catch (Exception ex)
+                    {
+                        _logger.LogError(ex, "Error updating session activity");
+                    }
+                });
             }
         }
 

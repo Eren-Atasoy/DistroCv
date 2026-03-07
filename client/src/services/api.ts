@@ -16,16 +16,18 @@ class ApiClient {
         const url = `${this.baseUrl}${endpoint}`;
 
         // Get token from storage if available
-        const token = localStorage.getItem('token');
+        const token = localStorage.getItem('accessToken');
 
-        const config: RequestInit = {
-            ...options,
-            headers: {
+const headers: Record<string, string> = {
                 'Content-Type': 'application/json',
-                'Authorization': token ? `Bearer ${token}` : '',
-                ...options.headers,
-            },
-        };
+                ...(options.headers as Record<string, string>),
+            };
+            if (token) headers['Authorization'] = `Bearer ${token}`;
+
+            const config: RequestInit = {
+                ...options,
+                headers,
+            };
 
         try {
             const response = await fetch(url, config);
@@ -40,8 +42,11 @@ class ApiClient {
                     // event bus or redirect could go here
                 }
 
-                const err = new Error(error.message || 'API request failed') as any;
-                err.details = error.errors;
+                // ASP.NET returns { title, errors } for 400 model validation; { message } for custom errors
+                const message = error.message || error.title || 'API request failed';
+                const err = new Error(message) as any;
+                // error.errors: { "FieldName": ["error msg"] } from ASP.NET ModelState
+                err.details = error.errors ?? null;
                 throw err;
             }
 
@@ -77,13 +82,26 @@ class ApiClient {
 
 export const api = new ApiClient(API_BASE_URL);
 
+export interface AuthResult {
+    accessToken: string;
+    refreshToken: string;
+    expiresIn: number;
+    user: {
+        id: string;
+        email: string;
+        fullName: string;
+        preferredLanguage?: string;
+        emailVerified?: boolean;
+    };
+}
+
 // Auth Methods
 export const authApi = {
-    login: (data: any) => api.post<{ token: string; user: any }>('/Auth/login', data),
-    register: (data: any) => api.post<{ token: string; user: any }>('/Auth/register', data),
-    google: (data: { idToken: string; preferredLanguage?: string }) => api.post<{ token: string; user: any }>('/Auth/google', data),
-    logout: () => api.post('/Auth/logout-all'),
-    me: () => api.get<{ user: any }>('/Profile/me') // Assuming there is a profile/me endpoint or similar
+    login: (data: any) => api.post<AuthResult>('/auth/login', data),
+    register: (data: any) => api.post<AuthResult>('/auth/register', data),
+    google: (data: { idToken: string; preferredLanguage?: string }) => api.post<AuthResult>('/auth/google', data),
+    logout: () => api.post('/auth/logout-all'),
+    me: () => api.get<any>('/auth/me'),
 };
 
 // Types
