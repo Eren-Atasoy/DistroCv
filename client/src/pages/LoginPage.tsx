@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { GoogleLogin } from '@react-oauth/google';
@@ -29,8 +29,14 @@ export default function LoginPage() {
     const [fieldErrors, setFieldErrors] = useState<{ [key: string]: string }>({});
     const [isLoading, setIsLoading] = useState(false);
 
-    const { login, googleLogin } = useAuth();
+    const { login, googleLogin, isAuthenticated, isLoading: isAuthLoading } = useAuth();
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!isAuthLoading && isAuthenticated) {
+            navigate('/dashboard', { replace: true });
+        }
+    }, [isAuthenticated, isAuthLoading, navigate]);
 
     const validate = (): boolean => {
         const errors: { [key: string]: string } = {};

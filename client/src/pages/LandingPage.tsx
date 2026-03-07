@@ -16,6 +16,7 @@ import {
 import { useState, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
 import LanguageSwitcher from '../components/LanguageSwitcher'
+import { useAuth } from '../contexts/AuthContext'
 
 const useFeatures = () => {
     const { t } = useTranslation()
@@ -61,6 +62,7 @@ const useStats = () => {
 export default function LandingPage() {
     const navigate = useNavigate()
     const { t, i18n } = useTranslation()
+    const { isAuthenticated } = useAuth()
     const [isUploading, setIsUploading] = useState(false)
     const [uploadedFile, setUploadedFile] = useState<File | null>(null)
     const features = useFeatures()
@@ -74,10 +76,10 @@ export default function LandingPage() {
             setIsUploading(true)
             setTimeout(() => {
                 setIsUploading(false)
-                navigate('/register')
+                navigate(isAuthenticated ? '/dashboard' : '/register')
             }, 2000)
         }
-    }, [navigate])
+    }, [navigate, isAuthenticated])
 
     const { getRootProps, getInputProps, isDragActive } = useDropzone({
         onDrop,
@@ -115,10 +117,12 @@ export default function LandingPage() {
                         </button>
                         <LanguageSwitcher variant="minimal" />
                         <button
-                            onClick={() => navigate('/login')}
+                            onClick={() => navigate(isAuthenticated ? '/dashboard' : '/login')}
                             className="px-4 py-2 rounded-lg bg-white/10 text-white hover:bg-white/20 transition-all"
                         >
-                            {isEn ? 'Login' : 'Giriş Yap'}
+                            {isAuthenticated
+                                ? (isEn ? 'Dashboard' : 'Panel')
+                                : (isEn ? 'Login' : 'Giriş Yap')}
                         </button>
                     </div>
                 </nav>

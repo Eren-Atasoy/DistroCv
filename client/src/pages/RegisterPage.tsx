@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { useAuth } from '../contexts/AuthContext';
 import { GoogleLogin } from '@react-oauth/google';
@@ -55,8 +55,14 @@ export default function RegisterPage() {
     const [isLoading, setIsLoading] = useState(false);
     const [passwordFocused, setPasswordFocused] = useState(false);
 
-    const { register, googleLogin } = useAuth();
+    const { register, googleLogin, isAuthenticated, isLoading: isAuthLoading } = useAuth();
     const navigate = useNavigate();
+
+    useEffect(() => {
+        if (!isAuthLoading && isAuthenticated) {
+            navigate('/dashboard', { replace: true });
+        }
+    }, [isAuthenticated, isAuthLoading, navigate]);
 
     const strength = getPasswordStrength(password);
     const passwordValid = Object.values(strength).every(Boolean);
