@@ -34,8 +34,9 @@ public class GeminiService : IGeminiService
             WriteIndented = true
         };
 
-        // Configure HttpClient
-        _httpClient.BaseAddress = new Uri(_config.BaseUrl);
+        // Configure HttpClient - ensure trailing slash for proper URL resolution
+        var baseUrl = _config.BaseUrl.TrimEnd('/') + "/";
+        _httpClient.BaseAddress = new Uri(baseUrl);
     }
 
     /// <summary>
@@ -77,18 +78,19 @@ public class GeminiService : IGeminiService
             _logger.LogInformation("Generating embedding vector with Gemini");
 
             // Use Gemini's embedding model
-            var url = $"/models/embedding-001:embedContent?key={_config.ApiKey}";
+            var url = $"models/gemini-embedding-001:embedContent?key={_config.ApiKey}";
 
             var request = new
             {
-                model = "models/embedding-001",
+                model = "models/gemini-embedding-001",
                 content = new
                 {
                     parts = new[]
                     {
                         new { text = text }
                     }
-                }
+                },
+                outputDimensionality = 1536
             };
 
             var response = await _httpClient.PostAsJsonAsync(url, request, _jsonOptions);
@@ -145,7 +147,7 @@ public class GeminiService : IGeminiService
     /// </summary>
     private async Task<string> CallGeminiAsync(string prompt)
     {
-        var url = $"/models/{_config.Model}:generateContent?key={_config.ApiKey}";
+        var url = $"models/{_config.Model}:generateContent?key={_config.ApiKey}";
 
         var request = new GeminiRequest
         {

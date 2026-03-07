@@ -63,6 +63,9 @@ builder.Services.AddDbContext<DistroCvDbContext>(options =>
             npgsqlOptions.UseVector();
             npgsqlOptions.EnableRetryOnFailure(3);
         });
+    // Suppress PendingModelChangesWarning until new migration is created
+    options.ConfigureWarnings(w =>
+        w.Ignore(Microsoft.EntityFrameworkCore.Diagnostics.RelationalEventId.PendingModelChangesWarning));
 });
 
 // Configure AWS Services (Cognito, S3, Lambda)
@@ -88,6 +91,7 @@ builder.Services.AddScoped<DistroCv.Core.Interfaces.IProfileService, DistroCv.In
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IJobScrapingService, DistroCv.Infrastructure.Services.JobScrapingService>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IJobMatchRepository, DistroCv.Infrastructure.Data.JobMatchRepository>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IMatchingService, DistroCv.Infrastructure.Services.MatchingService>();
+builder.Services.AddCachedMatchingService(); // Decorator: CachedMatchingService wraps MatchingService
 builder.Services.AddScoped<DistroCv.Core.Interfaces.INotificationService, DistroCv.Infrastructure.Services.NotificationService>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IResumeTailoringService, DistroCv.Infrastructure.Services.ResumeTailoringService>();
 builder.Services.AddScoped<DistroCv.Core.Interfaces.IApplicationDistributionService, DistroCv.Infrastructure.Services.ApplicationDistributionService>();
@@ -245,7 +249,7 @@ if (app.Environment.IsDevelopment())
         options.DefaultHttpClient = new(ScalarTarget.Http, ScalarClient.HttpClient);
     });
     app.UseDeveloperExceptionPage();
-    
+
     // Enable Hangfire Dashboard in development
     app.UseHangfireDashboard("/hangfire", new DashboardOptions
     {

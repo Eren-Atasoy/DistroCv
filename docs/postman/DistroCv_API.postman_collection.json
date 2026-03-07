@@ -1,0 +1,965 @@
+{
+  "info": {
+    "name": "DistroCv API",
+    "_postman_id": "distrocv-api-collection",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{accessToken}}",
+        "type": "string"
+      }
+    ]
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Register",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"Test123!@\",\n  \"fullName\": \"Test Kullanıcı\",\n  \"preferredLanguage\": \"tr\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const res = pm.response.json();",
+                  "    pm.environment.set('accessToken', res.accessToken);",
+                  "    pm.environment.set('refreshToken', res.refreshToken);",
+                  "    pm.environment.set('userId', res.user.id);",
+                  "    pm.test('✅ Register başarılı', () => pm.expect(res.accessToken).to.be.a('string'));",
+                  "    pm.test('✅ User objesi döndü', () => pm.expect(res.user.email).to.eql('test@example.com'));",
+                  "} else {",
+                  "    pm.test('❌ Register başarısız: ' + pm.response.code, () => pm.expect.fail(pm.response.text()));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register — Duplicate Email (400)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"Test123!@\",\n  \"fullName\": \"Test Kullanıcı\",\n  \"preferredLanguage\": \"tr\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('✅ Duplicate email 400 döndü', () => {",
+                  "    pm.expect(pm.response.code).to.eql(400);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register — Invalid Email (400)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"invalid-email\",\n  \"password\": \"Test123!@\",\n  \"fullName\": \"Test\",\n  \"preferredLanguage\": \"tr\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('✅ Invalid email 400 döndü', () => {",
+                  "    pm.expect(pm.response.code).to.eql(400);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Register — Weak Password (400)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"weak@example.com\",\n  \"password\": \"123\",\n  \"fullName\": \"Test\",\n  \"preferredLanguage\": \"tr\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/register",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "register"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('✅ Weak password 400 döndü', () => {",
+                  "    pm.expect(pm.response.code).to.eql(400);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"Test123!@\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const res = pm.response.json();",
+                  "    pm.environment.set('accessToken', res.accessToken);",
+                  "    pm.environment.set('refreshToken', res.refreshToken);",
+                  "    pm.environment.set('userId', res.user.id);",
+                  "    pm.test('✅ Login başarılı', () => pm.expect(res.accessToken).to.be.a('string'));",
+                  "    pm.test('✅ User döndü', () => pm.expect(res.user.email).to.eql('test@example.com'));",
+                  "} else {",
+                  "    pm.test('❌ Login başarısız: ' + pm.response.code, () => pm.expect.fail(pm.response.text()));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login — Wrong Password (401)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\",\n  \"password\": \"WrongPass123!@\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('✅ Wrong password 401 döndü', () => {",
+                  "    pm.expect(pm.response.code).to.eql(401);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Login — Non-existent Email (401)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"nonexistent@example.com\",\n  \"password\": \"Test123!@\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/login",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "login"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('✅ Non-existent user 401 döndü', () => {",
+                  "    pm.expect(pm.response.code).to.eql(401);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Google OAuth Login",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"idToken\": \"GOOGLE_ID_TOKEN_BURAYA\",\n  \"preferredLanguage\": \"tr\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/google",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "google"]
+            },
+            "description": "Gerçek Google idToken gerektirir. Google OAuth consent screen'den alınan token'ı yapıştır. Lokal test için Google Cloud Console'dan test token alabilirsin."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "// Google idToken olmadan 400 dönmesi beklenir",
+                  "pm.test('✅ Google OAuth — token doğrulama çalışıyor', () => {",
+                  "    if (pm.request.body.raw.includes('GOOGLE_ID_TOKEN_BURAYA')) {",
+                  "        // Placeholder token ile 400/500 beklenir",
+                  "        pm.expect(pm.response.code).to.be.oneOf([400, 500]);",
+                  "    } else {",
+                  "        // Gerçek token ile 200 beklenir",
+                  "        pm.expect(pm.response.code).to.eql(200);",
+                  "        const res = pm.response.json();",
+                  "        pm.expect(res).to.have.property('accessToken');",
+                  "        pm.environment.set('accessToken', res.accessToken);",
+                  "        pm.environment.set('refreshToken', res.refreshToken);",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Me (Current User)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "me"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const res = pm.response.json();",
+                  "    pm.test('✅ Me endpoint çalışıyor', () => pm.expect(res.email).to.eql('test@example.com'));",
+                  "    pm.test('✅ userId doğru', () => pm.expect(res.id).to.eql(pm.environment.get('userId')));",
+                  "} else {",
+                  "    pm.test('❌ Me başarısız: ' + pm.response.code, () => pm.expect.fail(pm.response.text()));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Me — No Token (401)",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/auth/me",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "me"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('✅ Token olmadan 401 döndü', () => {",
+                  "    pm.expect(pm.response.code).to.eql(401);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Refresh Token",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"refreshToken\": \"{{refreshToken}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/refresh",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "refresh"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.response.code === 200) {",
+                  "    const res = pm.response.json();",
+                  "    pm.environment.set('accessToken', res.accessToken);",
+                  "    pm.environment.set('refreshToken', res.refreshToken);",
+                  "    pm.test('✅ Token yenilendi', () => pm.expect(res.accessToken).to.be.a('string'));",
+                  "} else {",
+                  "    pm.test('❌ Refresh başarısız: ' + pm.response.code, () => pm.expect.fail(pm.response.text()));",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Change Password",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"oldPassword\": \"Test123!@\",\n  \"newPassword\": \"NewTest456!@\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/change-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "change-password"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('✅ Şifre değiştirildi', () => {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "});",
+                  "",
+                  "// Şifre değiştikten sonra eski şifreyi geri al (sonraki testler bozulmasın)",
+                  "if (pm.response.code === 200 || pm.response.code === 204) {",
+                  "    const revertBody = JSON.stringify({ oldPassword: 'NewTest456!@', newPassword: 'Test123!@' });",
+                  "    pm.sendRequest({",
+                  "        url: pm.environment.get('baseUrl') + '/auth/change-password',",
+                  "        method: 'POST',",
+                  "        header: {",
+                  "            'Content-Type': 'application/json',",
+                  "            'Authorization': 'Bearer ' + pm.environment.get('accessToken')",
+                  "        },",
+                  "        body: { mode: 'raw', raw: revertBody }",
+                  "    }, (err, res) => {",
+                  "        console.log('Şifre geri alındı:', res.code);",
+                  "    });",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Sessions",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/auth/sessions",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "sessions"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('✅ Sessions listesi döndü', () => {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('sessions');",
+                  "    pm.expect(res.sessions).to.be.an('array');",
+                  "    pm.expect(res).to.have.property('totalCount');",
+                  "});",
+                  "",
+                  "// İlk session ID'yi environment'a kaydet (Revoke Session testi için)",
+                  "if (pm.response.code === 200) {",
+                  "    const data = pm.response.json();",
+                  "    if (data.sessions && data.sessions.length > 0) {",
+                  "        pm.environment.set('sessionId', data.sessions[0].id);",
+                  "        console.log('sessionId kaydedildi:', data.sessions[0].id);",
+                  "    }",
+                  "}"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Forgot Password",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"email\": \"test@example.com\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/forgot-password",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "forgot-password"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('✅ Forgot password accepted', () => {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Logout All Devices",
+          "request": {
+            "method": "POST",
+            "url": {
+              "raw": "{{baseUrl}}/auth/logout-all",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "logout-all"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('✅ Tüm oturumlar kapatıldı', () => {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Revoke Session",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"{{sessionId}}\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/sessions/revoke",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "sessions", "revoke"]
+            },
+            "description": "Get Sessions testinden otomatik olarak sessionId environment'a kaydedilir."
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('✅ Oturum iptal edildi', () => {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 204]);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Revoke Session — Invalid ID (400/404)",
+          "request": {
+            "method": "POST",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sessionId\": \"non-existent-session-id\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/auth/sessions/revoke",
+              "host": ["{{baseUrl}}"],
+              "path": ["auth", "sessions", "revoke"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('✅ Geçersiz session ID hata döndü', () => {",
+                  "    pm.expect(pm.response.code).to.be.oneOf([400, 404]);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "Profile",
+      "item": [
+        {
+          "name": "Upload Resume (PDF)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": [
+                {
+                  "key": "file",
+                  "type": "file",
+                  "src": "",
+                  "description": "PDF, DOCX veya TXT dosyasını seç (max 10MB)"
+                }
+              ]
+            },
+            "url": {
+              "raw": "{{baseUrl}}/profile/upload-resume",
+              "host": ["{{baseUrl}}"],
+              "path": ["profile", "upload-resume"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('✅ Resume yüklendi ve digital twin oluşturuldu', () => {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('digitalTwinId');",
+                  "    pm.expect(res).to.have.property('message');",
+                  "    pm.environment.set('digitalTwinId', res.digitalTwinId);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Upload Resume — No File (400)",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "formdata",
+              "formdata": []
+            },
+            "url": {
+              "raw": "{{baseUrl}}/profile/upload-resume",
+              "host": ["{{baseUrl}}"],
+              "path": ["profile", "upload-resume"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('✅ Dosya olmadan 400 döndü', () => {",
+                  "    pm.expect(pm.response.code).to.eql(400);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Digital Twin",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/profile/digital-twin",
+              "host": ["{{baseUrl}}"],
+              "path": ["profile", "digital-twin"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('✅ Digital twin bilgisi döndü', () => {",
+                  "    // Resume yüklenmemişse 404, yüklenmişse 200",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
+                  "    if (pm.response.code === 200) {",
+                  "        const res = pm.response.json();",
+                  "        pm.expect(res).to.have.property('id');",
+                  "        pm.expect(res).to.have.property('userId');",
+                  "    }",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Preferences",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"sectors\": \"Yazılım, Fintech\",\n  \"locations\": \"İstanbul, Ankara\",\n  \"salaryRange\": \"25000-50000 TL\",\n  \"careerGoals\": \"Senior Backend Developer\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/profile/preferences",
+              "host": ["{{baseUrl}}"],
+              "path": ["profile", "preferences"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('✅ Tercihler güncellendi', () => {",
+                  "    // Digital twin yoksa 404, varsa 200",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Analyze LinkedIn Profile",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/profile/linkedin?profileUrl=https://linkedin.com/in/test-user",
+              "host": ["{{baseUrl}}"],
+              "path": ["profile", "linkedin"],
+              "query": [
+                { "key": "profileUrl", "value": "https://linkedin.com/in/test-user" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('✅ LinkedIn analiz endpoint çalışıyor', () => {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Analyze LinkedIn — No URL (400)",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/profile/linkedin",
+              "host": ["{{baseUrl}}"],
+              "path": ["profile", "linkedin"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('✅ URL olmadan 400 döndü', () => {",
+                  "    pm.expect(pm.response.code).to.eql(400);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update API Key",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"apiKey\": \"test-api-key-12345\"\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/profile/api-key",
+              "host": ["{{baseUrl}}"],
+              "path": ["profile", "api-key"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('✅ API Key güncellendi', () => {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res.message).to.include('successfully');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Available Sectors",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/profile/filters/sectors",
+              "host": ["{{baseUrl}}"],
+              "path": ["profile", "filters", "sectors"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('✅ Sektör listesi döndü', () => {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('sectors');",
+                  "    pm.expect(res.sectors).to.be.an('array');",
+                  "    pm.expect(res.sectors.length).to.be.greaterThan(0);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Available Cities",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/profile/filters/cities",
+              "host": ["{{baseUrl}}"],
+              "path": ["profile", "filters", "cities"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('✅ Şehir listesi döndü', () => {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('cities');",
+                  "    pm.expect(res.cities).to.be.an('array');",
+                  "    pm.expect(res.cities.length).to.be.greaterThan(0);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Available Cities — Major Only",
+          "request": {
+            "auth": { "type": "noauth" },
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/profile/filters/cities?majorOnly=true",
+              "host": ["{{baseUrl}}"],
+              "path": ["profile", "filters", "cities"],
+              "query": [
+                { "key": "majorOnly", "value": "true" }
+              ]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('✅ Büyük şehir listesi döndü', () => {",
+                  "    pm.expect(pm.response.code).to.eql(200);",
+                  "    const res = pm.response.json();",
+                  "    pm.expect(res).to.have.property('majorCities');",
+                  "    pm.expect(res.majorCities).to.be.an('array');",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Get Filter Preferences",
+          "request": {
+            "method": "GET",
+            "url": {
+              "raw": "{{baseUrl}}/profile/filters/preferences",
+              "host": ["{{baseUrl}}"],
+              "path": ["profile", "filters", "preferences"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('✅ Filtre tercihleri döndü', () => {",
+                  "    // Digital twin yoksa 404, varsa 200",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        },
+        {
+          "name": "Update Filter Preferences",
+          "request": {
+            "method": "PUT",
+            "header": [
+              { "key": "Content-Type", "value": "application/json" }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"preferredSectors\": [1, 3, 5],\n  \"preferredCities\": [34, 6, 35],\n  \"minSalary\": 25000,\n  \"maxSalary\": 60000,\n  \"isRemotePreferred\": true\n}"
+            },
+            "url": {
+              "raw": "{{baseUrl}}/profile/filters/preferences",
+              "host": ["{{baseUrl}}"],
+              "path": ["profile", "filters", "preferences"]
+            }
+          },
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('✅ Filtre tercihleri güncellendi', () => {",
+                  "    // Digital twin yoksa 404, varsa 200",
+                  "    pm.expect(pm.response.code).to.be.oneOf([200, 404]);",
+                  "});"
+                ]
+              }
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

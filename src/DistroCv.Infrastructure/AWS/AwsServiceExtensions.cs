@@ -1,4 +1,5 @@
 using Amazon;
+using Amazon.Runtime;
 using Amazon.S3;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
@@ -18,20 +19,25 @@ public static class AwsServiceExtensions
 
         var region = RegionEndpoint.GetBySystemName(awsConfig.Region ?? "eu-west-1");
 
+        // Build AWS options with explicit credentials if provided
+        var awsOptions = new Amazon.Extensions.NETCore.Setup.AWSOptions
+        {
+            Region = region
+        };
+
+        if (!string.IsNullOrEmpty(awsConfig.AccessKey) && !string.IsNullOrEmpty(awsConfig.SecretKey))
+        {
+            awsOptions.Credentials = new BasicAWSCredentials(awsConfig.AccessKey, awsConfig.SecretKey);
+        }
+
         // Register HttpClient
         services.AddHttpClient();
 
         // Register AWS S3 (dosya yükleme için)
-        services.AddAWSService<IAmazonS3>(new Amazon.Extensions.NETCore.Setup.AWSOptions
-        {
-            Region = region
-        });
+        services.AddAWSService<IAmazonS3>(awsOptions);
 
         // Register AWS CloudWatch (metrics)
-        services.AddAWSService<Amazon.CloudWatch.IAmazonCloudWatch>(new Amazon.Extensions.NETCore.Setup.AWSOptions
-        {
-            Region = region
-        });
+        services.AddAWSService<Amazon.CloudWatch.IAmazonCloudWatch>(awsOptions);
 
         // Register S3 service
         services.AddScoped<IS3Service, S3Service>();

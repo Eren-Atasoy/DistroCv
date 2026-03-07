@@ -56,20 +56,31 @@ public class ProfileService : IProfileService
                 _ => "application/octet-stream"
             };
 
-            // Upload resume to S3
-            _logger.LogInformation("Uploading resume to S3 for user {UserId}", userId);
-            var s3Key = await _s3Service.UploadFileAsync(resumeStream, fileName, contentType);
-            var resumeUrl = $"s3://{s3Key}";
-
-            // Reset stream position for parsing
-            if (resumeStream.CanSeek)
+            // Read stream into byte array so we can create separate streams
+            // (S3 SDK disposes the input stream after upload)
+            byte[] fileBytes;
+            using (var tempStream = new MemoryStream())
             {
-                resumeStream.Position = 0;
+                await resumeStream.CopyToAsync(tempStream);
+                fileBytes = tempStream.ToArray();
             }
 
-            // Parse resume to extract structured data
+            // Upload resume to S3 (using its own stream)
+            _logger.LogInformation("Uploading resume to S3 for user {UserId}", userId);
+            string s3Key;
+            using (var s3Stream = new MemoryStream(fileBytes))
+            {
+                s3Key = await _s3Service.UploadFileAsync(s3Stream, fileName, contentType);
+            }
+            var resumeUrl = $"s3://{s3Key}";
+
+            // Parse resume to extract structured data (using a fresh stream)
             _logger.LogInformation("Parsing resume for user {UserId}", userId);
-            var parsedData = await ParseResumeAsync(resumeStream, fileName);
+            string parsedData;
+            using (var parseStream = new MemoryStream(fileBytes))
+            {
+                parsedData = await ParseResumeAsync(parseStream, fileName);
+            }
 
             // Analyze resume with Gemini to extract structured information
             _logger.LogInformation("Analyzing resume with Gemini for user {UserId}", userId);
@@ -189,7 +200,7 @@ public class ProfileService : IProfileService
             _logger.LogError(ex, "Error generating embedding with Gemini, falling back to placeholder");
             
             // Fallback to placeholder vector if Gemini fails
-            var dimensions = 768;
+            var dimensions = 1536;
             var values = new float[dimensions];
             
             var hash = text.GetHashCode();

@@ -15,7 +15,7 @@ public class GeminiConfiguration
     /// <summary>
     /// Gemini model to use (e.g., gemini-1.5-flash, gemini-1.5-pro)
     /// </summary>
-    public string Model { get; set; } = "gemini-1.5-flash";
+    public string Model { get; set; } = "gemini-2.5-flash";
 
     /// <summary>
     /// API endpoint base URL
