@@ -17,7 +17,7 @@ public static class AwsServiceExtensions
         var awsConfig = new AwsConfiguration();
         awsConfigSection.Bind(awsConfig);
 
-        var region = RegionEndpoint.GetBySystemName(awsConfig.Region ?? "eu-west-1");
+        var region = RegionEndpoint.GetBySystemName(awsConfig.Region ?? "eu-north-1");
 
         // Build AWS options with explicit credentials if provided
         var awsOptions = new Amazon.Extensions.NETCore.Setup.AWSOptions

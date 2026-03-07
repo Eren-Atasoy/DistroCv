@@ -23,6 +23,7 @@ import {
     Bar
 } from 'recharts'
 import { dashboardApi, applicationsApi, jobsApi, type JobMatch, type ApplicationDto, type DashboardStats, type DashboardTrends } from '../services/api'
+import { useAuth } from '../contexts/AuthContext'
 
 // Types
 interface Stat {
@@ -77,6 +78,7 @@ const getStatusLabel = (status: string) => {
 };
 
 export default function Dashboard() {
+    const { user } = useAuth();
     const [stats, setStats] = useState<DashboardStats | null>(null);
     const [trends, setTrends] = useState<DashboardTrends | null>(null);
     const [recentApplications, setRecentApplications] = useState<ApplicationDto[]>([]);
@@ -206,7 +208,7 @@ export default function Dashboard() {
             <div className="flex justify-between items-start">
                 <div>
                     <h1 className="text-3xl font-display font-bold text-white mb-2">
-                        Hoş Geldin, Eren 👋
+                        Hoş Geldin, {user?.fullName?.split(' ')[0] ?? 'Kullanıcı'} 👋
                     </h1>
                     <p className="text-surface-400">
                         İşte kariyer yolculuğunun özeti

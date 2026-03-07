@@ -8,10 +8,10 @@ import {
     LogOut,
     Menu,
     X,
-    Building2,
     GraduationCap,
     Linkedin,
-    SlidersHorizontal
+    SlidersHorizontal,
+    Shield
 } from 'lucide-react'
 import { useState } from 'react'
 import { useTranslation } from 'react-i18next'
@@ -28,7 +28,6 @@ const useNavItems = () => {
         { path: '/preferences', icon: SlidersHorizontal, label: isEn ? 'Preferences' : 'Tercihler' },
         { path: '/skills', icon: GraduationCap, label: t('nav.skills') },
         { path: '/linkedin-optimizer', icon: Linkedin, label: t('nav.linkedin') },
-        { path: '/admin/companies', icon: Building2, label: t('nav.companies') },
     ]
 }
 
@@ -38,7 +37,7 @@ export default function Layout() {
     const [sidebarOpen, setSidebarOpen] = useState(false)
     const { t } = useTranslation()
     const navItems = useNavItems()
-    const { logout } = useAuth()
+    const { logout, isAdmin } = useAuth()
 
     const handleLogout = async () => {
         await logout()
@@ -116,6 +115,15 @@ export default function Layout() {
 
                     {/* Bottom Section */}
                     <div className="p-4 border-t border-surface-700 space-y-2">
+                        {isAdmin && (
+                            <Link
+                                to="/admin"
+                                className="flex items-center gap-3 px-4 py-3 rounded-xl text-red-400 hover:text-red-300 hover:bg-red-500/10 transition-all duration-200"
+                            >
+                                <Shield size={20} />
+                                <span className="font-medium">Admin Panel</span>
+                            </Link>
+                        )}
                         <Link
                             to="/settings"
                             className="flex items-center gap-3 px-4 py-3 rounded-xl text-surface-400 hover:text-white hover:bg-surface-800 transition-all duration-200"

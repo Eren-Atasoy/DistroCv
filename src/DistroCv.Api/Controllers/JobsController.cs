@@ -62,7 +62,20 @@ public class JobsController : BaseApiController
                     m.MatchReasoning,
                     m.SkillGaps,
                     m.Status,
-                    m.CalculatedAt
+                    m.CalculatedAt,
+                    new JobPostingDto(
+                        m.JobPosting.Id,
+                        m.JobPosting.Title,
+                        m.JobPosting.Description ?? string.Empty,
+                        m.JobPosting.CompanyName,
+                        m.JobPosting.Location,
+                        m.JobPosting.Sector,
+                        m.JobPosting.SalaryRange,
+                        m.JobPosting.SourcePlatform,
+                        m.JobPosting.SourceUrl,
+                        m.JobPosting.ScrapedAt,
+                        m.JobPosting.IsActive
+                    )
                 ))
                 .ToList();
 

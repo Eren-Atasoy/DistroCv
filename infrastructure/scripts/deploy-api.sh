@@ -12,7 +12,7 @@ YELLOW='\033[1;33m'
 NC='\033[0m' # No Color
 
 # Configuration
-AWS_REGION="${AWS_REGION:-eu-west-1}"
+AWS_REGION="${AWS_REGION:-eu-north-1}"
 ENVIRONMENT="${ENVIRONMENT:-production}"
 ECR_REPOSITORY="distrocv-api"
 

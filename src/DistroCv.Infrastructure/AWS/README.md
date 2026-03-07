@@ -5,12 +5,14 @@ This directory contains AWS service integrations for DistroCV v2.0.
 ## Services Configured
 
 ### 1. AWS Cognito (Authentication)
+
 - User registration and sign-in
 - Password management (forgot/reset)
 - JWT token generation
 - OAuth 2.0 support
 
 ### 2. AWS S3 (File Storage)
+
 - Resume uploads (PDF, DOCX, TXT)
 - Tailored resume storage
 - Screenshot storage for error logging
@@ -18,6 +20,7 @@ This directory contains AWS service integrations for DistroCV v2.0.
 - AES-256 server-side encryption
 
 ### 3. AWS Lambda (Background Jobs)
+
 - Job scraping scheduled tasks
 - Match calculation event-driven processing
 - Data cleanup scheduled tasks
@@ -25,6 +28,7 @@ This directory contains AWS service integrations for DistroCV v2.0.
 ## Setup Instructions
 
 ### Prerequisites
+
 1. AWS Account with appropriate permissions
 2. AWS CLI installed and configured
 3. .NET 9.0 SDK
@@ -37,7 +41,7 @@ aws cognito-idp create-user-pool \
   --policies "PasswordPolicy={MinimumLength=8,RequireUppercase=true,RequireLowercase=true,RequireNumbers=true,RequireSymbols=true}" \
   --auto-verified-attributes email \
   --username-attributes email \
-  --region eu-west-1
+  --region eu-north-1
 ```
 
 ### Step 2: Create Cognito App Client
@@ -48,7 +52,7 @@ aws cognito-idp create-user-pool-client \
   --client-name distrocv-web \
   --generate-secret \
   --explicit-auth-flows ALLOW_USER_PASSWORD_AUTH ALLOW_REFRESH_TOKEN_AUTH \
-  --region eu-west-1
+  --region eu-north-1
 ```
 
 ### Step 3: Create S3 Bucket
@@ -56,8 +60,8 @@ aws cognito-idp create-user-pool-client \
 ```bash
 aws s3api create-bucket \
   --bucket distrocv-files \
-  --region eu-west-1 \
-  --create-bucket-configuration LocationConstraint=eu-west-1
+  --region eu-north-1 \
+  --create-bucket-configuration LocationConstraint=eu-north-1
 
 # Enable encryption
 aws s3api put-bucket-encryption \
@@ -80,6 +84,7 @@ aws s3api put-public-access-block \
 ### Step 4: Configure IAM Permissions
 
 Create an IAM user or role with the following policies:
+
 - `AmazonCognitoPowerUser`
 - `AmazonS3FullAccess` (or custom policy for specific bucket)
 - `AWSLambdaFullAccess` (for Lambda functions)
@@ -91,14 +96,14 @@ Update `appsettings.json` and `appsettings.Development.json` with your AWS crede
 ```json
 {
   "AWS": {
-    "Region": "eu-west-1",
+    "Region": "eu-north-1",
     "S3BucketName": "distrocv-files",
-    "CognitoUserPoolId": "eu-west-1_XXXXXXXXX",
+    "CognitoUserPoolId": "eu-north-1_XXXXXXXXX",
     "CognitoClientId": "your-client-id",
     "CognitoClientSecret": "your-client-secret"
   },
   "Jwt": {
-    "Issuer": "https://cognito-idp.eu-west-1.amazonaws.com/eu-west-1_XXXXXXXXX",
+    "Issuer": "https://cognito-idp.eu-north-1.amazonaws.com/eu-north-1_XXXXXXXXX",
     "Audience": "your-client-id"
   }
 }
@@ -109,19 +114,22 @@ Update `appsettings.json` and `appsettings.Development.json` with your AWS crede
 For local development, configure AWS credentials using one of these methods:
 
 **Option 1: AWS CLI**
+
 ```bash
 aws configure
 ```
 
 **Option 2: Environment Variables**
+
 ```bash
 export AWS_ACCESS_KEY_ID=your-access-key
 export AWS_SECRET_ACCESS_KEY=your-secret-key
-export AWS_REGION=eu-west-1
+export AWS_REGION=eu-north-1
 ```
 
 **Option 3: AWS Credentials File**
 Create `~/.aws/credentials`:
+
 ```
 [default]
 aws_access_key_id = your-access-key
@@ -147,11 +155,11 @@ public class ResumeController : ControllerBase
     {
         using var stream = file.OpenReadStream();
         var fileKey = await _s3Service.UploadFileAsync(
-            stream, 
-            file.FileName, 
+            stream,
+            file.FileName,
             file.ContentType
         );
-        
+
         return Ok(new { FileKey = fileKey });
     }
 }
@@ -173,11 +181,11 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> SignUp(SignUpRequest request)
     {
         var userId = await _cognitoService.SignUpAsync(
-            request.Email, 
-            request.Password, 
+            request.Email,
+            request.Password,
             request.FullName
         );
-        
+
         return Ok(new { UserId = userId });
     }
 
@@ -185,12 +193,12 @@ public class AuthController : ControllerBase
     public async Task<IActionResult> SignIn(SignInRequest request)
     {
         var result = await _cognitoService.SignInAsync(
-            request.Email, 
+            request.Email,
             request.Password
         );
-        
-        return Ok(new 
-        { 
+
+        return Ok(new
+        {
             AccessToken = result.AccessToken,
             RefreshToken = result.RefreshToken,
             ExpiresIn = result.ExpiresIn
@@ -222,15 +230,19 @@ To test AWS services locally without actual AWS resources:
 ### Common Issues
 
 **Issue: "Unable to get IAM security credentials"**
+
 - Solution: Ensure AWS credentials are properly configured
 
 **Issue: "Access Denied" errors**
+
 - Solution: Check IAM permissions for the user/role
 
 **Issue: "Bucket does not exist"**
+
 - Solution: Verify bucket name and region in configuration
 
 **Issue: "Invalid JWT token"**
+
 - Solution: Ensure Cognito User Pool ID and Client ID are correct
 
 ## Production Deployment

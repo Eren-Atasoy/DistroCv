@@ -55,23 +55,24 @@ This guide provides comprehensive instructions for deploying DistroCV v2.0 to pr
 
 ### Components
 
-| Component | Service | Purpose |
-|-----------|---------|---------|
-| API Server | ECS Fargate | .NET 9 API hosting |
-| Database | RDS PostgreSQL 16 | Data storage with pgvector |
-| Cache | ElastiCache Redis | Session & match caching |
-| Authentication | AWS Cognito | User authentication |
-| Storage | S3 | Resume files, tailored resumes |
-| CDN | CloudFront | SPA delivery, SSL termination |
-| Load Balancer | ALB | Traffic distribution |
-| Background Jobs | Lambda + EventBridge | Scheduled tasks |
-| Monitoring | CloudWatch | Logs and metrics |
+| Component       | Service              | Purpose                        |
+| --------------- | -------------------- | ------------------------------ |
+| API Server      | ECS Fargate          | .NET 9 API hosting             |
+| Database        | RDS PostgreSQL 16    | Data storage with pgvector     |
+| Cache           | ElastiCache Redis    | Session & match caching        |
+| Authentication  | AWS Cognito          | User authentication            |
+| Storage         | S3                   | Resume files, tailored resumes |
+| CDN             | CloudFront           | SPA delivery, SSL termination  |
+| Load Balancer   | ALB                  | Traffic distribution           |
+| Background Jobs | Lambda + EventBridge | Scheduled tasks                |
+| Monitoring      | CloudWatch           | Logs and metrics               |
 
 ---
 
 ## Prerequisites
 
 ### Required Tools
+
 ```bash
 # AWS CLI v2
 curl "https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip" -o "awscliv2.zip"
@@ -98,12 +99,13 @@ sudo mv terraform /usr/local/bin/
 ```
 
 ### AWS Account Setup
+
 ```bash
 # Configure AWS credentials
 aws configure
 # AWS Access Key ID: YOUR_ACCESS_KEY
 # AWS Secret Access Key: YOUR_SECRET_KEY
-# Default region: eu-west-1
+# Default region: eu-north-1
 # Default output format: json
 
 # Verify configuration
@@ -124,12 +126,12 @@ aws ec2 create-vpc \
 
 # Create subnets (2 public, 2 private for high availability)
 # Public subnets for ALB
-aws ec2 create-subnet --vpc-id vpc-xxx --cidr-block 10.0.1.0/24 --availability-zone eu-west-1a
-aws ec2 create-subnet --vpc-id vpc-xxx --cidr-block 10.0.2.0/24 --availability-zone eu-west-1b
+aws ec2 create-subnet --vpc-id vpc-xxx --cidr-block 10.0.1.0/24 --availability-zone eu-north-1a
+aws ec2 create-subnet --vpc-id vpc-xxx --cidr-block 10.0.2.0/24 --availability-zone eu-north-1b
 
 # Private subnets for ECS and RDS
-aws ec2 create-subnet --vpc-id vpc-xxx --cidr-block 10.0.3.0/24 --availability-zone eu-west-1a
-aws ec2 create-subnet --vpc-id vpc-xxx --cidr-block 10.0.4.0/24 --availability-zone eu-west-1b
+aws ec2 create-subnet --vpc-id vpc-xxx --cidr-block 10.0.3.0/24 --availability-zone eu-north-1a
+aws ec2 create-subnet --vpc-id vpc-xxx --cidr-block 10.0.4.0/24 --availability-zone eu-north-1b
 ```
 
 ### 2. Security Groups
@@ -179,7 +181,7 @@ aws cognito-idp create-user-pool \
 
 # Create App Client
 aws cognito-idp create-user-pool-client \
-  --user-pool-id eu-west-1_XXXXX \
+  --user-pool-id eu-north-1_XXXXX \
   --client-name distrocv-web \
   --generate-secret \
   --explicit-auth-flows ALLOW_USER_PASSWORD_AUTH ALLOW_REFRESH_TOKEN_AUTH \
@@ -192,8 +194,8 @@ aws cognito-idp create-user-pool-client \
 # Resumes bucket
 aws s3api create-bucket \
   --bucket distrocv-resumes-prod \
-  --region eu-west-1 \
-  --create-bucket-configuration LocationConstraint=eu-west-1
+  --region eu-north-1 \
+  --create-bucket-configuration LocationConstraint=eu-north-1
 
 # Enable versioning
 aws s3api put-bucket-versioning \
@@ -208,8 +210,8 @@ aws s3api put-public-access-block \
 # Frontend bucket (for SPA)
 aws s3api create-bucket \
   --bucket distrocv-frontend-prod \
-  --region eu-west-1 \
-  --create-bucket-configuration LocationConstraint=eu-west-1
+  --region eu-north-1 \
+  --create-bucket-configuration LocationConstraint=eu-north-1
 
 # Configure for static website hosting
 aws s3 website s3://distrocv-frontend-prod \
@@ -275,7 +277,7 @@ SELECT * FROM pg_extension WHERE extname = 'vector';
 cd src/DistroCv.Infrastructure
 
 # Set connection string
-export ConnectionStrings__DefaultConnection="Host=distrocv-db.xxx.eu-west-1.rds.amazonaws.com;Database=distrocv;Username=distrocv_admin;Password=YOUR_PASSWORD"
+export ConnectionStrings__DefaultConnection="Host=distrocv-db.xxx.eu-north-1.rds.amazonaws.com;Database=distrocv;Username=distrocv_admin;Password=YOUR_PASSWORD"
 
 # Run migrations
 dotnet ef database update --project ../DistroCv.Api
@@ -288,13 +290,13 @@ dotnet ef database update --project ../DistroCv.Api
 -- These are defined in 20260122_AddPerformanceIndexes.cs
 
 -- pgvector HNSW indexes for similarity search
-CREATE INDEX IF NOT EXISTS idx_digital_twins_embedding_hnsw 
-ON "DigitalTwins" 
+CREATE INDEX IF NOT EXISTS idx_digital_twins_embedding_hnsw
+ON "DigitalTwins"
 USING hnsw ("EmbeddingVector" vector_cosine_ops)
 WITH (m = 16, ef_construction = 64);
 
-CREATE INDEX IF NOT EXISTS idx_job_postings_embedding_hnsw 
-ON "JobPostings" 
+CREATE INDEX IF NOT EXISTS idx_job_postings_embedding_hnsw
+ON "JobPostings"
 USING hnsw ("EmbeddingVector" vector_cosine_ops)
 WITH (m = 16, ef_construction = 64);
 ```
@@ -315,8 +317,8 @@ ConnectionStrings__DefaultConnection=Host=distrocv-db.xxx.rds.amazonaws.com;Data
 ConnectionStrings__Redis=distrocv-redis.xxx.cache.amazonaws.com:6379
 
 # AWS Configuration
-AWS__Region=eu-west-1
-AWS__CognitoUserPoolId=eu-west-1_XXXXX
+AWS__Region=eu-north-1
+AWS__CognitoUserPoolId=eu-north-1_XXXXX
 AWS__CognitoClientId=YOUR_CLIENT_ID
 AWS__CognitoClientSecret=YOUR_CLIENT_SECRET
 AWS__S3BucketName=distrocv-resumes-prod
@@ -351,9 +353,9 @@ Create `.env.production`:
 
 ```bash
 VITE_API_URL=https://api.distrocv.com
-VITE_COGNITO_USER_POOL_ID=eu-west-1_XXXXX
+VITE_COGNITO_USER_POOL_ID=eu-north-1_XXXXX
 VITE_COGNITO_CLIENT_ID=YOUR_CLIENT_ID
-VITE_COGNITO_REGION=eu-west-1
+VITE_COGNITO_REGION=eu-north-1
 VITE_GA_TRACKING_ID=G-XXXXXXXXXX
 ```
 
@@ -416,11 +418,11 @@ docker build -t distrocv-api:latest .
 aws ecr create-repository --repository-name distrocv-api
 
 # Login to ECR
-aws ecr get-login-password --region eu-west-1 | docker login --username AWS --password-stdin YOUR_ACCOUNT_ID.dkr.ecr.eu-west-1.amazonaws.com
+aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin YOUR_ACCOUNT_ID.dkr.ecr.eu-north-1.amazonaws.com
 
 # Tag and push
-docker tag distrocv-api:latest YOUR_ACCOUNT_ID.dkr.ecr.eu-west-1.amazonaws.com/distrocv-api:latest
-docker push YOUR_ACCOUNT_ID.dkr.ecr.eu-west-1.amazonaws.com/distrocv-api:latest
+docker tag distrocv-api:latest YOUR_ACCOUNT_ID.dkr.ecr.eu-north-1.amazonaws.com/distrocv-api:latest
+docker push YOUR_ACCOUNT_ID.dkr.ecr.eu-north-1.amazonaws.com/distrocv-api:latest
 ```
 
 ### 2. Create ECS Task Definition
@@ -437,7 +439,7 @@ docker push YOUR_ACCOUNT_ID.dkr.ecr.eu-west-1.amazonaws.com/distrocv-api:latest
   "containerDefinitions": [
     {
       "name": "distrocv-api",
-      "image": "YOUR_ACCOUNT_ID.dkr.ecr.eu-west-1.amazonaws.com/distrocv-api:latest",
+      "image": "YOUR_ACCOUNT_ID.dkr.ecr.eu-north-1.amazonaws.com/distrocv-api:latest",
       "essential": true,
       "portMappings": [
         {
@@ -446,29 +448,32 @@ docker push YOUR_ACCOUNT_ID.dkr.ecr.eu-west-1.amazonaws.com/distrocv-api:latest
         }
       ],
       "environment": [
-        {"name": "ASPNETCORE_ENVIRONMENT", "value": "Production"},
-        {"name": "ASPNETCORE_URLS", "value": "http://+:5000"}
+        { "name": "ASPNETCORE_ENVIRONMENT", "value": "Production" },
+        { "name": "ASPNETCORE_URLS", "value": "http://+:5000" }
       ],
       "secrets": [
         {
           "name": "ConnectionStrings__DefaultConnection",
-          "valueFrom": "arn:aws:ssm:eu-west-1:YOUR_ACCOUNT:parameter/distrocv/prod/db-connection-string"
+          "valueFrom": "arn:aws:ssm:eu-north-1:YOUR_ACCOUNT:parameter/distrocv/prod/db-connection-string"
         },
         {
           "name": "Gemini__ApiKey",
-          "valueFrom": "arn:aws:ssm:eu-west-1:YOUR_ACCOUNT:parameter/distrocv/prod/gemini-api-key"
+          "valueFrom": "arn:aws:ssm:eu-north-1:YOUR_ACCOUNT:parameter/distrocv/prod/gemini-api-key"
         }
       ],
       "logConfiguration": {
         "logDriver": "awslogs",
         "options": {
           "awslogs-group": "/ecs/distrocv-api",
-          "awslogs-region": "eu-west-1",
+          "awslogs-region": "eu-north-1",
           "awslogs-stream-prefix": "ecs"
         }
       },
       "healthCheck": {
-        "command": ["CMD-SHELL", "curl -f http://localhost:5000/health || exit 1"],
+        "command": [
+          "CMD-SHELL",
+          "curl -f http://localhost:5000/health || exit 1"
+        ],
         "interval": 30,
         "timeout": 5,
         "retries": 3,
@@ -545,6 +550,7 @@ aws cloudfront create-distribution \
 ```
 
 CloudFront config (`cloudfront-config.json`):
+
 ```json
 {
   "CallerReference": "distrocv-prod-2024",
@@ -552,7 +558,7 @@ CloudFront config (`cloudfront-config.json`):
     "Items": [
       {
         "Id": "S3-distrocv-frontend",
-        "DomainName": "distrocv-frontend-prod.s3.eu-west-1.amazonaws.com",
+        "DomainName": "distrocv-frontend-prod.s3.eu-north-1.amazonaws.com",
         "S3OriginConfig": {
           "OriginAccessIdentity": "origin-access-identity/cloudfront/XXXXX"
         }
@@ -649,7 +655,7 @@ aws elbv2 create-listener \
   --load-balancer-arn arn:aws:elasticloadbalancing:xxx \
   --protocol HTTPS \
   --port 443 \
-  --certificates CertificateArn=arn:aws:acm:eu-west-1:xxx:certificate/xxx \
+  --certificates CertificateArn=arn:aws:acm:eu-north-1:xxx:certificate/xxx \
   --default-actions Type=forward,TargetGroupArn=arn:aws:elasticloadbalancing:xxx:targetgroup/xxx
 ```
 
@@ -681,7 +687,7 @@ aws cloudwatch put-metric-alarm \
   --threshold 10 \
   --comparison-operator GreaterThanThreshold \
   --evaluation-periods 2 \
-  --alarm-actions arn:aws:sns:eu-west-1:xxx:distrocv-alerts
+  --alarm-actions arn:aws:sns:eu-north-1:xxx:distrocv-alerts
 
 # High response time alarm
 aws cloudwatch put-metric-alarm \
@@ -693,7 +699,7 @@ aws cloudwatch put-metric-alarm \
   --threshold 2 \
   --comparison-operator GreaterThanThreshold \
   --evaluation-periods 2 \
-  --alarm-actions arn:aws:sns:eu-west-1:xxx:distrocv-alerts
+  --alarm-actions arn:aws:sns:eu-north-1:xxx:distrocv-alerts
 ```
 
 ### 3. Create CloudWatch Dashboard
@@ -719,7 +725,7 @@ on:
     branches: [main]
 
 env:
-  AWS_REGION: eu-west-1
+  AWS_REGION: eu-north-1
   ECR_REPOSITORY: distrocv-api
   ECS_CLUSTER: distrocv-cluster
   ECS_SERVICE: distrocv-api
@@ -732,7 +738,7 @@ jobs:
       - name: Setup .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: '9.0.x'
+          dotnet-version: "9.0.x"
       - name: Run tests
         run: dotnet test --verbosity normal
 
@@ -741,7 +747,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
@@ -772,12 +778,12 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
-          cache: 'npm'
+          node-version: "20"
+          cache: "npm"
           cache-dependency-path: client/package-lock.json
 
       - name: Install and build
@@ -883,6 +889,7 @@ S3 versioning is enabled on all buckets for recovery.
 ### Common Issues
 
 1. **ECS Task Failing to Start**
+
    ```bash
    # Check task logs
    aws logs get-log-events --log-group-name /ecs/distrocv-api --log-stream-name ecs/distrocv-api/xxx
@@ -911,4 +918,3 @@ See [Troubleshooting Guide](TROUBLESHOOTING_GUIDE.md) for detailed solutions.
 - **AWS Support**: https://aws.amazon.com/support
 - **Team Contact**: devops@distrocv.com
 - **On-call**: Check PagerDuty schedule
-

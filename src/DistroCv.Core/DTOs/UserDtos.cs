@@ -6,6 +6,7 @@ public record UserDto(
     string FullName,
     string PreferredLanguage,
     string AuthProvider,
+    string Role,
     DateTime CreatedAt,
     DateTime? LastLoginAt,
     bool IsActive,

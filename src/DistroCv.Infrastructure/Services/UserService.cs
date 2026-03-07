@@ -98,6 +98,7 @@ public class UserService : IUserService
         user.FullName,
         user.PreferredLanguage,
         user.AuthProvider,
+        user.Role,
         user.CreatedAt,
         user.LastLoginAt,
         user.IsActive,

@@ -1,6 +1,7 @@
 # =============================================================
 # Ortam dosyaları — asla commit edilmemeli!
 # =============================================================
+.env
 .env.local
 .env.prod
 client/.env.local

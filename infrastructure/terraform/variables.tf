@@ -3,7 +3,7 @@
 variable "aws_region" {
   description = "AWS region for resources"
   type        = string
-  default     = "eu-west-1"
+  default     = "eu-north-1"
 }
 
 variable "environment" {
@@ -21,7 +21,7 @@ variable "vpc_cidr" {
 variable "availability_zones" {
   description = "Availability zones for multi-AZ deployment"
   type        = list(string)
-  default     = ["eu-west-1a", "eu-west-1b", "eu-west-1c"]
+  default     = ["eu-north-1a", "eu-north-1b", "eu-north-1c"]
 }
 
 variable "api_image" {

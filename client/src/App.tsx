@@ -12,9 +12,13 @@ import PreferencesPage from './pages/PreferencesPage'
 import BugReportPage from './pages/BugReportPage'
 import FeatureRequestPage from './pages/FeatureRequestPage'
 import Layout from './components/layout/Layout'
+import AdminLayout from './components/layout/AdminLayout'
 import { ProtectedRoute } from './components/auth/ProtectedRoute'
+import { AdminRoute } from './components/auth/AdminRoute'
 import LoginPage from './pages/LoginPage'
 import RegisterPage from './pages/RegisterPage'
+import AdminDashboard from './pages/admin/AdminDashboard'
+import AdminSeedPage from './pages/admin/AdminSeedPage'
 
 function App() {
   return (
@@ -26,7 +30,7 @@ function App() {
       <Route path="/login" element={<LoginPage />} />
       <Route path="/register" element={<RegisterPage />} />
 
-      {/* Protected Routes */}
+      {/* Protected User Routes */}
       <Route element={<ProtectedRoute />}>
         <Route element={<Layout />}>
           <Route path="/dashboard" element={<Dashboard />} />
@@ -34,12 +38,20 @@ function App() {
           <Route path="/applications" element={<ApplicationsPage />} />
           <Route path="/applications/:id/resume" element={<ResumeEditor />} />
           <Route path="/applications/:id/interview" element={<InterviewPrep />} />
-          <Route path="/admin/companies" element={<AdminCompanies />} />
           <Route path="/skills" element={<SkillGapPage />} />
           <Route path="/linkedin-optimizer" element={<LinkedInOptimizerPage />} />
           <Route path="/preferences" element={<PreferencesPage />} />
           <Route path="/bugs" element={<BugReportPage />} />
           <Route path="/features" element={<FeatureRequestPage />} />
+        </Route>
+      </Route>
+
+      {/* Admin Routes */}
+      <Route element={<AdminRoute />}>
+        <Route element={<AdminLayout />}>
+          <Route path="/admin" element={<AdminDashboard />} />
+          <Route path="/admin/companies" element={<AdminCompanies />} />
+          <Route path="/admin/seed" element={<AdminSeedPage />} />
         </Route>
       </Route>
     </Routes>

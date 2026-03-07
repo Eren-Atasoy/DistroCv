@@ -49,6 +49,7 @@ Task<bool> RevokeTokenAsync(string refreshToken);
 **Implementation Details:**
 
 #### RefreshTokenAsync
+
 - Uses AWS Cognito's `REFRESH_TOKEN_AUTH` flow
 - Validates refresh token with Cognito
 - Returns new access token and ID token
@@ -56,18 +57,21 @@ Task<bool> RevokeTokenAsync(string refreshToken);
 - Logs all operations for audit purposes
 
 **Key Features:**
+
 - Automatic token validation
 - Comprehensive error handling
 - Detailed logging
 - Returns new tokens without requiring re-authentication
 
 #### RevokeTokenAsync
+
 - Uses AWS Cognito's `RevokeToken` API
 - Invalidates refresh token immediately
 - Forces user to sign in again
 - Logs all operations for audit purposes
 
 **Key Features:**
+
 - Immediate token invalidation
 - Logout from all devices
 - Comprehensive error handling
@@ -78,6 +82,7 @@ Task<bool> RevokeTokenAsync(string refreshToken);
 Added two new endpoints for token management:
 
 #### POST /api/auth/refresh
+
 ```csharp
 /// <summary>
 /// Refresh access token using refresh token
@@ -90,12 +95,14 @@ public async Task<IActionResult> RefreshToken([FromBody] RefreshTokenRequestDto 
 ```
 
 **Features:**
+
 - Validates refresh token presence
 - Returns new access and ID tokens
 - Handles invalid/expired tokens
 - Returns appropriate HTTP status codes
 
 #### POST /api/auth/revoke
+
 ```csharp
 /// <summary>
 /// Revoke refresh token (logout from all devices)
@@ -107,6 +114,7 @@ public async Task<IActionResult> RevokeToken([FromBody] RefreshTokenRequestDto r
 ```
 
 **Features:**
+
 - Validates refresh token presence
 - Revokes token in Cognito
 - Returns success confirmation
@@ -153,7 +161,9 @@ Added 6 comprehensive unit tests:
 Created comprehensive documentation:
 
 #### JWT_TOKEN_MANAGEMENT.md
+
 Complete implementation guide including:
+
 - Architecture overview
 - Component descriptions
 - API endpoint documentation
@@ -221,6 +231,7 @@ Complete implementation guide including:
 Refreshes an expired access token.
 
 **Request**:
+
 ```json
 {
   "refreshToken": "eyJjdHkiOiJKV1QiLCJlbmMiOiJBMjU2R0NNIiwiYWxnIjoiUlNBLU9BRVAifQ..."
@@ -228,6 +239,7 @@ Refreshes an expired access token.
 ```
 
 **Response (200 OK)**:
+
 ```json
 {
   "accessToken": "eyJraWQiOiI...",
@@ -238,6 +250,7 @@ Refreshes an expired access token.
 ```
 
 **Error Responses**:
+
 - `400 Bad Request`: Refresh token is missing or empty
 - `401 Unauthorized`: Refresh token is invalid or expired
 - `500 Internal Server Error`: Server error
@@ -247,6 +260,7 @@ Refreshes an expired access token.
 Revokes a refresh token (logout from all devices).
 
 **Request**:
+
 ```json
 {
   "refreshToken": "eyJjdHkiOiJKV1QiLCJlbmMiOiJBMjU2R0NNIiwiYWxnIjoiUlNBLU9BRVAifQ..."
@@ -254,6 +268,7 @@ Revokes a refresh token (logout from all devices).
 ```
 
 **Response (200 OK)**:
+
 ```json
 {
   "success": true,
@@ -262,6 +277,7 @@ Revokes a refresh token (logout from all devices).
 ```
 
 **Error Responses**:
+
 - `400 Bad Request`: Refresh token is missing, empty, or invalid
 - `500 Internal Server Error`: Server error
 
@@ -272,6 +288,7 @@ Revokes a refresh token (logout from all devices).
 ✅ **JWT Authentication Configuration** (Program.cs)
 
 The implementation builds upon the existing JWT configuration:
+
 - Token validation with AWS Cognito
 - Automatic token refresh capability
 - Token revocation support
@@ -282,6 +299,7 @@ The implementation builds upon the existing JWT configuration:
 ✅ **14.3**: "THE System SHALL AWS Cognito ile kullanıcı kimlik doğrulaması yapmalıdır"
 
 The implementation provides:
+
 - Seamless integration with AWS Cognito
 - Token refresh using Cognito's REFRESH_TOKEN_AUTH flow
 - Token revocation using Cognito's RevokeToken API
@@ -292,6 +310,7 @@ The implementation provides:
 ✅ **9.2**: "THE System SHALL Candidate'in şifrelerini ve oturum bilgilerini asla sunucuda saklamamalıdır"
 
 The implementation ensures:
+
 - Tokens are never stored on the server
 - Tokens are validated with Cognito on every request
 - Tokens can be revoked immediately
@@ -321,6 +340,7 @@ Status: ✅ ALL TESTS PASSED
 ```
 
 **Test Breakdown**:
+
 - 7 existing authentication tests (from Task 3.1)
 - 5 new token management tests (Task 3.3)
 
@@ -339,30 +359,30 @@ axios.interceptors.response.use(
     if (error.response?.status === 401 && !originalRequest._retry) {
       originalRequest._retry = true;
 
-      const refreshToken = localStorage.getItem('refreshToken');
+      const refreshToken = localStorage.getItem("refreshToken");
 
       try {
-        const response = await axios.post('/api/auth/refresh', {
-          refreshToken
+        const response = await axios.post("/api/auth/refresh", {
+          refreshToken,
         });
 
         const { accessToken, idToken } = response.data;
-        
-        localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('idToken', idToken);
 
-        originalRequest.headers['Authorization'] = 'Bearer ' + accessToken;
-        
+        localStorage.setItem("accessToken", accessToken);
+        localStorage.setItem("idToken", idToken);
+
+        originalRequest.headers["Authorization"] = "Bearer " + accessToken;
+
         return axios(originalRequest);
       } catch (refreshError) {
         localStorage.clear();
-        window.location.href = '/login';
+        window.location.href = "/login";
         return Promise.reject(refreshError);
       }
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 ```
 
@@ -371,20 +391,20 @@ axios.interceptors.response.use(
 ```typescript
 export class AuthService {
   static setTokens(accessToken: string, refreshToken: string, idToken: string) {
-    localStorage.setItem('accessToken', accessToken);
-    localStorage.setItem('refreshToken', refreshToken);
-    localStorage.setItem('idToken', idToken);
+    localStorage.setItem("accessToken", accessToken);
+    localStorage.setItem("refreshToken", refreshToken);
+    localStorage.setItem("idToken", idToken);
   }
 
   static async logout() {
-    const refreshToken = localStorage.getItem('refreshToken');
-    
+    const refreshToken = localStorage.getItem("refreshToken");
+
     if (refreshToken) {
-      await axios.post('/api/auth/revoke', { refreshToken });
+      await axios.post("/api/auth/revoke", { refreshToken });
     }
 
     localStorage.clear();
-    window.location.href = '/login';
+    window.location.href = "/login";
   }
 }
 ```
@@ -396,8 +416,8 @@ No additional configuration required. The implementation uses existing AWS Cogni
 ```json
 {
   "AWS": {
-    "Region": "eu-west-1",
-    "CognitoUserPoolId": "eu-west-1_XXXXXXXXX",
+    "Region": "eu-north-1",
+    "CognitoUserPoolId": "eu-north-1_XXXXXXXXX",
     "CognitoClientId": "your-client-id"
   }
 }
@@ -406,21 +426,25 @@ No additional configuration required. The implementation uses existing AWS Cogni
 ## Security Considerations
 
 ### 1. Token Storage
+
 - Tokens are stored in localStorage/sessionStorage on the client
 - Tokens are never stored on the server
 - Tokens are cleared on logout
 
 ### 2. Token Expiration
+
 - Access tokens expire in 1 hour (configurable in Cognito)
 - Refresh tokens expire in 30 days (configurable in Cognito)
 - Automatic refresh before expiration recommended
 
 ### 3. Token Revocation
+
 - Tokens can be revoked immediately
 - Revocation invalidates all sessions
 - User must sign in again after revocation
 
 ### 4. HTTPS Only
+
 - Always use HTTPS in production
 - Never send tokens over HTTP
 - Implement HSTS to enforce HTTPS
@@ -430,6 +454,7 @@ No additional configuration required. The implementation uses existing AWS Cogni
 ### Logged Events
 
 All token operations are logged:
+
 - Token refresh attempts (success/failure)
 - Token revocation attempts (success/failure)
 - Error details for debugging
@@ -452,12 +477,14 @@ All token operations are logged:
 ## Next Steps
 
 ### Immediate Next Steps (Task 3.5)
+
 - [ ] Implement user session management
 - [ ] Add session tracking
 - [ ] Implement concurrent session limits
 - [ ] Add device management
 
 ### Future Enhancements
+
 - [ ] Implement refresh token rotation
 - [ ] Add device tracking and management
 - [ ] Implement suspicious activity detection
@@ -505,6 +532,7 @@ All token operations are logged:
 ## Conclusion
 
 Task 3.3 "Setup JWT token management" has been successfully completed with:
+
 - ✅ Full token refresh implementation
 - ✅ Token revocation capability
 - ✅ Comprehensive error handling

@@ -40,6 +40,7 @@ This guide covers the complete deployment process for the DistroCV platform.
 ### Using Docker Compose
 
 1. **Start all services:**
+
    ```bash
    docker-compose up -d
    ```
@@ -52,6 +53,7 @@ This guide covers the complete deployment process for the DistroCV platform.
    - Redis: localhost:6379
 
 3. **View logs:**
+
    ```bash
    docker-compose logs -f api
    ```
@@ -64,6 +66,7 @@ This guide covers the complete deployment process for the DistroCV platform.
 ### Manual Setup
 
 1. **Start PostgreSQL:**
+
    ```bash
    docker run -d \
      --name postgres \
@@ -75,12 +78,14 @@ This guide covers the complete deployment process for the DistroCV platform.
    ```
 
 2. **Run migrations:**
+
    ```bash
    cd src/DistroCv.Api
    dotnet ef database update
    ```
 
 3. **Start backend:**
+
    ```bash
    cd src/DistroCv.Api
    dotnet run
@@ -107,13 +112,13 @@ aws ec2 create-vpc \
 aws ec2 create-subnet \
   --vpc-id vpc-xxxxx \
   --cidr-block 10.0.1.0/24 \
-  --availability-zone eu-west-1a \
+  --availability-zone eu-north-1a \
   --tag-specifications 'ResourceType=subnet,Tags=[{Key=Name,Value=distrocv-public-1a}]'
 
 aws ec2 create-subnet \
   --vpc-id vpc-xxxxx \
   --cidr-block 10.0.2.0/24 \
-  --availability-zone eu-west-1b \
+  --availability-zone eu-north-1b \
   --tag-specifications 'ResourceType=subnet,Tags=[{Key=Name,Value=distrocv-public-1b}]'
 
 # Create Internet Gateway
@@ -154,7 +159,7 @@ aws rds create-db-instance \
   --enable-cloudwatch-logs-exports '["postgresql"]'
 
 # Enable pgvector extension
-psql -h distrocv-prod-db.xxxxx.eu-west-1.rds.amazonaws.com -U postgres -d distrocv -c "CREATE EXTENSION IF NOT EXISTS vector;"
+psql -h distrocv-prod-db.xxxxx.eu-north-1.rds.amazonaws.com -U postgres -d distrocv -c "CREATE EXTENSION IF NOT EXISTS vector;"
 ```
 
 ### 3. ECR Repository
@@ -165,10 +170,10 @@ aws ecr create-repository \
   --repository-name distrocv-api \
   --image-scanning-configuration scanOnPush=true \
   --encryption-configuration encryptionType=AES256 \
-  --region eu-west-1
+  --region eu-north-1
 
 # Get login token
-aws ecr get-login-password --region eu-west-1 | docker login --username AWS --password-stdin YOUR_ACCOUNT_ID.dkr.ecr.eu-west-1.amazonaws.com
+aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin YOUR_ACCOUNT_ID.dkr.ecr.eu-north-1.amazonaws.com
 ```
 
 ### 4. ECS Cluster and Service
@@ -179,7 +184,7 @@ aws ecs create-cluster \
   --cluster-name distrocv-prod-cluster \
   --capacity-providers FARGATE FARGATE_SPOT \
   --default-capacity-provider-strategy capacityProvider=FARGATE,weight=1 \
-  --region eu-west-1
+  --region eu-north-1
 
 # Create task definition
 aws ecs register-task-definition \
@@ -232,8 +237,8 @@ aws elbv2 create-listener \
 # Create S3 bucket for frontend
 aws s3api create-bucket \
   --bucket distrocv-prod-frontend \
-  --region eu-west-1 \
-  --create-bucket-configuration LocationConstraint=eu-west-1
+  --region eu-north-1 \
+  --create-bucket-configuration LocationConstraint=eu-north-1
 
 # Enable versioning
 aws s3api put-bucket-versioning \
@@ -260,11 +265,11 @@ aws cognito-idp create-user-pool \
   --auto-verified-attributes email \
   --username-attributes email \
   --mfa-configuration OPTIONAL \
-  --region eu-west-1
+  --region eu-north-1
 
 # Create app client
 aws cognito-idp create-user-pool-client \
-  --user-pool-id eu-west-1_XXXXXXXXX \
+  --user-pool-id eu-north-1_XXXXXXXXX \
   --client-name distrocv-web \
   --generate-secret \
   --explicit-auth-flows ALLOW_USER_PASSWORD_AUTH ALLOW_REFRESH_TOKEN_AUTH ALLOW_USER_SRP_AUTH \
@@ -280,6 +285,7 @@ aws cognito-idp create-user-pool-client \
 Add the following secrets to your GitHub repository:
 
 **Development:**
+
 - `AWS_ACCESS_KEY_ID_DEV`
 - `AWS_SECRET_ACCESS_KEY_DEV`
 - `ECR_REGISTRY_DEV`
@@ -288,6 +294,7 @@ Add the following secrets to your GitHub repository:
 - `DB_CONNECTION_STRING_DEV`
 
 **Production:**
+
 - `AWS_ACCESS_KEY_ID_PROD`
 - `AWS_SECRET_ACCESS_KEY_PROD`
 - `ECR_REGISTRY_PROD`
@@ -306,12 +313,14 @@ Add the following secrets to your GitHub repository:
 ### 3. Branch Protection Rules
 
 **Main Branch:**
+
 - Require pull request reviews (1 approval)
 - Require status checks to pass
 - Require branches to be up to date
 - Include administrators
 
 **Develop Branch:**
+
 - Require pull request reviews (1 approval)
 - Require status checks to pass
 
@@ -320,17 +329,20 @@ Add the following secrets to your GitHub repository:
 ### Development Deployment
 
 1. **Create feature branch:**
+
    ```bash
    git checkout -b feature/my-feature
    ```
 
 2. **Make changes and commit:**
+
    ```bash
    git add .
    git commit -m "feat: add new feature"
    ```
 
 3. **Push to GitHub:**
+
    ```bash
    git push origin feature/my-feature
    ```
@@ -360,10 +372,10 @@ If needed, you can deploy manually:
 docker build -t distrocv-api:latest -f src/DistroCv.Api/Dockerfile .
 
 # Tag for ECR
-docker tag distrocv-api:latest YOUR_ACCOUNT_ID.dkr.ecr.eu-west-1.amazonaws.com/distrocv-api:latest
+docker tag distrocv-api:latest YOUR_ACCOUNT_ID.dkr.ecr.eu-north-1.amazonaws.com/distrocv-api:latest
 
 # Push to ECR
-docker push YOUR_ACCOUNT_ID.dkr.ecr.eu-west-1.amazonaws.com/distrocv-api:latest
+docker push YOUR_ACCOUNT_ID.dkr.ecr.eu-north-1.amazonaws.com/distrocv-api:latest
 
 # Update ECS service
 aws ecs update-service \
@@ -377,6 +389,7 @@ aws ecs update-service \
 ### CloudWatch Dashboards
 
 Create custom dashboard:
+
 ```bash
 aws cloudwatch put-dashboard \
   --dashboard-name DistroCV-Production \
@@ -426,10 +439,12 @@ aws logs put-retention-policy \
 ### Backup Strategy
 
 **Database:**
+
 - Automated daily backups (7-day retention)
 - Manual snapshots before major deployments
 
 **S3:**
+
 - Versioning enabled
 - Lifecycle policies for old versions
 
@@ -438,6 +453,7 @@ aws logs put-retention-policy \
 ### Common Issues
 
 **Issue: ECS task fails to start**
+
 ```bash
 # Check task logs
 aws ecs describe-tasks \
@@ -449,6 +465,7 @@ aws logs tail /ecs/distrocv-api --follow
 ```
 
 **Issue: Database connection fails**
+
 ```bash
 # Test connection
 psql -h RDS_ENDPOINT -U postgres -d distrocv
@@ -458,6 +475,7 @@ aws ec2 describe-security-groups --group-ids sg-xxxxx
 ```
 
 **Issue: CloudFront not serving updated content**
+
 ```bash
 # Create invalidation
 aws cloudfront create-invalidation \

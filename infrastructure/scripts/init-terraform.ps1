@@ -2,7 +2,7 @@
 # This script sets up the Terraform backend (S3 + DynamoDB)
 
 param(
-    [string]$Region = "eu-west-1",
+    [string]$Region = "eu-north-1",
     [string]$Environment = "production"
 )
 

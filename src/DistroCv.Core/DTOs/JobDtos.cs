@@ -25,7 +25,8 @@ public record JobMatchDto(
     string? MatchReasoning,
     string? SkillGaps,
     string Status,
-    DateTime CalculatedAt
+    DateTime CalculatedAt,
+    JobPostingDto? JobPosting = null
 );
 
 public record JobFeedbackDto(

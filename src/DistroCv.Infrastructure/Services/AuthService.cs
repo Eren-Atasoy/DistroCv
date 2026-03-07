@@ -332,6 +332,7 @@ public class AuthService : IAuthService
         user.FullName,
         user.PreferredLanguage,
         user.AuthProvider,
+        user.Role,
         user.CreatedAt,
         user.LastLoginAt,
         user.IsActive,

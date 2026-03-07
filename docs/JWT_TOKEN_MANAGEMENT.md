@@ -18,6 +18,7 @@ The JWT token management system is built on top of AWS Cognito and provides:
 ### 1. DTOs (Data Transfer Objects)
 
 #### RefreshTokenRequestDto
+
 ```csharp
 public record RefreshTokenRequestDto(
     string RefreshToken
@@ -27,6 +28,7 @@ public record RefreshTokenRequestDto(
 Used for both token refresh and token revocation requests.
 
 #### RefreshTokenResponseDto
+
 ```csharp
 public record RefreshTokenResponseDto(
     string AccessToken,
@@ -41,6 +43,7 @@ Returns new access and ID tokens after successful refresh.
 ### 2. CognitoService Methods
 
 #### RefreshTokenAsync
+
 ```csharp
 Task<AuthenticationResult> RefreshTokenAsync(string refreshToken);
 ```
@@ -48,20 +51,24 @@ Task<AuthenticationResult> RefreshTokenAsync(string refreshToken);
 **Purpose**: Refreshes an expired access token using a valid refresh token.
 
 **Parameters**:
+
 - `refreshToken`: The refresh token obtained during sign-in
 
 **Returns**: `AuthenticationResult` containing new access token and ID token
 
 **Throws**:
+
 - `InvalidOperationException`: If refresh token is invalid or expired
 
 **Implementation Details**:
+
 - Uses AWS Cognito's `REFRESH_TOKEN_AUTH` flow
 - Validates refresh token with Cognito
 - Returns new access token and ID token (refresh token remains the same)
 - Logs all operations for audit purposes
 
 #### RevokeTokenAsync
+
 ```csharp
 Task<bool> RevokeTokenAsync(string refreshToken);
 ```
@@ -69,14 +76,17 @@ Task<bool> RevokeTokenAsync(string refreshToken);
 **Purpose**: Revokes a refresh token, effectively logging out the user from all devices.
 
 **Parameters**:
+
 - `refreshToken`: The refresh token to revoke
 
 **Returns**: `true` if revocation was successful
 
 **Throws**:
+
 - `InvalidOperationException`: If revocation fails
 
 **Implementation Details**:
+
 - Uses AWS Cognito's `RevokeToken` API
 - Invalidates the refresh token immediately
 - User must sign in again to get new tokens
@@ -89,6 +99,7 @@ Task<bool> RevokeTokenAsync(string refreshToken);
 Refreshes an expired access token.
 
 **Request**:
+
 ```json
 {
   "refreshToken": "eyJjdHkiOiJKV1QiLCJlbmMiOiJBMjU2R0NNIiwiYWxnIjoiUlNBLU9BRVAifQ..."
@@ -96,6 +107,7 @@ Refreshes an expired access token.
 ```
 
 **Response (200 OK)**:
+
 ```json
 {
   "accessToken": "eyJraWQiOiI...",
@@ -106,11 +118,13 @@ Refreshes an expired access token.
 ```
 
 **Error Responses**:
+
 - `400 Bad Request`: Refresh token is missing or empty
 - `401 Unauthorized`: Refresh token is invalid or expired
 - `500 Internal Server Error`: Server error during token refresh
 
 **Example cURL**:
+
 ```bash
 curl -X POST https://api.distrocv.com/api/auth/refresh \
   -H "Content-Type: application/json" \
@@ -124,6 +138,7 @@ curl -X POST https://api.distrocv.com/api/auth/refresh \
 Revokes a refresh token (logout from all devices).
 
 **Request**:
+
 ```json
 {
   "refreshToken": "eyJjdHkiOiJKV1QiLCJlbmMiOiJBMjU2R0NNIiwiYWxnIjoiUlNBLU9BRVAifQ..."
@@ -131,6 +146,7 @@ Revokes a refresh token (logout from all devices).
 ```
 
 **Response (200 OK)**:
+
 ```json
 {
   "success": true,
@@ -139,10 +155,12 @@ Revokes a refresh token (logout from all devices).
 ```
 
 **Error Responses**:
+
 - `400 Bad Request`: Refresh token is missing, empty, or invalid
 - `500 Internal Server Error`: Server error during token revocation
 
 **Example cURL**:
+
 ```bash
 curl -X POST https://api.distrocv.com/api/auth/revoke \
   -H "Content-Type: application/json" \
@@ -203,20 +221,20 @@ Implement an HTTP interceptor to automatically refresh tokens when they expire:
 
 ```typescript
 // axios-interceptor.ts
-import axios from 'axios';
+import axios from "axios";
 
 let isRefreshing = false;
 let failedQueue: any[] = [];
 
 const processQueue = (error: any, token: string | null = null) => {
-  failedQueue.forEach(prom => {
+  failedQueue.forEach((prom) => {
     if (error) {
       prom.reject(error);
     } else {
       prom.resolve(token);
     }
   });
-  
+
   failedQueue = [];
 };
 
@@ -229,50 +247,53 @@ axios.interceptors.response.use(
       if (isRefreshing) {
         return new Promise((resolve, reject) => {
           failedQueue.push({ resolve, reject });
-        }).then(token => {
-          originalRequest.headers['Authorization'] = 'Bearer ' + token;
-          return axios(originalRequest);
-        }).catch(err => {
-          return Promise.reject(err);
-        });
+        })
+          .then((token) => {
+            originalRequest.headers["Authorization"] = "Bearer " + token;
+            return axios(originalRequest);
+          })
+          .catch((err) => {
+            return Promise.reject(err);
+          });
       }
 
       originalRequest._retry = true;
       isRefreshing = true;
 
-      const refreshToken = localStorage.getItem('refreshToken');
+      const refreshToken = localStorage.getItem("refreshToken");
 
       if (!refreshToken) {
         // No refresh token, redirect to login
-        window.location.href = '/login';
+        window.location.href = "/login";
         return Promise.reject(error);
       }
 
       try {
-        const response = await axios.post('/api/auth/refresh', {
-          refreshToken
+        const response = await axios.post("/api/auth/refresh", {
+          refreshToken,
         });
 
         const { accessToken, idToken } = response.data;
-        
+
         // Store new tokens
-        localStorage.setItem('accessToken', accessToken);
-        localStorage.setItem('idToken', idToken);
+        localStorage.setItem("accessToken", accessToken);
+        localStorage.setItem("idToken", idToken);
 
         // Update authorization header
-        axios.defaults.headers.common['Authorization'] = 'Bearer ' + accessToken;
-        originalRequest.headers['Authorization'] = 'Bearer ' + accessToken;
+        axios.defaults.headers.common["Authorization"] =
+          "Bearer " + accessToken;
+        originalRequest.headers["Authorization"] = "Bearer " + accessToken;
 
         processQueue(null, accessToken);
-        
+
         return axios(originalRequest);
       } catch (refreshError) {
         processQueue(refreshError, null);
-        
+
         // Refresh failed, redirect to login
         localStorage.clear();
-        window.location.href = '/login';
-        
+        window.location.href = "/login";
+
         return Promise.reject(refreshError);
       } finally {
         isRefreshing = false;
@@ -280,7 +301,7 @@ axios.interceptors.response.use(
     }
 
     return Promise.reject(error);
-  }
+  },
 );
 ```
 
@@ -291,9 +312,9 @@ Store tokens securely in the frontend:
 ```typescript
 // auth-service.ts
 export class AuthService {
-  private static readonly ACCESS_TOKEN_KEY = 'accessToken';
-  private static readonly REFRESH_TOKEN_KEY = 'refreshToken';
-  private static readonly ID_TOKEN_KEY = 'idToken';
+  private static readonly ACCESS_TOKEN_KEY = "accessToken";
+  private static readonly REFRESH_TOKEN_KEY = "refreshToken";
+  private static readonly ID_TOKEN_KEY = "idToken";
 
   static setTokens(accessToken: string, refreshToken: string, idToken: string) {
     localStorage.setItem(this.ACCESS_TOKEN_KEY, accessToken);
@@ -321,17 +342,17 @@ export class AuthService {
 
   static async logout() {
     const refreshToken = this.getRefreshToken();
-    
+
     if (refreshToken) {
       try {
-        await axios.post('/api/auth/revoke', { refreshToken });
+        await axios.post("/api/auth/revoke", { refreshToken });
       } catch (error) {
-        console.error('Error revoking token:', error);
+        console.error("Error revoking token:", error);
       }
     }
 
     this.clearTokens();
-    window.location.href = '/login';
+    window.location.href = "/login";
   }
 }
 ```
@@ -370,6 +391,7 @@ export class AuthService {
 ### Common Errors
 
 #### 1. Invalid Refresh Token
+
 ```json
 {
   "message": "Invalid or expired refresh token"
@@ -379,6 +401,7 @@ export class AuthService {
 **Solution**: User must sign in again
 
 #### 2. Missing Refresh Token
+
 ```json
 {
   "message": "Refresh token is required"
@@ -388,6 +411,7 @@ export class AuthService {
 **Solution**: Provide refresh token in request body
 
 #### 3. Token Revocation Failed
+
 ```json
 {
   "message": "Failed to revoke token"
@@ -448,8 +472,8 @@ No additional configuration required. The implementation uses existing AWS Cogni
 ```json
 {
   "AWS": {
-    "Region": "eu-west-1",
-    "CognitoUserPoolId": "eu-west-1_XXXXXXXXX",
+    "Region": "eu-north-1",
+    "CognitoUserPoolId": "eu-north-1_XXXXXXXXX",
     "CognitoClientId": "your-client-id"
   }
 }
@@ -488,7 +512,7 @@ setInterval(() => {
   if (token) {
     const decoded = jwtDecode(token);
     const expiresIn = decoded.exp * 1000 - Date.now();
-    
+
     // Refresh if token expires in less than 5 minutes
     if (expiresIn < 5 * 60 * 1000) {
       refreshToken();
@@ -509,11 +533,13 @@ async function refreshToken() {
     return refreshPromise;
   }
 
-  refreshPromise = axios.post('/api/auth/refresh', {
-    refreshToken: AuthService.getRefreshToken()
-  }).finally(() => {
-    refreshPromise = null;
-  });
+  refreshPromise = axios
+    .post("/api/auth/refresh", {
+      refreshToken: AuthService.getRefreshToken(),
+    })
+    .finally(() => {
+      refreshPromise = null;
+    });
 
   return refreshPromise;
 }
@@ -524,10 +550,10 @@ async function refreshToken() {
 Use localStorage events to sync logout across tabs:
 
 ```typescript
-window.addEventListener('storage', (event) => {
-  if (event.key === 'accessToken' && event.newValue === null) {
+window.addEventListener("storage", (event) => {
+  if (event.key === "accessToken" && event.newValue === null) {
     // Token was cleared in another tab, logout
-    window.location.href = '/login';
+    window.location.href = "/login";
   }
 });
 ```
@@ -537,6 +563,7 @@ window.addEventListener('storage', (event) => {
 ### Issue: Token Refresh Fails with 401
 
 **Possible Causes**:
+
 1. Refresh token has expired (30 days)
 2. Refresh token was revoked
 3. User was deleted from Cognito
@@ -547,6 +574,7 @@ window.addEventListener('storage', (event) => {
 ### Issue: Token Refresh Returns Same Token
 
 **Possible Causes**:
+
 1. Token hasn't expired yet
 2. Cognito configuration issue
 
@@ -555,6 +583,7 @@ window.addEventListener('storage', (event) => {
 ### Issue: Token Revocation Doesn't Work
 
 **Possible Causes**:
+
 1. Refresh token is invalid
 2. Cognito client configuration issue
 3. Network error

@@ -19,7 +19,7 @@ aws configure
 
 ```powershell
 cd infrastructure/scripts
-.\init-terraform.ps1 -Region "eu-west-1" -Environment "production"
+.\init-terraform.ps1 -Region "eu-north-1" -Environment "production"
 ```
 
 ### 3. Variables Yapılandır
@@ -54,7 +54,7 @@ terraform apply tfplan
 ```powershell
 # ECR'ye login
 $AccountId = aws sts get-caller-identity --query Account --output text
-$Region = "eu-west-1"
+$Region = "eu-north-1"
 aws ecr get-login-password --region $Region | docker login --username AWS --password-stdin "$AccountId.dkr.ecr.$Region.amazonaws.com"
 
 # Image build ve push
@@ -68,7 +68,7 @@ docker push "$AccountId.dkr.ecr.$Region.amazonaws.com/distrocv-api:latest"
 
 ```powershell
 # Connection string al
-$DbSecret = aws secretsmanager get-secret-value --secret-id distrocv/database/production --region eu-west-1 --query SecretString --output text | ConvertFrom-Json
+$DbSecret = aws secretsmanager get-secret-value --secret-id distrocv/database/production --region eu-north-1 --query SecretString --output text | ConvertFrom-Json
 $ConnectionString = $DbSecret.connection_string
 
 # Migration çalıştır
@@ -103,12 +103,13 @@ curl https://api.distrocv.com/health
 curl -I https://distrocv.com
 
 # ECS service status
-aws ecs describe-services --cluster distrocv-cluster-production --services distrocv-api-service-production --region eu-west-1
+aws ecs describe-services --cluster distrocv-cluster-production --services distrocv-api-service-production --region eu-north-1
 ```
 
 ## ✅ Deployment Tamamlandı!
 
 Artık DistroCV production'da çalışıyor:
+
 - **Frontend**: https://distrocv.com
 - **API**: https://api.distrocv.com
 - **Health**: https://api.distrocv.com/health
@@ -131,7 +132,7 @@ docker tag distrocv-api:v2.0.1 "$AccountId.dkr.ecr.$Region.amazonaws.com/distroc
 docker push "$AccountId.dkr.ecr.$Region.amazonaws.com/distrocv-api:v2.0.1"
 
 # ECS service güncelle
-aws ecs update-service --cluster distrocv-cluster-production --service distrocv-api-service-production --force-new-deployment --region eu-west-1
+aws ecs update-service --cluster distrocv-cluster-production --service distrocv-api-service-production --force-new-deployment --region eu-north-1
 ```
 
 ### Frontend Güncelleme
@@ -145,16 +146,19 @@ aws cloudfront create-invalidation --distribution-id $CloudFrontId --paths "/*"
 ## 🆘 Sorun Giderme
 
 ### ECS tasks başlamıyor
+
 ```powershell
 aws logs tail /ecs/distrocv-production --follow
 ```
 
 ### Database bağlantı hatası
+
 ```powershell
-aws rds describe-db-instances --db-instance-identifier distrocv-postgres-production --region eu-west-1
+aws rds describe-db-instances --db-instance-identifier distrocv-postgres-production --region eu-north-1
 ```
 
 ### CloudFront 403/404
+
 ```powershell
 aws cloudfront create-invalidation --distribution-id $CloudFrontId --paths "/*"
 ```
@@ -162,6 +166,7 @@ aws cloudfront create-invalidation --distribution-id $CloudFrontId --paths "/*"
 ## 📚 Detaylı Dokümantasyon
 
 Daha fazla bilgi için:
+
 - [DEPLOYMENT_GUIDE.md](./DEPLOYMENT_GUIDE.md) - Detaylı deployment rehberi
 - [terraform/README.md](./terraform/README.md) - Terraform dokümantasyonu
 - [AWS Documentation](https://docs.aws.amazon.com/)
@@ -169,6 +174,7 @@ Daha fazla bilgi için:
 ## 💰 Maliyet
 
 Tahmini aylık maliyet: **$250-550**
+
 - ECS Fargate: $50-250
 - RDS Multi-AZ: $150
 - ALB + CloudFront: $30-70
@@ -187,6 +193,7 @@ Tahmini aylık maliyet: **$250-550**
 ## 📞 Destek
 
 Sorun yaşarsanız:
+
 1. CloudWatch logs kontrol edin
 2. AWS Health Dashboard kontrol edin
 3. DevOps ekibiyle iletişime geçin

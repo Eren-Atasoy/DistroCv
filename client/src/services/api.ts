@@ -90,6 +90,7 @@ export interface AuthResult {
         id: string;
         email: string;
         fullName: string;
+        role?: string;
         preferredLanguage?: string;
         emailVerified?: boolean;
     };
@@ -113,6 +114,7 @@ export interface JobMatch {
     matchReasoning: string;
     skillGaps: string[];
     createdAt: string;
+    status?: string;
     jobPosting: JobPosting;
 }
 
@@ -142,7 +144,31 @@ export interface FeedbackRequest {
 export const jobsApi = {
     // Get matched jobs for user
     getMatchedJobs: async (): Promise<JobMatch[]> => {
-        return api.get<JobMatch[]>('/jobs/matched');
+        const res = await api.get<{ jobs: any[]; total: number }>('/jobs/matches');
+        return (res.jobs || []).map(m => ({
+            id: m.id,
+            jobPostingId: m.jobPostingId,
+            userId: '',
+            matchScore: m.matchScore,
+            matchReasoning: m.matchReasoning ?? '',
+            skillGaps: (() => {
+                try { return m.skillGaps ? JSON.parse(m.skillGaps) : []; }
+                catch { return []; }
+            })(),
+            createdAt: m.calculatedAt,
+            status: m.status,
+            jobPosting: m.jobPosting ?? {
+                id: m.jobPostingId,
+                title: m.jobTitle,
+                companyName: m.companyName,
+                location: m.location ?? '',
+                description: '',
+                requirements: '',
+                salary: m.salaryRange,
+                postedDate: m.calculatedAt,
+                sourcePlatform: 'Unknown',
+            }
+        }));
     },
 
     // Approve a job match

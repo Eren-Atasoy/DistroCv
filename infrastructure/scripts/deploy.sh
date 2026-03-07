@@ -13,7 +13,7 @@ NC='\033[0m' # No Color
 
 # Configuration
 ENVIRONMENT=${1:-production}
-AWS_REGION=${AWS_REGION:-eu-west-1}
+AWS_REGION=${AWS_REGION:-eu-north-1}
 ECR_REGISTRY=""
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 

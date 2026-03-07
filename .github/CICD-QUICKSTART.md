@@ -18,7 +18,7 @@ Go to **Settings > Secrets and variables > Actions** and add:
 ```
 AWS_ACCESS_KEY_ID_DEV=AKIA...
 AWS_SECRET_ACCESS_KEY_DEV=wJalr...
-ECR_REGISTRY_DEV=123456789.dkr.ecr.eu-west-1.amazonaws.com
+ECR_REGISTRY_DEV=123456789.dkr.ecr.eu-north-1.amazonaws.com
 S3_BUCKET_DEV=distrocv-dev-frontend
 CLOUDFRONT_DISTRIBUTION_ID_DEV=E1234567890ABC
 DB_CONNECTION_STRING_DEV=Host=...;Database=distrocv_dev;...
@@ -30,7 +30,7 @@ DB_CONNECTION_STRING_DEV=Host=...;Database=distrocv_dev;...
 
 ```bash
 # Set variables
-export AWS_REGION=eu-west-1
+export AWS_REGION=eu-north-1
 export PROJECT_NAME=distrocv
 export ENV=dev
 
@@ -72,6 +72,7 @@ Go to **Actions** tab to see your pipeline running!
 ## What Happens Next?
 
 ### On Pull Request
+
 - ✅ Code quality checks
 - ✅ Backend tests
 - ✅ Frontend tests
@@ -79,12 +80,14 @@ Go to **Actions** tab to see your pipeline running!
 - ✅ PR size validation
 
 ### On Merge to `develop`
+
 - ✅ All PR checks
 - ✅ Build Docker image
 - ✅ Deploy to development environment
 - ✅ Run health checks
 
 ### On Merge to `main`
+
 - ✅ All checks
 - ✅ Deploy to production
 - ✅ Create GitHub release
@@ -93,6 +96,7 @@ Go to **Actions** tab to see your pipeline running!
 ## Common Commands
 
 ### View Pipeline Status
+
 ```bash
 # Using GitHub CLI
 gh run list
@@ -102,12 +106,14 @@ gh run view RUN_ID
 ```
 
 ### Manual Deployment Trigger
+
 ```bash
 # Using GitHub CLI
 gh workflow run ci-cd.yml
 ```
 
 ### Check Deployment Status
+
 ```bash
 # Development
 curl https://dev-api.distrocv.com/health
@@ -121,14 +127,17 @@ curl https://api.distrocv.com/health
 ### Pipeline Fails on First Run?
 
 **Missing Secrets:**
+
 - Check all required secrets are added
 - Verify secret names match exactly
 
 **AWS Permissions:**
+
 - Ensure IAM user has ECR, ECS, S3, CloudFront permissions
 - Check AWS credentials are valid
 
 **Build Errors:**
+
 - Check .NET version (9.0)
 - Check Node version (20.x)
 - Verify all dependencies restore correctly
@@ -152,18 +161,18 @@ See [DEPLOYMENT.md](../../DEPLOYMENT.md) for complete setup.
 
 ## Quick Reference
 
-| Environment | Branch | Auto-Deploy | URL |
-|------------|--------|-------------|-----|
-| Development | `develop` | ✅ Yes | https://dev.distrocv.com |
-| Production | `main` | ✅ Yes (with approval) | https://distrocv.com |
+| Environment | Branch    | Auto-Deploy            | URL                      |
+| ----------- | --------- | ---------------------- | ------------------------ |
+| Development | `develop` | ✅ Yes                 | https://dev.distrocv.com |
+| Production  | `main`    | ✅ Yes (with approval) | https://distrocv.com     |
 
-| Check | Runs On | Required |
-|-------|---------|----------|
-| Code Quality | PR | ✅ Yes |
-| Tests | PR | ✅ Yes |
-| Security Scan | PR | ✅ Yes |
-| Deploy Dev | Merge to develop | Auto |
-| Deploy Prod | Merge to main | Manual approval |
+| Check         | Runs On          | Required        |
+| ------------- | ---------------- | --------------- |
+| Code Quality  | PR               | ✅ Yes          |
+| Tests         | PR               | ✅ Yes          |
+| Security Scan | PR               | ✅ Yes          |
+| Deploy Dev    | Merge to develop | Auto            |
+| Deploy Prod   | Merge to main    | Manual approval |
 
 ## Commit Message Format
 
@@ -178,6 +187,7 @@ footer
 **Types:** feat, fix, docs, style, refactor, test, chore
 
 **Examples:**
+
 ```bash
 git commit -m "feat: add user authentication"
 git commit -m "fix: resolve database connection issue"

@@ -69,7 +69,11 @@ public class ProfileController : BaseApiController
             var response = new ResumeUploadResponseDto(
                 DigitalTwinId: digitalTwin.Id,
                 Message: "Resume uploaded and processed successfully",
-                ParsedData: digitalTwin.ParsedResumeJson
+                ParsedData: digitalTwin.ParsedResumeJson,
+                Skills: digitalTwin.Skills,
+                Experience: digitalTwin.Experience,
+                Education: digitalTwin.Education,
+                CareerGoals: digitalTwin.CareerGoals
             );
 
             _logger.LogInformation("Resume upload completed successfully for user {UserId}, DigitalTwin {DigitalTwinId}",

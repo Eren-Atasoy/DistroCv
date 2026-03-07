@@ -70,14 +70,14 @@ DistroCV follows a Clean Architecture pattern with clear separation of concerns:
 
 ### Key Design Patterns
 
-| Pattern | Usage |
-|---------|-------|
-| Repository | Data access abstraction |
-| Service | Business logic encapsulation |
-| Decorator | Caching (CachedMatchingService) |
-| Mediator | Command/Query handling (future) |
-| Strategy | Multiple scraping platforms |
-| Factory | PDF/DOCX document generation |
+| Pattern    | Usage                           |
+| ---------- | ------------------------------- |
+| Repository | Data access abstraction         |
+| Service    | Business logic encapsulation    |
+| Decorator  | Caching (CachedMatchingService) |
+| Mediator   | Command/Query handling (future) |
+| Strategy   | Multiple scraping platforms     |
+| Factory    | PDF/DOCX document generation    |
 
 ---
 
@@ -137,41 +137,41 @@ DistroCv/
 
 ### Backend
 
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| .NET | 9.0 | Runtime |
-| ASP.NET Core | 9.0 | Web framework |
-| Entity Framework Core | 9.0 | ORM |
-| PostgreSQL | 16 | Database |
-| pgvector | 0.5 | Vector similarity search |
-| Redis | 7.0 | Distributed caching |
-| Hangfire | 1.8 | Background job processing |
-| SignalR | 9.0 | Real-time communication |
-| Serilog | 3.x | Structured logging |
+| Technology            | Version | Purpose                   |
+| --------------------- | ------- | ------------------------- |
+| .NET                  | 9.0     | Runtime                   |
+| ASP.NET Core          | 9.0     | Web framework             |
+| Entity Framework Core | 9.0     | ORM                       |
+| PostgreSQL            | 16      | Database                  |
+| pgvector              | 0.5     | Vector similarity search  |
+| Redis                 | 7.0     | Distributed caching       |
+| Hangfire              | 1.8     | Background job processing |
+| SignalR               | 9.0     | Real-time communication   |
+| Serilog               | 3.x     | Structured logging        |
 
 ### Frontend
 
-| Technology | Version | Purpose |
-|------------|---------|---------|
-| React | 18.2 | UI framework |
-| TypeScript | 5.x | Type safety |
-| Vite | 5.x | Build tool |
-| Tailwind CSS | 3.x | Styling |
-| React Router | 6.x | Routing |
-| React Query | 5.x | Data fetching |
-| i18next | 23.x | Internationalization |
-| Framer Motion | 11.x | Animations |
-| Lucide React | 0.x | Icons |
+| Technology    | Version | Purpose              |
+| ------------- | ------- | -------------------- |
+| React         | 18.2    | UI framework         |
+| TypeScript    | 5.x     | Type safety          |
+| Vite          | 5.x     | Build tool           |
+| Tailwind CSS  | 3.x     | Styling              |
+| React Router  | 6.x     | Routing              |
+| React Query   | 5.x     | Data fetching        |
+| i18next       | 23.x    | Internationalization |
+| Framer Motion | 11.x    | Animations           |
+| Lucide React  | 0.x     | Icons                |
 
 ### External Services
 
-| Service | Purpose |
-|---------|---------|
-| AWS Cognito | Authentication |
-| AWS S3 | File storage |
-| Google Gemini | AI/ML |
-| Gmail API | Email sending |
-| LinkedIn API | Job data, applications |
+| Service       | Purpose                |
+| ------------- | ---------------------- |
+| AWS Cognito   | Authentication         |
+| AWS S3        | File storage           |
+| Google Gemini | AI/ML                  |
+| Gmail API     | Email sending          |
+| LinkedIn API  | Job data, applications |
 
 ---
 
@@ -240,7 +240,7 @@ cat > .env.local << EOF
 VITE_API_URL=http://localhost:5000
 VITE_COGNITO_USER_POOL_ID=your-pool-id
 VITE_COGNITO_CLIENT_ID=your-client-id
-VITE_COGNITO_REGION=eu-west-1
+VITE_COGNITO_REGION=eu-north-1
 EOF
 
 # Start development server
@@ -301,13 +301,13 @@ public class MatchingService : IMatchingService
 
     /// <inheritdoc />
     public async Task<JobMatch> CalculateMatchAsync(
-        Guid userId, 
-        Guid jobPostingId, 
+        Guid userId,
+        Guid jobPostingId,
         CancellationToken cancellationToken = default)
     {
         _logger.LogInformation(
-            "Calculating match for user {UserId} and job {JobId}", 
-            userId, 
+            "Calculating match for user {UserId} and job {JobId}",
+            userId,
             jobPostingId);
 
         // Validate inputs
@@ -363,14 +363,14 @@ export function JobCard({ match, onApprove, onReject }: JobCardProps) {
         {match.jobPosting.companyName}
       </p>
       <div className="mt-4 flex gap-2">
-        <button 
+        <button
           onClick={handleApprove}
           disabled={isLoading}
           className="btn-primary"
         >
           {t('jobs.approve')}
         </button>
-        <button 
+        <button
           onClick={() => onReject(match.id)}
           className="btn-secondary"
         >
@@ -395,6 +395,7 @@ Follow conventional commits:
 ```
 
 Types:
+
 - `feat`: New feature
 - `fix`: Bug fix
 - `docs`: Documentation
@@ -404,6 +405,7 @@ Types:
 - `chore`: Maintenance tasks
 
 Examples:
+
 ```
 feat(matching): add sector filtering to match algorithm
 fix(auth): handle expired refresh tokens
@@ -529,23 +531,23 @@ public class ExceptionHandlingMiddleware
 
 ```typescript
 // Use React Query for server state
-import { useQuery, useMutation } from '@tanstack/react-query';
+import { useQuery, useMutation } from "@tanstack/react-query";
 
 function useMatches() {
   return useQuery({
-    queryKey: ['matches'],
-    queryFn: () => api.get('/jobs/matches'),
+    queryKey: ["matches"],
+    queryFn: () => api.get("/jobs/matches"),
     staleTime: 5 * 60 * 1000, // 5 minutes
   });
 }
 
 function useApproveMatch() {
   const queryClient = useQueryClient();
-  
+
   return useMutation({
     mutationFn: (matchId: string) => api.post(`/jobs/${matchId}/approve`),
     onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['matches'] });
+      queryClient.invalidateQueries({ queryKey: ["matches"] });
     },
   });
 }
@@ -603,19 +605,19 @@ public class JobMatchConfiguration : IEntityTypeConfiguration<JobMatch>
     public void Configure(EntityTypeBuilder<JobMatch> builder)
     {
         builder.ToTable("JobMatches");
-        
+
         builder.HasKey(m => m.Id);
-        
+
         builder.Property(m => m.MatchScore)
             .HasPrecision(5, 2)
             .IsRequired();
-        
+
         builder.Property(m => m.MatchReasoning)
             .HasMaxLength(2000);
-        
+
         builder.HasIndex(m => new { m.UserId, m.JobPostingId })
             .IsUnique();
-        
+
         builder.HasOne(m => m.User)
             .WithMany(u => u.JobMatches)
             .HasForeignKey(m => m.UserId)
@@ -690,7 +692,7 @@ public class JobMatchingIntegrationTests : IClassFixture<TestWebApplicationFacto
     public async Task GetMatches_ReturnsMatchesForAuthenticatedUser()
     {
         // Arrange
-        _client.DefaultRequestHeaders.Authorization = 
+        _client.DefaultRequestHeaders.Authorization =
             new AuthenticationHeaderValue("Bearer", "valid-token");
 
         // Act
@@ -911,6 +913,7 @@ var pagedResults = await query
 ### Version Numbering
 
 Follow Semantic Versioning (SemVer):
+
 - **Major**: Breaking changes
 - **Minor**: New features (backward compatible)
 - **Patch**: Bug fixes
@@ -937,6 +940,5 @@ Follow Semantic Versioning (SemVer):
 
 ---
 
-*Last Updated: January 2026*
-*Maintained by: DistroCV Development Team*
-
+_Last Updated: January 2026_
+_Maintained by: DistroCV Development Team_

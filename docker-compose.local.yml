@@ -20,7 +20,10 @@ services:
       - ConnectionStrings__DefaultConnection=${CONNECTION_STRING}
       - AWS__Region=${AWS_REGION}
       - AWS__S3BucketName=${AWS_S3_BUCKET_NAME}
+      - AWS__AccessKey=${AWS_ACCESS_KEY}
+      - AWS__SecretKey=${AWS_SECRET_KEY}
       - Jwt__Secret=${JWT_SECRET}
+      - Jwt__Issuer=${JWT_ISSUER}
       - Jwt__Audience=${JWT_AUDIENCE}
       - Gemini__ApiKey=${GEMINI_API_KEY}
       - Google__ClientId=${GOOGLE_CLIENT_ID}

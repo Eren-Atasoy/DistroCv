@@ -6,6 +6,7 @@ interface User {
     id: string;
     email: string;
     fullName: string;
+    role?: string;
     preferredLanguage?: string;
     emailVerified?: boolean;
 }
@@ -13,6 +14,7 @@ interface User {
 interface AuthContextType {
     user: User | null;
     isAuthenticated: boolean;
+    isAdmin: boolean;
     isLoading: boolean;
     login: (data: any) => Promise<void>;
     register: (data: any) => Promise<void>;
@@ -78,7 +80,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     };
 
     return (
-        <AuthContext.Provider value={{ user, isAuthenticated: !!user, isLoading, login, register, googleLogin, logout }}>
+        <AuthContext.Provider value={{ user, isAuthenticated: !!user, isAdmin: user?.role === 'Admin', isLoading, login, register, googleLogin, logout }}>
             {children}
         </AuthContext.Provider>
     );

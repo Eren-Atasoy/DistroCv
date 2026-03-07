@@ -23,5 +23,9 @@ public record UpdatePreferencesDto(
 public record ResumeUploadResponseDto(
     Guid DigitalTwinId,
     string Message,
-    string? ParsedData
+    string? ParsedData,
+    string? Skills,
+    string? Experience,
+    string? Education,
+    string? CareerGoals
 );

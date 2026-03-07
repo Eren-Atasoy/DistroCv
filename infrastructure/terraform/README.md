@@ -33,8 +33,8 @@ The infrastructure includes:
 # Create S3 bucket for Terraform state
 aws s3api create-bucket \
   --bucket distrocv-terraform-state \
-  --region eu-west-1 \
-  --create-bucket-configuration LocationConstraint=eu-west-1
+  --region eu-north-1 \
+  --create-bucket-configuration LocationConstraint=eu-north-1
 
 # Enable versioning
 aws s3api put-bucket-versioning \
@@ -47,7 +47,7 @@ aws dynamodb create-table \
   --attribute-definitions AttributeName=LockID,AttributeType=S \
   --key-schema AttributeName=LockID,KeyType=HASH \
   --billing-mode PAY_PER_REQUEST \
-  --region eu-west-1
+  --region eu-north-1
 ```
 
 ### 2. Configure Variables
@@ -84,9 +84,9 @@ cd ../../src/DistroCv.Api
 docker build -t distrocv-api:latest .
 
 # Tag and push to ECR
-aws ecr get-login-password --region eu-west-1 | docker login --username AWS --password-stdin 123456789012.dkr.ecr.eu-west-1.amazonaws.com
-docker tag distrocv-api:latest 123456789012.dkr.ecr.eu-west-1.amazonaws.com/distrocv-api:latest
-docker push 123456789012.dkr.ecr.eu-west-1.amazonaws.com/distrocv-api:latest
+aws ecr get-login-password --region eu-north-1 | docker login --username AWS --password-stdin 123456789012.dkr.ecr.eu-north-1.amazonaws.com
+docker tag distrocv-api:latest 123456789012.dkr.ecr.eu-north-1.amazonaws.com/distrocv-api:latest
+docker push 123456789012.dkr.ecr.eu-north-1.amazonaws.com/distrocv-api:latest
 ```
 
 ## Deployment
@@ -120,12 +120,12 @@ This will create all infrastructure resources. The initial deployment takes appr
 aws ecs describe-services \
   --cluster distrocv-cluster-production \
   --services distrocv-api-service-production \
-  --region eu-west-1
+  --region eu-north-1
 
 # Check ALB health
 aws elbv2 describe-target-health \
   --target-group-arn $(terraform output -raw api_target_group_arn) \
-  --region eu-west-1
+  --region eu-north-1
 
 # Test API endpoint
 curl https://api.distrocv.com/health
@@ -139,7 +139,7 @@ After infrastructure is deployed, initialize the database:
 # Get database connection string from Secrets Manager
 aws secretsmanager get-secret-value \
   --secret-id distrocv/database/production \
-  --region eu-west-1 \
+  --region eu-north-1 \
   --query SecretString \
   --output text | jq -r .connection_string
 
@@ -186,6 +186,7 @@ aws cloudfront create-invalidation \
 ### CloudWatch Dashboards
 
 Access CloudWatch dashboards:
+
 - ECS Metrics: Container Insights
 - RDS Metrics: Database performance
 - ALB Metrics: Request counts and latencies
@@ -194,6 +195,7 @@ Access CloudWatch dashboards:
 ### Logs
 
 View logs in CloudWatch Log Groups:
+
 - `/ecs/distrocv-production` - API logs
 - `/aws/lambda/distrocv-*` - Lambda function logs
 - `distrocv-alb-logs-production` - ALB access logs (S3)
@@ -201,6 +203,7 @@ View logs in CloudWatch Log Groups:
 ### Alarms
 
 Configured alarms:
+
 - ECS CPU > 85%
 - ECS Memory > 90%
 - ECS Task count < minimum
@@ -218,12 +221,13 @@ aws ecs update-service \
   --cluster distrocv-cluster-production \
   --service distrocv-api-service-production \
   --desired-count 5 \
-  --region eu-west-1
+  --region eu-north-1
 ```
 
 ### Auto-Scaling
 
 Auto-scaling is configured for:
+
 - **CPU-based**: Target 70% CPU utilization
 - **Memory-based**: Target 80% memory utilization
 - **Request-based**: Target 1000 requests per target
@@ -243,7 +247,7 @@ Auto-scaling is configured for:
 aws rds create-db-snapshot \
   --db-instance-identifier distrocv-postgres-production \
   --db-snapshot-identifier distrocv-manual-snapshot-$(date +%Y%m%d-%H%M%S) \
-  --region eu-west-1
+  --region eu-north-1
 ```
 
 ### Restore from Snapshot
@@ -253,7 +257,7 @@ aws rds restore-db-instance-from-db-snapshot \
   --db-instance-identifier distrocv-postgres-restored \
   --db-snapshot-identifier SNAPSHOT_ID \
   --db-instance-class db.t4g.large \
-  --region eu-west-1
+  --region eu-north-1
 ```
 
 ## Security
@@ -261,6 +265,7 @@ aws rds restore-db-instance-from-db-snapshot \
 ### Secrets Management
 
 All sensitive data is stored in AWS Secrets Manager:
+
 - Database credentials
 - Gemini API key
 - Gmail OAuth credentials
@@ -309,7 +314,7 @@ All sensitive data is stored in AWS Secrets Manager:
 aws ecs describe-tasks \
   --cluster distrocv-cluster-production \
   --tasks TASK_ARN \
-  --region eu-west-1
+  --region eu-north-1
 
 # Check CloudWatch logs
 aws logs tail /ecs/distrocv-production --follow
@@ -361,6 +366,7 @@ aws s3 rb s3://distrocv-resumes-production-ACCOUNT_ID
 ## Support
 
 For issues or questions:
+
 - Check CloudWatch logs
 - Review AWS service health dashboard
 - Contact DevOps team

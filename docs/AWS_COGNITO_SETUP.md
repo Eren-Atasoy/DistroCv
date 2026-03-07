@@ -26,6 +26,7 @@ The authentication system uses AWS Cognito User Pools for user management and JW
 ### Creating a Cognito User Pool
 
 1. **Create User Pool**
+
    ```bash
    aws cognito-idp create-user-pool \
      --pool-name distrocv-users \
@@ -34,17 +35,18 @@ The authentication system uses AWS Cognito User Pools for user management and JW
      --username-attributes email \
      --schema Name=email,Required=true,Mutable=false \
               Name=name,Required=true,Mutable=true \
-     --region eu-west-1
+     --region eu-north-1
    ```
 
 2. **Create App Client**
+
    ```bash
    aws cognito-idp create-user-pool-client \
      --user-pool-id <YOUR_USER_POOL_ID> \
      --client-name distrocv-web-client \
      --explicit-auth-flows ALLOW_USER_PASSWORD_AUTH ALLOW_REFRESH_TOKEN_AUTH \
      --generate-secret \
-     --region eu-west-1
+     --region eu-north-1
    ```
 
 3. **Note the following values:**
@@ -60,8 +62,8 @@ Update `appsettings.json` with your Cognito details:
 ```json
 {
   "AWS": {
-    "Region": "eu-west-1",
-    "CognitoUserPoolId": "eu-west-1_XXXXXXXXX",
+    "Region": "eu-north-1",
+    "CognitoUserPoolId": "eu-north-1_XXXXXXXXX",
     "CognitoClientId": "your-client-id",
     "CognitoClientSecret": "your-client-secret",
     "S3BucketName": "distrocv-files"
@@ -72,8 +74,8 @@ Update `appsettings.json` with your Cognito details:
 For production, use environment variables or AWS Secrets Manager:
 
 ```bash
-export AWS__Region="eu-west-1"
-export AWS__CognitoUserPoolId="eu-west-1_XXXXXXXXX"
+export AWS__Region="eu-north-1"
+export AWS__CognitoUserPoolId="eu-north-1_XXXXXXXXX"
 export AWS__CognitoClientId="your-client-id"
 export AWS__CognitoClientSecret="your-client-secret"
 ```
@@ -83,6 +85,7 @@ export AWS__CognitoClientSecret="your-client-secret"
 ### Authentication Endpoints
 
 #### 1. Sign Up
+
 ```http
 POST /api/auth/signup
 Content-Type: application/json
@@ -96,6 +99,7 @@ Content-Type: application/json
 ```
 
 **Response:**
+
 ```json
 {
   "userId": "cognito-user-sub",
@@ -104,6 +108,7 @@ Content-Type: application/json
 ```
 
 #### 2. Confirm Sign Up
+
 ```http
 POST /api/auth/confirm-signup
 Content-Type: application/json
@@ -115,6 +120,7 @@ Content-Type: application/json
 ```
 
 #### 3. Resend Confirmation Code
+
 ```http
 POST /api/auth/resend-confirmation
 Content-Type: application/json
@@ -125,6 +131,7 @@ Content-Type: application/json
 ```
 
 #### 4. Sign In
+
 ```http
 POST /api/auth/signin
 Content-Type: application/json
@@ -136,6 +143,7 @@ Content-Type: application/json
 ```
 
 **Response:**
+
 ```json
 {
   "accessToken": "eyJraWQiOiI...",
@@ -155,18 +163,21 @@ Content-Type: application/json
 ```
 
 #### 5. Get Current User
+
 ```http
 GET /api/auth/me
 Authorization: Bearer <access-token>
 ```
 
 #### 6. Logout
+
 ```http
 POST /api/auth/logout
 Authorization: Bearer <access-token>
 ```
 
 #### 7. Forgot Password
+
 ```http
 POST /api/auth/forgot-password
 Content-Type: application/json
@@ -177,6 +188,7 @@ Content-Type: application/json
 ```
 
 #### 8. Confirm Forgot Password
+
 ```http
 POST /api/auth/confirm-forgot-password
 Content-Type: application/json
@@ -189,6 +201,7 @@ Content-Type: application/json
 ```
 
 #### 9. Change Password
+
 ```http
 POST /api/auth/change-password
 Authorization: Bearer <access-token>
@@ -203,6 +216,7 @@ Content-Type: application/json
 ## JWT Token Structure
 
 ### ID Token Claims
+
 ```json
 {
   "sub": "cognito-user-sub",
@@ -210,7 +224,7 @@ Content-Type: application/json
   "email_verified": true,
   "name": "John Doe",
   "aud": "client-id",
-  "iss": "https://cognito-idp.eu-west-1.amazonaws.com/eu-west-1_XXXXXXXXX",
+  "iss": "https://cognito-idp.eu-north-1.amazonaws.com/eu-north-1_XXXXXXXXX",
   "token_use": "id",
   "auth_time": 1234567890,
   "exp": 1234571490
@@ -218,11 +232,12 @@ Content-Type: application/json
 ```
 
 ### Access Token Claims
+
 ```json
 {
   "sub": "cognito-user-sub",
   "client_id": "client-id",
-  "iss": "https://cognito-idp.eu-west-1.amazonaws.com/eu-west-1_XXXXXXXXX",
+  "iss": "https://cognito-idp.eu-north-1.amazonaws.com/eu-north-1_XXXXXXXXX",
   "token_use": "access",
   "scope": "openid email profile",
   "auth_time": 1234567890,
@@ -233,6 +248,7 @@ Content-Type: application/json
 ## Security Considerations
 
 ### Password Requirements
+
 - Minimum 8 characters
 - At least one uppercase letter
 - At least one lowercase letter
@@ -240,12 +256,14 @@ Content-Type: application/json
 - At least one special character
 
 ### Token Management
+
 - Access tokens expire after 1 hour (3600 seconds)
 - Refresh tokens can be used to obtain new access tokens
 - Tokens are validated on every request using JWT middleware
 - Global sign out invalidates all tokens for a user
 
 ### Best Practices
+
 1. **Never store passwords** - Cognito handles password hashing
 2. **Use HTTPS only** - All authentication requests must use TLS
 3. **Validate tokens** - Always validate JWT tokens on the server
@@ -257,17 +275,18 @@ Content-Type: application/json
 
 ### Common Errors
 
-| Error | Description | HTTP Status |
-|-------|-------------|-------------|
-| UsernameExistsException | User already exists | 400 |
-| InvalidPasswordException | Password doesn't meet requirements | 400 |
-| CodeMismatchException | Invalid confirmation code | 400 |
-| ExpiredCodeException | Confirmation code expired | 400 |
-| NotAuthorizedException | Invalid credentials | 401 |
-| UserNotConfirmedException | Email not confirmed | 401 |
-| UserNotFoundException | User not found | 400 |
+| Error                     | Description                        | HTTP Status |
+| ------------------------- | ---------------------------------- | ----------- |
+| UsernameExistsException   | User already exists                | 400         |
+| InvalidPasswordException  | Password doesn't meet requirements | 400         |
+| CodeMismatchException     | Invalid confirmation code          | 400         |
+| ExpiredCodeException      | Confirmation code expired          | 400         |
+| NotAuthorizedException    | Invalid credentials                | 401         |
+| UserNotConfirmedException | Email not confirmed                | 401         |
+| UserNotFoundException     | User not found                     | 400         |
 
 ### Error Response Format
+
 ```json
 {
   "message": "Error description"
@@ -279,6 +298,7 @@ Content-Type: application/json
 ### Manual Testing with cURL
 
 1. **Sign Up**
+
 ```bash
 curl -X POST http://localhost:5000/api/auth/signup \
   -H "Content-Type: application/json" \
@@ -291,6 +311,7 @@ curl -X POST http://localhost:5000/api/auth/signup \
 ```
 
 2. **Confirm Sign Up**
+
 ```bash
 curl -X POST http://localhost:5000/api/auth/confirm-signup \
   -H "Content-Type: application/json" \
@@ -301,6 +322,7 @@ curl -X POST http://localhost:5000/api/auth/confirm-signup \
 ```
 
 3. **Sign In**
+
 ```bash
 curl -X POST http://localhost:5000/api/auth/signin \
   -H "Content-Type: application/json" \
@@ -311,6 +333,7 @@ curl -X POST http://localhost:5000/api/auth/signin \
 ```
 
 4. **Get Current User**
+
 ```bash
 curl -X GET http://localhost:5000/api/auth/me \
   -H "Authorization: Bearer <access-token>"
@@ -319,20 +342,24 @@ curl -X GET http://localhost:5000/api/auth/me \
 ## Troubleshooting
 
 ### Issue: "User Pool not found"
+
 - Verify the User Pool ID in configuration
 - Check AWS region is correct
 - Ensure IAM permissions are set
 
 ### Issue: "Invalid client_id"
+
 - Verify the App Client ID in configuration
 - Ensure the client exists in the User Pool
 
 ### Issue: "Token validation failed"
+
 - Check token hasn't expired
 - Verify JWT issuer matches User Pool URL
 - Ensure audience matches Client ID
 
 ### Issue: "User not confirmed"
+
 - User must confirm email before signing in
 - Resend confirmation code if needed
 - Check email spam folder

@@ -68,12 +68,14 @@ cd client && npm run build
 ### Issue: "401 Unauthorized" Error
 
 **Symptoms:**
+
 - API returns 401 for authenticated endpoints
 - User cannot log in
 
 **Possible Causes & Solutions:**
 
 1. **Expired Token**
+
    ```javascript
    // Frontend: Check token expiration
    const isExpired = Date.now() >= jwt.exp * 1000;
@@ -83,13 +85,14 @@ cd client && npm run build
    ```
 
 2. **Invalid Cognito Configuration**
+
    ```bash
    # Verify Cognito settings
-   aws cognito-idp describe-user-pool --user-pool-id eu-west-1_XXXXX
-   
+   aws cognito-idp describe-user-pool --user-pool-id eu-north-1_XXXXX
+
    # Check app client
    aws cognito-idp describe-user-pool-client \
-     --user-pool-id eu-west-1_XXXXX \
+     --user-pool-id eu-north-1_XXXXX \
      --client-id YOUR_CLIENT_ID
    ```
 
@@ -97,7 +100,7 @@ cd client && npm run build
    ```csharp
    // Check appsettings.json
    "AWS": {
-     "CognitoUserPoolId": "eu-west-1_XXXXX",  // Must match
+     "CognitoUserPoolId": "eu-north-1_XXXXX",  // Must match
      "CognitoClientId": "your-client-id"       // Must match
    }
    ```
@@ -105,11 +108,13 @@ cd client && npm run build
 ### Issue: "403 Forbidden" Error
 
 **Symptoms:**
+
 - User is logged in but cannot access certain resources
 
 **Solutions:**
 
 1. **Check User Roles**
+
    ```sql
    SELECT * FROM "Users" WHERE email = 'user@example.com';
    -- Verify role field
@@ -125,6 +130,7 @@ cd client && npm run build
 ### Issue: Cannot Register New User
 
 **Symptoms:**
+
 - Registration fails with Cognito error
 
 **Solutions:**
@@ -146,25 +152,28 @@ cd client && npm run build
 ### Issue: Database Connection Failed
 
 **Symptoms:**
+
 - API startup fails with "Connection refused"
 - Health check shows database as unhealthy
 
 **Solutions:**
 
 1. **Verify Connection String**
+
    ```bash
    # Check environment variable
    echo $ConnectionStrings__DefaultConnection
-   
+
    # Test connection
    psql "Host=localhost;Database=distrocv;Username=postgres;Password=xxx"
    ```
 
 2. **Check PostgreSQL Service**
+
    ```bash
    # Check if PostgreSQL is running
    systemctl status postgresql
-   
+
    # Check logs
    tail -f /var/log/postgresql/postgresql-16-main.log
    ```
@@ -178,17 +187,20 @@ cd client && npm run build
 ### Issue: Migration Failed
 
 **Symptoms:**
+
 - `dotnet ef database update` fails
 - Application startup fails with schema errors
 
 **Solutions:**
 
 1. **Check Pending Migrations**
+
    ```bash
    dotnet ef migrations list
    ```
 
 2. **Generate Migration Script**
+
    ```bash
    dotnet ef migrations script --idempotent
    # Review and apply manually if needed
@@ -203,15 +215,17 @@ cd client && npm run build
 ### Issue: pgvector Not Working
 
 **Symptoms:**
+
 - Similarity search fails
 - "type vector does not exist" error
 
 **Solutions:**
 
 1. **Enable Extension**
+
    ```sql
    CREATE EXTENSION IF NOT EXISTS vector;
-   
+
    -- Verify
    SELECT * FROM pg_extension WHERE extname = 'vector';
    ```
@@ -227,12 +241,14 @@ cd client && npm run build
 ### Issue: Slow API Response
 
 **Symptoms:**
+
 - API response time > 2 seconds
 - X-Response-Time header shows high values
 
 **Solutions:**
 
 1. **Check Database Queries**
+
    ```sql
    -- Find slow queries
    SELECT query, calls, total_time/calls as avg_time
@@ -242,28 +258,31 @@ cd client && npm run build
    ```
 
 2. **Check Missing Indexes**
+
    ```sql
    -- Check if indexes exist
    SELECT indexname FROM pg_indexes WHERE tablename = 'JobMatches';
-   
+
    -- Create missing indexes
    CREATE INDEX idx_job_matches_user_id ON "JobMatches" ("UserId");
    ```
 
 3. **Enable Query Caching**
+
    ```csharp
    // Check if caching is configured
    services.AddCachingServices(configuration);
    ```
 
 4. **Review N+1 Queries**
+
    ```csharp
    // Bad: N+1 query
    var matches = await _context.JobMatches.ToListAsync();
    foreach (var m in matches) {
      var job = await _context.JobPostings.FindAsync(m.JobPostingId);
    }
-   
+
    // Good: Eager loading
    var matches = await _context.JobMatches
      .Include(m => m.JobPosting)
@@ -273,12 +292,14 @@ cd client && npm run build
 ### Issue: Rate Limiting Triggered
 
 **Symptoms:**
+
 - 429 Too Many Requests error
 - User cannot make API calls
 
 **Solutions:**
 
 1. **Check Current Limits**
+
    ```csharp
    // Review RateLimitingMiddleware configuration
    // Default limits:
@@ -295,12 +316,14 @@ cd client && npm run build
 ### Issue: CORS Error
 
 **Symptoms:**
+
 - Browser console shows "Access-Control-Allow-Origin" error
 - Preflight requests fail
 
 **Solutions:**
 
 1. **Check CORS Configuration**
+
    ```csharp
    // appsettings.json
    "Cors": {
@@ -326,12 +349,14 @@ cd client && npm run build
 ### Issue: Build Fails
 
 **Symptoms:**
+
 - `npm run build` fails
 - TypeScript compilation errors
 
 **Solutions:**
 
 1. **Clear Cache and Reinstall**
+
    ```bash
    rm -rf node_modules
    rm package-lock.json
@@ -340,6 +365,7 @@ cd client && npm run build
    ```
 
 2. **Check TypeScript Errors**
+
    ```bash
    npm run type-check
    ```
@@ -353,20 +379,23 @@ cd client && npm run build
 ### Issue: Blank Page After Deploy
 
 **Symptoms:**
+
 - Production site shows blank page
 - Console shows JavaScript errors
 
 **Solutions:**
 
 1. **Check Base URL**
+
    ```typescript
    // vite.config.ts
    export default defineConfig({
-     base: '/',
+     base: "/",
    });
    ```
 
 2. **Verify Environment Variables**
+
    ```bash
    # Build with correct env
    VITE_API_URL=https://api.distrocv.com npm run build
@@ -378,20 +407,23 @@ cd client && npm run build
 ### Issue: Real-time Updates Not Working
 
 **Symptoms:**
+
 - SignalR notifications not received
 - Connection status shows disconnected
 
 **Solutions:**
 
 1. **Check SignalR Connection**
+
    ```typescript
    // Debug connection
    connection.onclose((error) => {
-     console.error('SignalR disconnected:', error);
+     console.error("SignalR disconnected:", error);
    });
    ```
 
 2. **Verify Hub URL**
+
    ```typescript
    const connection = new HubConnectionBuilder()
      .withUrl(`${API_URL}/hubs/notifications`)
@@ -417,16 +449,18 @@ cd client && npm run build
 ### Issue: Gemini API Error
 
 **Symptoms:**
+
 - Match calculation fails
 - Resume parsing returns empty
 
 **Solutions:**
 
 1. **Check API Key**
+
    ```bash
    # Verify API key is set
    echo $Gemini__ApiKey
-   
+
    # Test API directly
    curl -X POST "https://generativelanguage.googleapis.com/v1/models/gemini-1.5-pro:generateContent?key=YOUR_KEY" \
      -H "Content-Type: application/json" \
@@ -452,6 +486,7 @@ cd client && npm run build
 ### Issue: Poor Match Quality
 
 **Symptoms:**
+
 - Match scores don't seem accurate
 - Skill gaps are incorrect
 
@@ -462,6 +497,7 @@ cd client && npm run build
    - Include sufficient context
 
 2. **Check Digital Twin Data**
+
    ```sql
    SELECT skills, experience FROM "DigitalTwins" WHERE "UserId" = 'xxx';
    -- Verify data is properly parsed
@@ -478,16 +514,18 @@ cd client && npm run build
 ### Issue: Scraping Returns No Jobs
 
 **Symptoms:**
+
 - Job scraping completes but no jobs are stored
 - LinkedIn/Indeed connections fail
 
 **Solutions:**
 
 1. **Check Playwright Installation**
+
    ```bash
    # Install browsers
    npx playwright install chromium
-   
+
    # Verify installation
    npx playwright --version
    ```
@@ -505,12 +543,14 @@ cd client && npm run build
 ### Issue: Duplicate Jobs
 
 **Symptoms:**
+
 - Same job appears multiple times
 - External ID matching fails
 
 **Solutions:**
 
 1. **Check Duplicate Detection**
+
    ```csharp
    // Verify IsDuplicateAsync is working
    if (await _jobScrapingService.IsDuplicateAsync(externalId))
@@ -520,7 +560,7 @@ cd client && npm run build
 2. **Check Unique Constraint**
    ```sql
    -- Verify index exists
-   SELECT indexname FROM pg_indexes 
+   SELECT indexname FROM pg_indexes
    WHERE tablename = 'JobPostings' AND indexname LIKE '%external_id%';
    ```
 
@@ -531,18 +571,21 @@ cd client && npm run build
 ### Issue: Emails Not Sending
 
 **Symptoms:**
+
 - Application send fails silently
 - No delivery confirmation
 
 **Solutions:**
 
 1. **Check Gmail Credentials**
+
    ```bash
    # Verify credentials file exists
    ls -la /app/secrets/gmail-credentials.json
    ```
 
 2. **Refresh OAuth Token**
+
    ```csharp
    // Check if token needs refresh
    if (credential.Token.IsExpired(SystemClock.Default))
@@ -571,18 +614,21 @@ cd client && npm run build
 ### Issue: High Memory Usage
 
 **Symptoms:**
+
 - Container restarts frequently
 - OOM errors in logs
 
 **Solutions:**
 
 1. **Increase Container Memory**
+
    ```json
    // ECS task definition
    "memory": 2048  // Increase from 1024
    ```
 
 2. **Check for Memory Leaks**
+
    ```csharp
    // Ensure proper disposal
    using var scope = _serviceProvider.CreateScope();
@@ -598,12 +644,14 @@ cd client && npm run build
 ### Issue: High CPU Usage
 
 **Symptoms:**
+
 - Response times increase
 - CPU metrics spike
 
 **Solutions:**
 
 1. **Profile Application**
+
    ```bash
    # Use dotnet-trace
    dotnet trace collect -p <pid> --duration 00:00:30
@@ -619,12 +667,14 @@ cd client && npm run build
 ### Issue: ECS Task Fails to Start
 
 **Symptoms:**
+
 - Task transitions to STOPPED
 - Service doesn't reach desired count
 
 **Solutions:**
 
 1. **Check Task Logs**
+
    ```bash
    aws logs get-log-events \
      --log-group-name /ecs/distrocv-api \
@@ -632,6 +682,7 @@ cd client && npm run build
    ```
 
 2. **Verify Image Exists**
+
    ```bash
    aws ecr describe-images --repository-name distrocv-api
    ```
@@ -646,12 +697,14 @@ cd client && npm run build
 ### Issue: ALB Health Checks Failing
 
 **Symptoms:**
+
 - Target shows "unhealthy"
 - Requests not reaching containers
 
 **Solutions:**
 
 1. **Verify Health Check Path**
+
    ```bash
    # Health check should return 200
    curl http://container-ip:5000/health
@@ -693,13 +746,13 @@ aws logs filter-log-events \
 
 ### Key Metrics to Monitor
 
-| Metric | Warning Threshold | Critical Threshold |
-|--------|-------------------|-------------------|
-| API Response Time | > 1s | > 2s |
-| Error Rate | > 1% | > 5% |
-| CPU Usage | > 70% | > 90% |
-| Memory Usage | > 80% | > 95% |
-| Database Connections | > 80% | > 95% |
+| Metric               | Warning Threshold | Critical Threshold |
+| -------------------- | ----------------- | ------------------ |
+| API Response Time    | > 1s              | > 2s               |
+| Error Rate           | > 1%              | > 5%               |
+| CPU Usage            | > 70%             | > 90%              |
+| Memory Usage         | > 80%             | > 95%              |
+| Database Connections | > 80%             | > 95%              |
 
 ### Setting Up Alerts
 
@@ -713,7 +766,7 @@ aws cloudwatch put-metric-alarm \
   --period 300 \
   --threshold 10 \
   --comparison-operator GreaterThanThreshold \
-  --alarm-actions arn:aws:sns:eu-west-1:xxx:alerts
+  --alarm-actions arn:aws:sns:eu-north-1:xxx:alerts
 ```
 
 ---
@@ -723,11 +776,13 @@ aws cloudwatch put-metric-alarm \
 ### Database Corruption
 
 1. **Stop all services**
+
    ```bash
    aws ecs update-service --cluster distrocv-cluster --service distrocv-api --desired-count 0
    ```
 
 2. **Create backup**
+
    ```bash
    aws rds create-db-snapshot \
      --db-instance-identifier distrocv-db \
@@ -768,18 +823,18 @@ aws cloudfront create-invalidation --distribution-id xxx --paths "/*"
 
 ### Internal Team
 
-| Role | Contact | Availability |
-|------|---------|--------------|
-| On-Call Engineer | PagerDuty | 24/7 |
-| Backend Lead | backend@distrocv.com | Business hours |
-| Frontend Lead | frontend@distrocv.com | Business hours |
-| DevOps | devops@distrocv.com | Business hours |
+| Role             | Contact               | Availability   |
+| ---------------- | --------------------- | -------------- |
+| On-Call Engineer | PagerDuty             | 24/7           |
+| Backend Lead     | backend@distrocv.com  | Business hours |
+| Frontend Lead    | frontend@distrocv.com | Business hours |
+| DevOps           | devops@distrocv.com   | Business hours |
 
 ### External Support
 
-| Service | Contact |
-|---------|---------|
-| AWS Support | aws.amazon.com/support |
+| Service              | Contact                  |
+| -------------------- | ------------------------ |
+| AWS Support          | aws.amazon.com/support   |
 | Google Cloud Support | cloud.google.com/support |
 | PostgreSQL Community | postgresql.org/community |
 
@@ -792,6 +847,5 @@ aws cloudfront create-invalidation --distribution-id xxx --paths "/*"
 
 ---
 
-*Last Updated: January 2026*
-*Version: 2.0.0*
-
+_Last Updated: January 2026_
+_Version: 2.0.0_

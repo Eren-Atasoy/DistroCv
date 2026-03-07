@@ -6,17 +6,18 @@ This document outlines the backup strategy, disaster recovery procedures, and bu
 
 ## Recovery Objectives
 
-| Metric | Target | Definition |
-|--------|--------|------------|
-| **RTO** (Recovery Time Objective) | 1 hour | Maximum acceptable downtime |
+| Metric                             | Target     | Definition                   |
+| ---------------------------------- | ---------- | ---------------------------- |
+| **RTO** (Recovery Time Objective)  | 1 hour     | Maximum acceptable downtime  |
 | **RPO** (Recovery Point Objective) | 15 minutes | Maximum acceptable data loss |
-| **MTTR** (Mean Time To Recover) | 30 minutes | Expected recovery time |
+| **MTTR** (Mean Time To Recover)    | 30 minutes | Expected recovery time       |
 
 ## Backup Strategy
 
 ### 1. Database Backups (RDS PostgreSQL)
 
 #### Automated Backups
+
 ```yaml
 Configuration:
   Backup Window: 03:00-04:00 UTC (low traffic)
@@ -26,11 +27,13 @@ Configuration:
 ```
 
 #### Manual Snapshots
+
 - **Before deployments**: Create manual snapshot
 - **Weekly**: Full snapshot for long-term retention
 - **Monthly**: Archive to S3 Glacier for compliance
 
 #### Point-in-Time Recovery
+
 - Enabled for RDS
 - Allows recovery to any point within retention period
 - Transaction log backups every 5 minutes
@@ -38,6 +41,7 @@ Configuration:
 ### 2. S3 Bucket Backups
 
 #### Versioning & Replication
+
 ```yaml
 Buckets:
   distrocv-resumes:
@@ -46,7 +50,7 @@ Buckets:
     Lifecycle:
       - Transition to IA: 90 days
       - Transition to Glacier: 365 days
-    
+
   distrocv-tailored-resumes:
     Versioning: Enabled
     Replication: Cross-region to eu-central-1
@@ -57,11 +61,13 @@ Buckets:
 ### 3. Application State Backups
 
 #### Configuration Backups
+
 - AWS Secrets Manager: Automatic versioning
 - Parameter Store: Daily export to S3
 - Terraform State: S3 + DynamoDB locking
 
 #### Code & Infrastructure
+
 - Git repository: GitHub with branch protection
 - Container images: ECR with immutable tags
 - Terraform: Version controlled in Git
@@ -81,10 +87,12 @@ ElastiCache Configuration:
 ### Scenario 1: Database Failure
 
 #### Detection
+
 - CloudWatch alarm: RDS availability < 100%
 - Health check failure at /health endpoint
 
 #### Recovery Steps
+
 ```bash
 # 1. Check RDS status
 aws rds describe-db-instances --db-instance-identifier distrocv-prod
@@ -110,11 +118,13 @@ aws ecs update-service --cluster distrocv --service api --force-new-deployment
 ### Scenario 2: Application Failure
 
 #### Detection
+
 - ALB health check failures
 - CloudWatch alarm: HTTP 5xx rate > 1%
 - ECS task failures
 
 #### Recovery Steps
+
 ```bash
 # 1. Check ECS service status
 aws ecs describe-services --cluster distrocv --services api
@@ -139,10 +149,12 @@ git push origin main
 ### Scenario 3: Complete Region Failure
 
 #### Detection
-- Multiple AWS services unavailable in eu-west-1
+
+- Multiple AWS services unavailable in eu-north-1
 - CloudWatch cross-region alarms triggered
 
 #### Recovery Steps
+
 ```bash
 # 1. Activate DR region (eu-central-1)
 cd infrastructure/terraform
@@ -182,11 +194,13 @@ curl https://api.distrocv.com/health
 ### Scenario 4: Security Breach
 
 #### Detection
+
 - GuardDuty findings
 - Unusual API activity patterns
 - User reports of unauthorized access
 
 #### Response Steps
+
 ```bash
 # 1. Isolate affected resources
 aws ec2 modify-security-group-rules \
@@ -216,6 +230,7 @@ aws rds restore-db-instance-to-point-in-time \
 ## Automated Backup Scripts
 
 ### Daily Backup Script
+
 ```bash
 #!/bin/bash
 # backup-daily.sh
@@ -238,10 +253,11 @@ aws s3 sync secrets/ s3://$BACKUP_BUCKET/secrets/$DATE/
 aws s3 cp s3://distrocv-terraform-state/prod/terraform.tfstate s3://$BACKUP_BUCKET/terraform/$DATE/
 
 # Create backup report
-echo "Backup completed: $DATE" | aws sns publish --topic-arn arn:aws:sns:eu-west-1:ACCOUNT:backup-notifications --message file:///dev/stdin
+echo "Backup completed: $DATE" | aws sns publish --topic-arn arn:aws:sns:eu-north-1:ACCOUNT:backup-notifications --message file:///dev/stdin
 ```
 
 ### Backup Verification Script
+
 ```bash
 #!/bin/bash
 # verify-backup.sh
@@ -266,17 +282,18 @@ echo "Backup verification completed successfully"
 
 ## Recovery Testing Schedule
 
-| Test Type | Frequency | Last Test | Next Test | Owner |
-|-----------|-----------|-----------|-----------|-------|
-| Database restore | Monthly | | | DevOps |
-| Application rollback | Bi-weekly | | | Dev Team |
-| Full DR failover | Quarterly | | | All Teams |
-| Backup integrity | Weekly | | | DevOps |
-| Security incident drill | Quarterly | | | Security |
+| Test Type               | Frequency | Last Test | Next Test | Owner     |
+| ----------------------- | --------- | --------- | --------- | --------- |
+| Database restore        | Monthly   |           |           | DevOps    |
+| Application rollback    | Bi-weekly |           |           | Dev Team  |
+| Full DR failover        | Quarterly |           |           | All Teams |
+| Backup integrity        | Weekly    |           |           | DevOps    |
+| Security incident drill | Quarterly |           |           | Security  |
 
 ## Monitoring & Alerts
 
 ### CloudWatch Alarms
+
 ```yaml
 Alarms:
   - Name: RDS-Availability
@@ -297,26 +314,25 @@ Alarms:
 
 ## Contact Information
 
-| Role | Name | Phone | Email |
-|------|------|-------|-------|
-| On-Call DevOps | | | |
-| Database Admin | | | |
-| Security Lead | | | |
-| Tech Lead | | | |
+| Role           | Name | Phone | Email |
+| -------------- | ---- | ----- | ----- |
+| On-Call DevOps |      |       |       |
+| Database Admin |      |       |       |
+| Security Lead  |      |       |       |
+| Tech Lead      |      |       |       |
 
 ## Runbook Quick Reference
 
-| Scenario | Estimated RTO | Procedure Doc |
-|----------|---------------|---------------|
-| Database failure | 5 min (Multi-AZ) | Section 2.1 |
-| Application failure | 10 min | Section 2.2 |
-| Region failure | 60 min | Section 2.3 |
-| Security breach | Varies | Section 2.4 |
-| Data corruption | 30 min | Section 2.1 |
+| Scenario            | Estimated RTO    | Procedure Doc |
+| ------------------- | ---------------- | ------------- |
+| Database failure    | 5 min (Multi-AZ) | Section 2.1   |
+| Application failure | 10 min           | Section 2.2   |
+| Region failure      | 60 min           | Section 2.3   |
+| Security breach     | Varies           | Section 2.4   |
+| Data corruption     | 30 min           | Section 2.1   |
 
 ---
 
 **Last Updated:** 2026-01-22
 **Review Frequency:** Quarterly
 **Document Owner:** DevOps Team
-

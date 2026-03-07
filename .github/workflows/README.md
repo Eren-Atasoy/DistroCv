@@ -78,20 +78,20 @@ Automated pipeline that runs on every push and pull request to `main` and `devel
 
 ```bash
 # Development
-aws ecr create-repository --repository-name distrocv-api --region eu-west-1
+aws ecr create-repository --repository-name distrocv-api --region eu-north-1
 
 # Production
-aws ecr create-repository --repository-name distrocv-api --region eu-west-1
+aws ecr create-repository --repository-name distrocv-api --region eu-north-1
 ```
 
 #### Create ECS Clusters
 
 ```bash
 # Development
-aws ecs create-cluster --cluster-name distrocv-dev-cluster --region eu-west-1
+aws ecs create-cluster --cluster-name distrocv-dev-cluster --region eu-north-1
 
 # Production
-aws ecs create-cluster --cluster-name distrocv-prod-cluster --region eu-west-1
+aws ecs create-cluster --cluster-name distrocv-prod-cluster --region eu-north-1
 ```
 
 #### Create S3 Buckets for Frontend
@@ -100,14 +100,14 @@ aws ecs create-cluster --cluster-name distrocv-prod-cluster --region eu-west-1
 # Development
 aws s3api create-bucket \
   --bucket distrocv-dev-frontend \
-  --region eu-west-1 \
-  --create-bucket-configuration LocationConstraint=eu-west-1
+  --region eu-north-1 \
+  --create-bucket-configuration LocationConstraint=eu-north-1
 
 # Production
 aws s3api create-bucket \
   --bucket distrocv-prod-frontend \
-  --region eu-west-1 \
-  --create-bucket-configuration LocationConstraint=eu-west-1
+  --region eu-north-1 \
+  --create-bucket-configuration LocationConstraint=eu-north-1
 ```
 
 #### Create CloudFront Distributions
@@ -141,21 +141,25 @@ aws s3api create-bucket \
 ## Branch Strategy
 
 ### Development Branch (`develop`)
+
 - All feature branches merge here
 - Automatically deploys to development environment
 - Used for testing and QA
 
 ### Main Branch (`main`)
+
 - Production-ready code only
 - Automatically deploys to production environment
 - Protected branch with required reviews
 
 ### Feature Branches
+
 - Created from `develop`
 - Naming: `feature/feature-name`
 - Merge back to `develop` via pull request
 
 ### Hotfix Branches
+
 - Created from `main` for urgent fixes
 - Naming: `hotfix/issue-description`
 - Merge to both `main` and `develop`
@@ -167,6 +171,7 @@ aws s3api create-bucket \
 Located at `src/DistroCv.Api/Dockerfile`
 
 **Features:**
+
 - Multi-stage build for optimized image size
 - Non-root user for security
 - Health check endpoint
@@ -181,23 +186,26 @@ docker build -t distrocv-api:local -f src/DistroCv.Api/Dockerfile .
 # Run container
 docker run -p 8080:8080 \
   -e ConnectionStrings__DefaultConnection="Host=localhost;Database=distrocv;Username=postgres;Password=postgres" \
-  -e AWS__Region="eu-west-1" \
+  -e AWS__Region="eu-north-1" \
   distrocv-api:local
 ```
 
 ## Monitoring and Logs
 
 ### GitHub Actions Logs
+
 - View workflow runs in the Actions tab
 - Each job shows detailed logs
 - Failed jobs highlight errors
 
 ### AWS CloudWatch
+
 - ECS task logs automatically sent to CloudWatch
 - Log group: `/ecs/distrocv-api`
 - Retention: 30 days
 
 ### Application Insights
+
 - Structured logging with Serilog
 - Custom metrics and traces
 - Error tracking and alerting
@@ -205,12 +213,14 @@ docker run -p 8080:8080 \
 ## Rollback Procedures
 
 ### Automatic Rollback
+
 - ECS deployment circuit breaker enabled
 - Automatically rolls back on health check failures
 
 ### Manual Rollback
 
 #### Backend (ECS)
+
 ```bash
 # List task definitions
 aws ecs list-task-definitions --family-prefix distrocv-api
@@ -223,6 +233,7 @@ aws ecs update-service \
 ```
 
 #### Frontend (S3 + CloudFront)
+
 ```bash
 # Restore from S3 versioning
 aws s3api list-object-versions --bucket distrocv-prod-frontend
@@ -235,6 +246,7 @@ aws cloudfront create-invalidation --distribution-id DISTRIBUTION_ID --paths "/*
 ```
 
 #### Database
+
 ```bash
 # Rollback migration
 dotnet ef migrations remove --project src/DistroCv.Infrastructure/DistroCv.Infrastructure.csproj
@@ -243,14 +255,17 @@ dotnet ef migrations remove --project src/DistroCv.Infrastructure/DistroCv.Infra
 ## Performance Optimization
 
 ### Build Cache
+
 - GitHub Actions caches npm and NuGet packages
 - Reduces build time by ~50%
 
 ### Parallel Jobs
+
 - Backend and frontend build in parallel
 - Reduces total pipeline time
 
 ### Artifact Retention
+
 - Build artifacts kept for 7 days
 - Reduces storage costs
 
@@ -281,12 +296,14 @@ dotnet ef migrations remove --project src/DistroCv.Infrastructure/DistroCv.Infra
 ### Build Failures
 
 **Issue: .NET restore fails**
+
 ```bash
 # Solution: Clear NuGet cache
 dotnet nuget locals all --clear
 ```
 
 **Issue: npm install fails**
+
 ```bash
 # Solution: Delete node_modules and package-lock.json
 rm -rf client/node_modules client/package-lock.json
@@ -296,11 +313,13 @@ npm install
 ### Deployment Failures
 
 **Issue: ECS task fails to start**
+
 - Check CloudWatch logs for errors
 - Verify environment variables
 - Check security group rules
 
 **Issue: CloudFront not serving updated content**
+
 - Verify S3 sync completed
 - Check invalidation status
 - Wait for cache TTL to expire
@@ -308,6 +327,7 @@ npm install
 ### Database Migration Failures
 
 **Issue: Migration fails**
+
 ```bash
 # Check migration status
 dotnet ef migrations list
@@ -333,6 +353,7 @@ dotnet ef database update PreviousMigrationName
 ## Support
 
 For issues or questions:
+
 1. Check GitHub Actions logs
 2. Review CloudWatch logs
 3. Contact DevOps team

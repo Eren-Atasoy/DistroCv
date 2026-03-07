@@ -44,6 +44,7 @@ The Google OAuth system integrates with the existing AWS Cognito authentication 
 ### 2. API Endpoint
 
 #### Google OAuth Sign In
+
 ```http
 POST /api/auth/google
 Content-Type: application/json
@@ -55,10 +56,12 @@ Content-Type: application/json
 ```
 
 **Request Parameters:**
+
 - `idToken` (required): Google ID token obtained from Google Sign-In
 - `preferredLanguage` (optional): User's preferred language ("tr" or "en"), defaults to "tr"
 
 **Response (Success):**
+
 ```json
 {
   "accessToken": "eyJraWQiOiI...",
@@ -78,6 +81,7 @@ Content-Type: application/json
 ```
 
 **Response (Error):**
+
 ```json
 {
   "message": "Invalid Google ID token"
@@ -93,12 +97,14 @@ GET https://oauth2.googleapis.com/tokeninfo?id_token={idToken}
 ```
 
 **Verified Information:**
+
 - Email address
 - Email verification status
 - User's full name
 - Google user ID (sub)
 
 **Security Checks:**
+
 - Token must be valid and not expired
 - Email must be verified by Google
 - Token must be issued by Google
@@ -119,8 +125,8 @@ Update `appsettings.json` with Google OAuth credentials:
 ```json
 {
   "AWS": {
-    "Region": "eu-west-1",
-    "CognitoUserPoolId": "eu-west-1_XXXXXXXXX",
+    "Region": "eu-north-1",
+    "CognitoUserPoolId": "eu-north-1_XXXXXXXXX",
     "CognitoClientId": "your-client-id",
     "GoogleClientId": "your-google-client-id.apps.googleusercontent.com",
     "GoogleClientSecret": "your-google-client-secret"
@@ -146,7 +152,7 @@ npm install @react-oauth/google
 ### 2. Setup Google OAuth Provider
 
 ```tsx
-import { GoogleOAuthProvider } from '@react-oauth/google';
+import { GoogleOAuthProvider } from "@react-oauth/google";
 
 function App() {
   return (
@@ -160,42 +166,38 @@ function App() {
 ### 3. Implement Google Sign-In Button
 
 ```tsx
-import { useGoogleLogin } from '@react-oauth/google';
+import { useGoogleLogin } from "@react-oauth/google";
 
 function LoginPage() {
   const login = useGoogleLogin({
     onSuccess: async (tokenResponse) => {
       // Send ID token to backend
-      const response = await fetch('/api/auth/google', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
+      const response = await fetch("/api/auth/google", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
         body: JSON.stringify({
           idToken: tokenResponse.credential,
-          preferredLanguage: 'tr'
-        })
+          preferredLanguage: "tr",
+        }),
       });
-      
+
       const data = await response.json();
-      
+
       if (response.ok) {
         // Store tokens and redirect
-        localStorage.setItem('accessToken', data.accessToken);
-        localStorage.setItem('refreshToken', data.refreshToken);
-        window.location.href = '/dashboard';
+        localStorage.setItem("accessToken", data.accessToken);
+        localStorage.setItem("refreshToken", data.refreshToken);
+        window.location.href = "/dashboard";
       } else {
-        console.error('Login failed:', data.message);
+        console.error("Login failed:", data.message);
       }
     },
     onError: () => {
-      console.error('Google Sign-In failed');
-    }
+      console.error("Google Sign-In failed");
+    },
   });
 
-  return (
-    <button onClick={() => login()}>
-      Sign in with Google
-    </button>
-  );
+  return <button onClick={() => login()}>Sign in with Google</button>;
 }
 ```
 
@@ -210,7 +212,7 @@ function LoginPage() {
 5. Select **Web application**
 6. Configure:
    - **Name**: DistroCV Web Client
-   - **Authorized JavaScript origins**: 
+   - **Authorized JavaScript origins**:
      - `http://localhost:3000` (development)
      - `http://localhost:5173` (Vite development)
      - `https://yourdomain.com` (production)
@@ -245,23 +247,28 @@ function LoginPage() {
 ## Security Considerations
 
 ### 1. Token Validation
+
 - Always verify Google ID tokens on the backend
 - Never trust tokens sent from the frontend without verification
 - Check token expiration and issuer
 
 ### 2. Email Verification
+
 - Only accept tokens with verified email addresses
 - Google handles email verification, so no additional confirmation needed
 
 ### 3. HTTPS Only
+
 - All OAuth flows must use HTTPS in production
 - Google will reject non-HTTPS redirect URIs in production
 
 ### 4. CORS Configuration
+
 - Configure CORS to allow requests from your frontend domain
 - Restrict origins to trusted domains only
 
 ### 5. Rate Limiting
+
 - Implement rate limiting on the `/api/auth/google` endpoint
 - Protect against brute force attacks
 
@@ -270,6 +277,7 @@ function LoginPage() {
 ### Manual Testing
 
 1. **Sign In with New User**
+
 ```bash
 # Get Google ID token from frontend
 # Then test the endpoint
@@ -282,6 +290,7 @@ curl -X POST http://localhost:5000/api/auth/google \
 ```
 
 2. **Sign In with Existing User**
+
 ```bash
 # Use the same endpoint with a different Google account
 curl -X POST http://localhost:5000/api/auth/google \
@@ -295,6 +304,7 @@ curl -X POST http://localhost:5000/api/auth/google \
 ### Integration Testing
 
 Create integration tests to verify:
+
 - Token verification with Google
 - User creation for new users
 - User retrieval for existing users
@@ -304,56 +314,68 @@ Create integration tests to verify:
 ## Troubleshooting
 
 ### Issue: "Invalid Google ID token"
+
 **Causes:**
+
 - Token has expired
 - Token is malformed
 - Token was not issued by Google
 - Network error connecting to Google's tokeninfo endpoint
 
 **Solutions:**
+
 - Ensure frontend is sending a fresh token
 - Verify token format is correct
 - Check network connectivity
 - Verify Google OAuth credentials are correct
 
 ### Issue: "Google email not verified"
+
 **Causes:**
+
 - User's Google account email is not verified
 - Token doesn't include email_verified claim
 
 **Solutions:**
+
 - Ask user to verify their Google account email
 - Check Google OAuth scope includes email verification
 
 ### Issue: "User creation failed"
+
 **Causes:**
+
 - Database connection error
 - Duplicate email in database
 - Invalid user data
 
 **Solutions:**
+
 - Check database connectivity
 - Verify email uniqueness constraint
 - Check user data validation rules
 
 ### Issue: "CORS error"
+
 **Causes:**
+
 - Frontend origin not allowed
 - Missing CORS headers
 
 **Solutions:**
+
 - Add frontend origin to CORS configuration in `appsettings.json`
 - Verify CORS middleware is configured in `Program.cs`
 
 ## Differences from Traditional Authentication
 
-| Feature | Email/Password | Google OAuth |
-|---------|---------------|--------------|
+| Feature            | Email/Password               | Google OAuth                   |
+| ------------------ | ---------------------------- | ------------------------------ |
 | Email Verification | Required (confirmation code) | Not required (Google verified) |
-| Password | User creates password | No password needed |
-| Account Creation | Manual sign-up | Automatic on first sign-in |
-| Password Reset | Forgot password flow | Not applicable |
-| MFA | Can be enabled | Handled by Google |
+| Password           | User creates password        | No password needed             |
+| Account Creation   | Manual sign-up               | Automatic on first sign-in     |
+| Password Reset     | Forgot password flow         | Not applicable                 |
+| MFA                | Can be enabled               | Handled by Google              |
 
 ## Future Enhancements
 

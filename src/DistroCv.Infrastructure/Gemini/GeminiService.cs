@@ -164,7 +164,8 @@ public class GeminiService : IGeminiService
             GenerationConfig = new GenerationConfig
             {
                 Temperature = _config.Temperature,
-                MaxOutputTokens = _config.MaxTokens
+                MaxOutputTokens = _config.MaxTokens,
+                ResponseMimeType = "application/json"
             }
         };
 
@@ -288,21 +289,7 @@ Important:
     {
         try
         {
-            // Remove markdown code blocks if present
-            var cleanedResponse = response.Trim();
-            if (cleanedResponse.StartsWith("```json"))
-            {
-                cleanedResponse = cleanedResponse.Substring(7);
-            }
-            if (cleanedResponse.StartsWith("```"))
-            {
-                cleanedResponse = cleanedResponse.Substring(3);
-            }
-            if (cleanedResponse.EndsWith("```"))
-            {
-                cleanedResponse = cleanedResponse.Substring(0, cleanedResponse.Length - 3);
-            }
-            cleanedResponse = cleanedResponse.Trim();
+            var cleanedResponse = ExtractJsonFromResponse(response);
 
             var jsonDoc = JsonDocument.Parse(cleanedResponse);
             var root = jsonDoc.RootElement;
@@ -385,21 +372,7 @@ Important:
     {
         try
         {
-            // Remove markdown code blocks if present
-            var cleanedResponse = response.Trim();
-            if (cleanedResponse.StartsWith("```json"))
-            {
-                cleanedResponse = cleanedResponse.Substring(7);
-            }
-            if (cleanedResponse.StartsWith("```"))
-            {
-                cleanedResponse = cleanedResponse.Substring(3);
-            }
-            if (cleanedResponse.EndsWith("```"))
-            {
-                cleanedResponse = cleanedResponse.Substring(0, cleanedResponse.Length - 3);
-            }
-            cleanedResponse = cleanedResponse.Trim();
+            var cleanedResponse = ExtractJsonFromResponse(response);
 
             var jsonDoc = JsonDocument.Parse(cleanedResponse);
             var root = jsonDoc.RootElement;
@@ -446,6 +419,37 @@ Important:
         }
     }
 
+    /// <summary>
+    /// Extracts JSON from a Gemini response, stripping markdown fences and surrounding text
+    /// </summary>
+    private static string ExtractJsonFromResponse(string response)
+    {
+        var text = response.Trim();
+
+        // Strip markdown code fences: ```json ... ``` or ``` ... ```
+        var fenceMatch = System.Text.RegularExpressions.Regex.Match(
+            text,
+            @"```(?:json)?\s*([\s\S]*?)```",
+            System.Text.RegularExpressions.RegexOptions.Singleline);
+        if (fenceMatch.Success)
+        {
+            text = fenceMatch.Groups[1].Value.Trim();
+        }
+
+        // If still not valid JSON, try to find the first { ... } block
+        if (!text.StartsWith("{"))
+        {
+            var start = text.IndexOf('{');
+            var end = text.LastIndexOf('}');
+            if (start >= 0 && end > start)
+            {
+                text = text.Substring(start, end - start + 1);
+            }
+        }
+
+        return text.Trim();
+    }
+
     #region DTOs for Gemini API
 
     private class GeminiRequest
@@ -476,6 +480,9 @@ Important:
 
         [JsonPropertyName("maxOutputTokens")]
         public int MaxOutputTokens { get; set; }
+
+        [JsonPropertyName("responseMimeType")]
+        public string? ResponseMimeType { get; set; }
     }
 
     private class GeminiResponse
@@ -548,7 +555,7 @@ Important:
             var requestJson = JsonSerializer.Serialize(request);
             var content = new StringContent(requestJson, Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PostAsync($"models/gemini-1.5-flash:generateContent?key={_config.ApiKey}", content);
+            var response = await _httpClient.PostAsync($"models/{_config.Model}:generateContent?key={_config.ApiKey}", content);
             response.EnsureSuccessStatusCode();
 
             var responseJson = await response.Content.ReadAsStringAsync();

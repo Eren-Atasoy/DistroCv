@@ -1,3 +1,4 @@
+using System.Linq;
 using DistroCv.Core.Entities;
 using DistroCv.Core.Interfaces;
 using DistroCv.Infrastructure.AWS;
@@ -136,7 +137,7 @@ public class ProfileService : IProfileService
             _context.DigitalTwins.Add(digitalTwin);
             await _context.SaveChangesAsync();
 
-            _logger.LogInformation("Digital twin created successfully for user {UserId} with ID {DigitalTwinId}", 
+            _logger.LogInformation("Digital twin created successfully for user {UserId} with ID {DigitalTwinId}",
                 userId, digitalTwin.Id);
 
             return digitalTwin;
@@ -188,21 +189,21 @@ public class ProfileService : IProfileService
         try
         {
             _logger.LogInformation("Generating embedding vector with Gemini");
-            
+
             // Use Gemini service to generate embeddings
             var embeddingArray = await _geminiService.GenerateEmbeddingAsync(text);
-            
+
             // Convert to pgvector Vector
             return new Vector(embeddingArray);
         }
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error generating embedding with Gemini, falling back to placeholder");
-            
+
             // Fallback to placeholder vector if Gemini fails
             var dimensions = 1536;
             var values = new float[dimensions];
-            
+
             var hash = text.GetHashCode();
             var random = new Random(hash);
             for (int i = 0; i < dimensions; i++)
@@ -249,7 +250,7 @@ public class ProfileService : IProfileService
 
             // Use PdfPig to extract text from PDF
             using var document = UglyToad.PdfPig.PdfDocument.Open(stream);
-            
+
             var extractedData = new
             {
                 type = "pdf",
@@ -262,10 +263,12 @@ public class ProfileService : IProfileService
             var fullTextBuilder = new System.Text.StringBuilder();
             var contentList = new List<object>();
 
-            // Extract text from each page
+            // Extract text from each page using word-level extraction for proper spacing
             foreach (var page in document.GetPages())
             {
-                var pageText = page.Text;
+                // page.Text concatenates without spaces; use GetWords() for proper spacing
+                var words = page.GetWords();
+                var pageText = string.Join(" ", words.Select(w => w.Text));
                 fullTextBuilder.AppendLine(pageText);
 
                 contentList.Add(new
@@ -276,7 +279,7 @@ public class ProfileService : IProfileService
                     height = page.Height
                 });
 
-                _logger.LogDebug("Extracted text from page {PageNumber}: {CharCount} characters", 
+                _logger.LogDebug("Extracted text from page {PageNumber}: {CharCount} characters",
                     page.Number, pageText.Length);
             }
 
@@ -295,7 +298,7 @@ public class ProfileService : IProfileService
                 WriteIndented = true
             });
 
-            _logger.LogInformation("Successfully parsed PDF with {PageCount} pages and {CharCount} total characters", 
+            _logger.LogInformation("Successfully parsed PDF with {PageCount} pages and {CharCount} total characters",
                 document.NumberOfPages, fullTextBuilder.Length);
 
             return await Task.FromResult(jsonResult);
@@ -303,7 +306,7 @@ public class ProfileService : IProfileService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error parsing PDF resume");
-            
+
             // Return error information in JSON format
             var errorResult = new
             {
@@ -328,7 +331,7 @@ public class ProfileService : IProfileService
 
             // Use DocumentFormat.OpenXml to extract text from DOCX
             using var document = DocumentFormat.OpenXml.Packaging.WordprocessingDocument.Open(stream, false);
-            
+
             if (document.MainDocumentPart == null)
             {
                 throw new InvalidOperationException("DOCX document has no main document part");
@@ -364,7 +367,7 @@ public class ProfileService : IProfileService
             foreach (var table in body.Elements<DocumentFormat.OpenXml.Wordprocessing.Table>())
             {
                 var tableData = new List<List<string>>();
-                
+
                 foreach (var row in table.Elements<DocumentFormat.OpenXml.Wordprocessing.TableRow>())
                 {
                     var rowData = new List<string>();
@@ -408,7 +411,7 @@ public class ProfileService : IProfileService
                 WriteIndented = true
             });
 
-            _logger.LogInformation("Successfully parsed DOCX with {ParagraphCount} paragraphs, {TableCount} tables, and {CharCount} total characters", 
+            _logger.LogInformation("Successfully parsed DOCX with {ParagraphCount} paragraphs, {TableCount} tables, and {CharCount} total characters",
                 paragraphs.Count, tables.Count, fullTextBuilder.Length);
 
             return Task.FromResult(jsonResult);
@@ -416,7 +419,7 @@ public class ProfileService : IProfileService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error parsing DOCX resume");
-            
+
             // Return error information in JSON format
             var errorResult = new
             {
@@ -438,10 +441,10 @@ public class ProfileService : IProfileService
         try
         {
             _logger.LogInformation("Parsing TXT resume with structure extraction");
-            
+
             using var reader = new StreamReader(stream);
             var content = await reader.ReadToEndAsync();
-            
+
             if (string.IsNullOrWhiteSpace(content))
             {
                 throw new InvalidOperationException("TXT file is empty");
@@ -455,16 +458,16 @@ public class ProfileService : IProfileService
 
             // Extract structured sections
             var sections = ExtractResumeSections(lines);
-            
+
             // Identify contact information
             var contactInfo = ExtractContactInformation(lines);
-            
+
             // Extract skills
             var skills = ExtractSkills(sections, lines);
-            
+
             // Extract experience entries
             var experience = ExtractExperience(sections, lines);
-            
+
             // Extract education entries
             var education = ExtractEducation(sections, lines);
 
@@ -493,7 +496,7 @@ public class ProfileService : IProfileService
                 WriteIndented = true
             });
 
-            _logger.LogInformation("Successfully parsed TXT with {LineCount} lines, {SectionCount} sections identified", 
+            _logger.LogInformation("Successfully parsed TXT with {LineCount} lines, {SectionCount} sections identified",
                 lines.Count, sections.Count);
 
             return jsonResult;
@@ -501,7 +504,7 @@ public class ProfileService : IProfileService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error parsing TXT resume");
-            
+
             // Return error information in JSON format
             var errorResult = new
             {
@@ -521,7 +524,7 @@ public class ProfileService : IProfileService
     private Dictionary<string, (int StartLine, int EndLine, string Content)> ExtractResumeSections(List<string> lines)
     {
         var sections = new Dictionary<string, (int StartLine, int EndLine, string Content)>();
-        
+
         // Common section headers (case-insensitive)
         var sectionKeywords = new Dictionary<string, string[]>
         {
@@ -573,7 +576,7 @@ public class ProfileService : IProfileService
                     .Replace("ç", "c")
                     .Replace("Ç", "c")).ToArray();
 
-                if (normalizedKeywords.Any(keyword => 
+                if (normalizedKeywords.Any(keyword =>
                     lineLower.Equals(keyword, StringComparison.OrdinalIgnoreCase) ||
                     lineLower.StartsWith(keyword + ":", StringComparison.OrdinalIgnoreCase) ||
                     lineLower.StartsWith(keyword + " -", StringComparison.OrdinalIgnoreCase)))
@@ -625,7 +628,7 @@ public class ProfileService : IProfileService
     private string? ExtractEmail(List<string> lines)
     {
         var emailPattern = @"\b[A-Za-z0-9._%+-]+@[A-Za-z0-9.-]+\.[A-Z|a-z]{2,}\b";
-        
+
         foreach (var line in lines.Take(20)) // Check first 20 lines
         {
             var match = System.Text.RegularExpressions.Regex.Match(line, emailPattern);
@@ -634,7 +637,7 @@ public class ProfileService : IProfileService
                 return match.Value;
             }
         }
-        
+
         return null;
     }
 
@@ -649,7 +652,7 @@ public class ProfileService : IProfileService
             @"\(?\d{3}\)?[-.\s]?\d{3}[-.\s]?\d{4}",                    // US format
             @"\+?\d{10,15}"                                             // Simple international
         };
-        
+
         foreach (var line in lines.Take(20)) // Check first 20 lines
         {
             foreach (var pattern in phonePatterns)
@@ -661,7 +664,7 @@ public class ProfileService : IProfileService
                 }
             }
         }
-        
+
         return null;
     }
 
@@ -671,7 +674,7 @@ public class ProfileService : IProfileService
     private string? ExtractLinkedIn(List<string> lines)
     {
         var linkedInPattern = @"(https?://)?(www\.)?linkedin\.com/in/[\w-]+/?";
-        
+
         foreach (var line in lines.Take(30)) // Check first 30 lines
         {
             var match = System.Text.RegularExpressions.Regex.Match(line, linkedInPattern, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
@@ -680,7 +683,7 @@ public class ProfileService : IProfileService
                 return match.Value;
             }
         }
-        
+
         return null;
     }
 
@@ -690,7 +693,7 @@ public class ProfileService : IProfileService
     private string? ExtractGitHub(List<string> lines)
     {
         var githubPattern = @"(https?://)?(www\.)?github\.com/[\w-]+/?";
-        
+
         foreach (var line in lines.Take(30)) // Check first 30 lines
         {
             var match = System.Text.RegularExpressions.Regex.Match(line, githubPattern, System.Text.RegularExpressions.RegexOptions.IgnoreCase);
@@ -699,7 +702,7 @@ public class ProfileService : IProfileService
                 return match.Value;
             }
         }
-        
+
         return null;
     }
 
@@ -713,7 +716,7 @@ public class ProfileService : IProfileService
         if (sections.ContainsKey("Skills"))
         {
             var skillsContent = sections["Skills"].Content;
-            
+
             // Split by common delimiters
             var delimiters = new[] { ',', ';', '|', '\n', '•', '-', '·' };
             var skillItems = skillsContent.Split(delimiters, StringSplitOptions.RemoveEmptyEntries)
@@ -744,7 +747,7 @@ public class ProfileService : IProfileService
 
             // Try to identify experience entries (simplified heuristic)
             var currentEntry = new List<string>();
-            
+
             foreach (var line in experienceLines)
             {
                 // Check if line might be a job title or company (usually shorter, may contain dates)
@@ -796,13 +799,13 @@ public class ProfileService : IProfileService
 
             // Try to identify education entries
             var currentEntry = new List<string>();
-            
+
             foreach (var line in educationLines)
             {
                 // Check if line might be a degree or institution
                 var hasDate = System.Text.RegularExpressions.Regex.IsMatch(line, @"\d{4}|\d{1,2}/\d{4}");
-                var hasDegreeKeyword = System.Text.RegularExpressions.Regex.IsMatch(line, 
-                    @"\b(bachelor|master|phd|doctorate|diploma|degree|bs|ba|ms|ma|mba|university|college|üniversite)\b", 
+                var hasDegreeKeyword = System.Text.RegularExpressions.Regex.IsMatch(line,
+                    @"\b(bachelor|master|phd|doctorate|diploma|degree|bs|ba|ms|ma|mba|university|college|üniversite)\b",
                     System.Text.RegularExpressions.RegexOptions.IgnoreCase);
 
                 if ((hasDate || hasDegreeKeyword) && currentEntry.Count > 0)
@@ -874,7 +877,7 @@ public class ProfileService : IProfileService
     #endregion
 
     #region Task 21: Security - Secure API Key Storage
-    
+
     /// <summary>
     /// Updates the user's encrypted API key (Task 21.5)
     /// </summary>
@@ -888,9 +891,9 @@ public class ProfileService : IProfileService
 
         user.EncryptedApiKey = encryptedApiKey;
         await _context.SaveChangesAsync();
-        
+
         _logger.LogInformation("Updated API Key for user {UserId}", userId);
     }
-    
+
     #endregion
 }

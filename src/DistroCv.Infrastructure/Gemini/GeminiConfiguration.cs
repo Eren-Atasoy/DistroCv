@@ -25,7 +25,7 @@ public class GeminiConfiguration
     /// <summary>
     /// Maximum tokens for generation
     /// </summary>
-    public int MaxTokens { get; set; } = 2048;
+    public int MaxTokens { get; set; } = 8192;
 
     /// <summary>
     /// Temperature for generation (0.0 to 1.0)
