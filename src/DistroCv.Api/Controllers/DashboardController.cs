@@ -1,5 +1,6 @@
 using DistroCv.Core.DTOs;
 using DistroCv.Infrastructure.Data;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -8,6 +9,7 @@ namespace DistroCv.Api.Controllers;
 /// <summary>
 /// Dashboard and analytics controller
 /// </summary>
+[Authorize]
 public class DashboardController : BaseApiController
 {
     private readonly DistroCvDbContext _context;
@@ -28,7 +30,7 @@ public class DashboardController : BaseApiController
     public async Task<IActionResult> GetStats()
     {
         var userId = GetCurrentUserId();
-        
+
         _logger.LogInformation("Getting dashboard stats for user: {UserId}", userId);
 
         var applications = await _context.Applications
@@ -44,11 +46,11 @@ public class DashboardController : BaseApiController
 
         // Mock logic for interview invitations if not explicitly tracked yet or use status "Interview"
         // Assuming "Responded" might include interviews or separate status
-        var interviews = applications.Count(a => a.Status == "Interview"); 
+        var interviews = applications.Count(a => a.Status == "Interview");
 
         var matchingJobs = await _context.JobMatches
             .CountAsync(m => m.UserId == userId);
-            
+
         decimal responseRate = sent > 0 ? (decimal)responded / sent * 100 : 0;
 
         var stats = new DashboardStatsDto(
@@ -73,7 +75,7 @@ public class DashboardController : BaseApiController
     public async Task<IActionResult> GetTrends()
     {
         var userId = GetCurrentUserId();
-        
+
         _logger.LogInformation("Getting trends for user: {UserId}", userId);
 
         var now = DateTime.UtcNow;

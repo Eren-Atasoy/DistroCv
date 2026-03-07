@@ -33,7 +33,7 @@ public class LinkedInProfileService : ILinkedInProfileService
     /// Task 18.1: Scrape LinkedIn profile data using Playwright
     /// </summary>
     public async Task<LinkedInProfileData> ScrapeProfileAsync(
-        string linkedInUrl, 
+        string linkedInUrl,
         CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Scraping LinkedIn profile: {Url}", linkedInUrl);
@@ -47,9 +47,9 @@ public class LinkedInProfileService : ILinkedInProfileService
         try
         {
             await InitializeBrowserAsync();
-            
+
             var page = await _browser!.NewPageAsync();
-            
+
             try
             {
                 // Navigate to profile
@@ -67,9 +67,9 @@ public class LinkedInProfileService : ILinkedInProfileService
 
                 // Extract profile data
                 var profileData = await ExtractProfileDataAsync(page, linkedInUrl);
-                
+
                 _logger.LogInformation("Successfully scraped profile for: {Name}", profileData.Name);
-                
+
                 return profileData;
             }
             finally
@@ -80,7 +80,7 @@ public class LinkedInProfileService : ILinkedInProfileService
         catch (PlaywrightException ex)
         {
             _logger.LogError(ex, "Playwright error while scraping LinkedIn profile");
-            
+
             // Return mock data if scraping fails (for demo purposes)
             return CreateMockProfileData(linkedInUrl);
         }
@@ -123,13 +123,13 @@ public class LinkedInProfileService : ILinkedInProfileService
         {
             var experienceItems = page.Locator("#experience ~ div .pvs-list__item--line-separated");
             var count = await experienceItems.CountAsync();
-            
+
             for (int i = 0; i < Math.Min(count, 5); i++)
             {
                 var item = experienceItems.Nth(i);
                 var title = await item.Locator(".t-bold span[aria-hidden='true']").First.TextContentAsync() ?? "";
                 var company = await item.Locator(".t-normal span[aria-hidden='true']").First.TextContentAsync() ?? "";
-                
+
                 string? duration = null;
                 try
                 {
@@ -167,13 +167,13 @@ public class LinkedInProfileService : ILinkedInProfileService
         {
             var educationItems = page.Locator("#education ~ div .pvs-list__item--line-separated");
             var count = await educationItems.CountAsync();
-            
+
             for (int i = 0; i < Math.Min(count, 3); i++)
             {
                 var item = educationItems.Nth(i);
                 var school = await item.Locator(".t-bold span[aria-hidden='true']").First.TextContentAsync() ?? "";
                 var degree = await item.Locator(".t-normal span[aria-hidden='true']").First.TextContentAsync();
-                
+
                 education.Add(new LinkedInEducation(
                     School: school.Trim(),
                     Degree: degree?.Trim(),
@@ -193,7 +193,7 @@ public class LinkedInProfileService : ILinkedInProfileService
         {
             var skillItems = page.Locator("#skills ~ div .pvs-list__item--line-separated .t-bold span[aria-hidden='true']");
             var count = await skillItems.CountAsync();
-            
+
             for (int i = 0; i < Math.Min(count, 10); i++)
             {
                 var skill = await skillItems.Nth(i).TextContentAsync();
@@ -225,7 +225,7 @@ public class LinkedInProfileService : ILinkedInProfileService
     private LinkedInProfileData CreateMockProfileData(string url)
     {
         _logger.LogWarning("Creating mock profile data for URL: {Url}", url);
-        
+
         return new LinkedInProfileData(
             ProfileUrl: url,
             Name: "Demo User",
@@ -252,7 +252,7 @@ public class LinkedInProfileService : ILinkedInProfileService
     /// </summary>
     public async Task<LinkedInOptimizationResultDto> AnalyzeProfileAsync(
         Guid userId,
-        LinkedInProfileAnalysisRequest request, 
+        LinkedInProfileAnalysisRequest request,
         CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Analyzing LinkedIn profile for user {UserId}", userId);
@@ -300,9 +300,9 @@ public class LinkedInProfileService : ILinkedInProfileService
 
             // Generate optimizations
             var optimizedProfile = await GenerateOptimizationsAsync(
-                profileData, 
-                request.TargetJobTitles, 
-                request.TargetIndustries, 
+                profileData,
+                request.TargetJobTitles,
+                request.TargetIndustries,
                 cancellationToken);
 
             optimization.OptimizedHeadline = optimizedProfile.Headline;
@@ -321,7 +321,7 @@ public class LinkedInProfileService : ILinkedInProfileService
 
             optimization.Status = "Completed";
             optimization.AnalyzedAt = DateTime.UtcNow;
-            
+
             await _repository.UpdateAsync(optimization, cancellationToken);
 
             _logger.LogInformation("Profile analysis completed for user {UserId}. Score: {Score}", userId, optimization.ProfileScore);
@@ -331,11 +331,11 @@ public class LinkedInProfileService : ILinkedInProfileService
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error analyzing profile for user {UserId}", userId);
-            
+
             optimization.Status = "Failed";
             optimization.ErrorMessage = ex.Message;
             await _repository.UpdateAsync(optimization, cancellationToken);
-            
+
             throw;
         }
     }
@@ -394,7 +394,7 @@ Important:
 - Return ONLY valid JSON";
 
         var response = await _geminiService.GenerateContentAsync(prompt);
-        
+
         try
         {
             var cleaned = CleanJsonResponse(response);
@@ -409,11 +409,11 @@ Important:
                     experiences.Add(new OptimizedExperienceDto(
                         OriginalDescription: exp.TryGetProperty("originalDescription", out var orig) ? orig.GetString() ?? "" : "",
                         OptimizedDescription: exp.TryGetProperty("optimizedDescription", out var opt) ? opt.GetString() ?? "" : "",
-                        AddedKeywords: exp.TryGetProperty("addedKeywords", out var kw) 
-                            ? kw.EnumerateArray().Select(k => k.GetString() ?? "").ToList() 
+                        AddedKeywords: exp.TryGetProperty("addedKeywords", out var kw)
+                            ? kw.EnumerateArray().Select(k => k.GetString() ?? "").ToList()
                             : new List<string>(),
-                        ImprovementNotes: exp.TryGetProperty("improvementNotes", out var notes) 
-                            ? notes.EnumerateArray().Select(n => n.GetString() ?? "").ToList() 
+                        ImprovementNotes: exp.TryGetProperty("improvementNotes", out var notes)
+                            ? notes.EnumerateArray().Select(n => n.GetString() ?? "").ToList()
                             : new List<string>()
                     ));
                 }
@@ -423,8 +423,8 @@ Important:
                 Headline: root.TryGetProperty("headline", out var h) ? h.GetString() : null,
                 About: root.TryGetProperty("about", out var a) ? a.GetString() : null,
                 Experience: experiences,
-                SuggestedSkills: root.TryGetProperty("suggestedSkills", out var skills) 
-                    ? skills.EnumerateArray().Select(s => s.GetString() ?? "").ToList() 
+                SuggestedSkills: root.TryGetProperty("suggestedSkills", out var skills)
+                    ? skills.EnumerateArray().Select(s => s.GetString() ?? "").ToList()
                     : new List<string>()
             );
         }
@@ -440,11 +440,14 @@ Important:
     /// </summary>
     public async Task<List<ProfileComparisonDto>> GetComparisonViewAsync(
         Guid optimizationId,
+        Guid userId,
         CancellationToken cancellationToken = default)
     {
         var optimization = await _repository.GetByIdAsync(optimizationId, cancellationToken);
         if (optimization == null)
             throw new InvalidOperationException($"Optimization not found: {optimizationId}");
+        if (optimization.UserId != userId)
+            throw new UnauthorizedAccessException("Optimization does not belong to this user");
 
         var comparisons = new List<ProfileComparisonDto>();
 
@@ -550,7 +553,7 @@ Return ONLY this JSON:
 }}";
 
         var response = await _geminiService.GenerateContentAsync(prompt);
-        
+
         try
         {
             var cleaned = CleanJsonResponse(response);
@@ -569,7 +572,7 @@ Return ONLY this JSON:
         catch (Exception ex)
         {
             _logger.LogError(ex, "Error parsing score response");
-            
+
             // Calculate basic score
             var headlineScore = string.IsNullOrEmpty(profileData.Headline) ? 0 : Math.Min(20, profileData.Headline.Length / 10);
             var aboutScore = string.IsNullOrEmpty(profileData.About) ? 0 : Math.Min(25, profileData.About.Length / 20);
@@ -607,7 +610,7 @@ Analyze and return ONLY this JSON:
 }}";
 
         var response = await _geminiService.GenerateContentAsync(prompt);
-        
+
         try
         {
             var cleaned = CleanJsonResponse(response);
@@ -618,11 +621,11 @@ Analyze and return ONLY this JSON:
                 Searchability: root.TryGetProperty("searchability", out var s) ? s.GetDouble() : 50,
                 KeywordDensity: root.TryGetProperty("keywordDensity", out var k) ? k.GetDouble() : 50,
                 ProfileCompleteness: root.TryGetProperty("profileCompleteness", out var p) ? p.GetDouble() : 50,
-                MissingKeywords: root.TryGetProperty("missingKeywords", out var mk) 
-                    ? mk.EnumerateArray().Select(m => m.GetString() ?? "").ToList() 
+                MissingKeywords: root.TryGetProperty("missingKeywords", out var mk)
+                    ? mk.EnumerateArray().Select(m => m.GetString() ?? "").ToList()
                     : new List<string>(),
-                StrongKeywords: root.TryGetProperty("strongKeywords", out var sk) 
-                    ? sk.EnumerateArray().Select(m => m.GetString() ?? "").ToList() 
+                StrongKeywords: root.TryGetProperty("strongKeywords", out var sk)
+                    ? sk.EnumerateArray().Select(m => m.GetString() ?? "").ToList()
                     : new List<string>()
             );
         }
@@ -641,16 +644,16 @@ Analyze and return ONLY this JSON:
 
         if (scoreBreakdown.HeadlineScore < 15)
             improvements.Add("Headline'ınızı daha açıklayıcı ve anahtar kelime odaklı yapın");
-        
+
         if (scoreBreakdown.AboutScore < 20)
             improvements.Add("About bölümünüzü genişletin ve başarılarınızı ekleyin");
-        
+
         if (scoreBreakdown.ExperienceScore < 25)
             improvements.Add("Deneyim açıklamalarınıza metrikler ve başarılar ekleyin");
-        
+
         if (scoreBreakdown.SkillsScore < 12)
             improvements.Add("Beceri listenizi sektör standartlarına göre güncelleyin");
-        
+
         if (scoreBreakdown.EducationScore < 8)
             improvements.Add("Eğitim bilgilerinizi tamamlayın");
 
@@ -665,10 +668,14 @@ Analyze and return ONLY this JSON:
 
     public async Task<LinkedInOptimizationResultDto?> GetOptimizationByIdAsync(
         Guid optimizationId,
+        Guid userId,
         CancellationToken cancellationToken = default)
     {
         var optimization = await _repository.GetByIdAsync(optimizationId, cancellationToken);
-        return optimization != null ? await MapToResultDto(optimization) : null;
+        if (optimization == null) return null;
+        if (optimization.UserId != userId)
+            throw new UnauthorizedAccessException("Optimization does not belong to this user");
+        return await MapToResultDto(optimization);
     }
 
     public async Task<List<ProfileOptimizationHistoryDto>> GetOptimizationHistoryAsync(
@@ -676,7 +683,7 @@ Analyze and return ONLY this JSON:
         CancellationToken cancellationToken = default)
     {
         var optimizations = await _repository.GetByUserIdAsync(userId, cancellationToken);
-        
+
         return optimizations.Select(o => new ProfileOptimizationHistoryDto(
             Id: o.Id,
             LinkedInUrl: o.LinkedInUrl,
@@ -695,7 +702,7 @@ Analyze and return ONLY this JSON:
         var optimization = await _repository.GetByIdAsync(optimizationId, cancellationToken);
         if (optimization == null)
             throw new InvalidOperationException("Optimization not found");
-            
+
         if (optimization.UserId != userId)
             throw new UnauthorizedAccessException("User does not own this optimization");
 
@@ -704,8 +711,8 @@ Analyze and return ONLY this JSON:
 
     private async Task<LinkedInOptimizationResultDto> MapToResultDto(LinkedInProfileOptimization optimization)
     {
-        var scoreBreakdown = !string.IsNullOrEmpty(optimization.ScoreBreakdown) 
-            ? JsonSerializer.Deserialize<ProfileScoreBreakdownDto>(optimization.ScoreBreakdown) 
+        var scoreBreakdown = !string.IsNullOrEmpty(optimization.ScoreBreakdown)
+            ? JsonSerializer.Deserialize<ProfileScoreBreakdownDto>(optimization.ScoreBreakdown)
             : new ProfileScoreBreakdownDto(0, 0, 0, 0, 0, optimization.ProfileScore);
 
         var originalExperience = !string.IsNullOrEmpty(optimization.OriginalExperience)
@@ -737,7 +744,7 @@ Analyze and return ONLY this JSON:
             : new List<string>();
 
         var seoAnalysis = !string.IsNullOrEmpty(optimization.SEOAnalysis)
-            ? JsonSerializer.Deserialize<SEOAnalysisDto>(optimization.SEOAnalysis) 
+            ? JsonSerializer.Deserialize<SEOAnalysisDto>(optimization.SEOAnalysis)
             : new SEOAnalysisDto(0, 0, 0, new List<string>(), new List<string>());
 
         return new LinkedInOptimizationResultDto(
@@ -768,7 +775,7 @@ Analyze and return ONLY this JSON:
     private List<string> GetTextChanges(string? original, string? optimized)
     {
         var changes = new List<string>();
-        
+
         if (string.IsNullOrEmpty(original) && !string.IsNullOrEmpty(optimized))
         {
             changes.Add("Added new content");
@@ -777,17 +784,17 @@ Analyze and return ONLY this JSON:
         {
             if (optimized.Length > original.Length)
                 changes.Add($"Expanded content by {optimized.Length - original.Length} characters");
-            
+
             // Simple keyword detection
             var newWords = optimized.Split(' ')
                 .Except(original.Split(' '), StringComparer.OrdinalIgnoreCase)
                 .Take(5)
                 .ToList();
-            
+
             if (newWords.Any())
                 changes.Add($"Added keywords: {string.Join(", ", newWords)}");
         }
-        
+
         return changes;
     }
 
@@ -795,22 +802,22 @@ Analyze and return ONLY this JSON:
     {
         if (string.IsNullOrEmpty(original) && !string.IsNullOrEmpty(optimized))
             return 20;
-        
+
         if (string.IsNullOrEmpty(optimized))
             return 0;
 
         var origLen = original?.Length ?? 0;
         var optLen = optimized.Length;
-        
+
         if (optLen > origLen)
             return Math.Min(20, (optLen - origLen) / 10);
-        
+
         return 5;
     }
 
     private bool IsValidLinkedInUrl(string url)
     {
-        return !string.IsNullOrEmpty(url) && 
+        return !string.IsNullOrEmpty(url) &&
                (url.Contains("linkedin.com/in/") || url.Contains("linkedin.com/pub/"));
     }
 

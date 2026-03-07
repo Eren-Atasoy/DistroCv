@@ -30,8 +30,8 @@ public class NotificationService : INotificationService
     /// Creates a notification for a new job match
     /// </summary>
     public async Task<Notification> CreateNewMatchNotificationAsync(
-        Guid userId, 
-        JobMatch jobMatch, 
+        Guid userId,
+        JobMatch jobMatch,
         CancellationToken cancellationToken = default)
     {
         try
@@ -74,8 +74,8 @@ public class NotificationService : INotificationService
     /// Creates a notification for application status update
     /// </summary>
     public async Task<Notification> CreateApplicationStatusNotificationAsync(
-        Guid userId, 
-        Application application, 
+        Guid userId,
+        Application application,
         CancellationToken cancellationToken = default)
     {
         try
@@ -118,7 +118,7 @@ public class NotificationService : INotificationService
     /// Gets unread notifications for a user
     /// </summary>
     public async Task<List<Notification>> GetUnreadNotificationsAsync(
-        Guid userId, 
+        Guid userId,
         CancellationToken cancellationToken = default)
     {
         try
@@ -142,9 +142,9 @@ public class NotificationService : INotificationService
     /// Gets all notifications for a user with pagination
     /// </summary>
     public async Task<List<Notification>> GetUserNotificationsAsync(
-        Guid userId, 
-        int skip = 0, 
-        int take = 50, 
+        Guid userId,
+        int skip = 0,
+        int take = 50,
         CancellationToken cancellationToken = default)
     {
         try
@@ -156,9 +156,9 @@ public class NotificationService : INotificationService
                 .Take(take)
                 .ToListAsync(cancellationToken);
 
-            _logger.LogDebug("Retrieved {Count} notifications for user {UserId} (skip: {Skip}, take: {Take})", 
+            _logger.LogDebug("Retrieved {Count} notifications for user {UserId} (skip: {Skip}, take: {Take})",
                 notifications.Count, userId, skip, take);
-            
+
             return notifications;
         }
         catch (Exception ex)
@@ -171,7 +171,7 @@ public class NotificationService : INotificationService
     /// <summary>
     /// Marks a notification as read
     /// </summary>
-    public async Task MarkAsReadAsync(Guid notificationId, CancellationToken cancellationToken = default)
+    public async Task MarkAsReadAsync(Guid notificationId, Guid userId, CancellationToken cancellationToken = default)
     {
         try
         {
@@ -182,6 +182,13 @@ public class NotificationService : INotificationService
             {
                 _logger.LogWarning("Notification {NotificationId} not found", notificationId);
                 return;
+            }
+
+            if (notification.UserId != userId)
+            {
+                _logger.LogWarning("User {UserId} attempted to mark notification {NotificationId} owned by {OwnerId}",
+                    userId, notificationId, notification.UserId);
+                throw new UnauthorizedAccessException("Notification does not belong to this user");
             }
 
             if (!notification.IsRead)
@@ -259,7 +266,7 @@ public class NotificationService : INotificationService
         try
         {
             var cutoffDate = DateTime.UtcNow.AddDays(-olderThanDays);
-            
+
             var oldNotifications = await _context.Notifications
                 .Where(n => n.CreatedAt < cutoffDate)
                 .ToListAsync(cancellationToken);

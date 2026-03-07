@@ -9,7 +9,7 @@ namespace DistroCv.Api.Controllers;
 /// Admin controller for company management and system administration
 /// Task 15.5: Company management interface for admin
 /// </summary>
-[Authorize]
+[Authorize(Roles = "Admin")]
 [Route("api/admin")]
 public class AdminController : BaseApiController
 {
@@ -35,9 +35,9 @@ public class AdminController : BaseApiController
         try
         {
             _logger.LogInformation("Getting companies with filter: {@Filter}", filter);
-            
+
             var (companies, total) = await _companyService.GetAllAsync(filter);
-            
+
             return Ok(new
             {
                 companies,
@@ -63,7 +63,7 @@ public class AdminController : BaseApiController
         try
         {
             var company = await _companyService.GetByIdAsync(id);
-            
+
             if (company == null)
             {
                 return NotFound(new { message = "Company not found" });
@@ -92,9 +92,9 @@ public class AdminController : BaseApiController
             }
 
             _logger.LogInformation("Creating company: {Name}", dto.Name);
-            
+
             var company = await _companyService.CreateAsync(dto);
-            
+
             return CreatedAtAction(nameof(GetCompany), new { id = company.Id }, company);
         }
         catch (InvalidOperationException ex)
@@ -118,9 +118,9 @@ public class AdminController : BaseApiController
         try
         {
             _logger.LogInformation("Updating company: {Id}", id);
-            
+
             var company = await _companyService.UpdateAsync(id, dto);
-            
+
             return Ok(company);
         }
         catch (InvalidOperationException ex)
@@ -144,9 +144,9 @@ public class AdminController : BaseApiController
         try
         {
             _logger.LogInformation("Deleting company: {Id}", id);
-            
+
             await _companyService.DeleteAsync(id);
-            
+
             return NoContent();
         }
         catch (InvalidOperationException ex)
@@ -171,9 +171,9 @@ public class AdminController : BaseApiController
         try
         {
             _logger.LogInformation("Verifying company: {Id}", id);
-            
+
             var company = await _companyService.VerifyCompanyAsync(id, dto);
-            
+
             return Ok(new
             {
                 message = "Company verified successfully",
@@ -202,9 +202,9 @@ public class AdminController : BaseApiController
         try
         {
             _logger.LogInformation("Analyzing culture for company: {Id}", id);
-            
+
             var analysis = await _companyService.AnalyzeCultureAsync(id);
-            
+
             return Ok(new
             {
                 message = "Culture analysis completed",
@@ -233,9 +233,9 @@ public class AdminController : BaseApiController
         try
         {
             _logger.LogInformation("Scraping news for company: {Id}", id);
-            
+
             var news = await _companyService.ScrapeNewsAsync(id);
-            
+
             return Ok(new
             {
                 message = "News scraping completed",
@@ -269,9 +269,9 @@ public class AdminController : BaseApiController
             }
 
             _logger.LogInformation("Checking verification for company: {Name}", companyName);
-            
+
             var (isVerified, company) = await _companyService.CheckCompanyVerificationAsync(companyName);
-            
+
             return Ok(new
             {
                 isVerified,
@@ -294,9 +294,9 @@ public class AdminController : BaseApiController
         try
         {
             _logger.LogInformation("Linking job posting {JobId} to company {CompanyId}", jobPostingId, companyId);
-            
+
             await _companyService.LinkJobPostingToCompanyAsync(jobPostingId, companyId);
-            
+
             return Ok(new { message = "Job posting linked to company successfully" });
         }
         catch (InvalidOperationException ex)
@@ -375,9 +375,9 @@ public class AdminController : BaseApiController
         try
         {
             _logger.LogInformation("Starting company seeding");
-            
+
             var count = await _companyService.SeedCompaniesAsync();
-            
+
             return Ok(new
             {
                 message = "Company seeding completed",
@@ -402,7 +402,7 @@ public class AdminController : BaseApiController
     public async Task<IActionResult> TriggerScraping()
     {
         _logger.LogInformation("Manual job scraping triggered");
-        
+
         // This would trigger the job scraping service
         // For now, return a placeholder response
         return Ok(new { message = "Job scraping triggered. Check the background service logs for progress." });

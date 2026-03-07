@@ -1,7 +1,6 @@
 using DistroCv.Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace DistroCv.Api.Controllers;
 
@@ -32,9 +31,9 @@ public class NotificationsController : BaseApiController
     {
         try
         {
-            var userId = GetUserId();
+            var userId = GetCurrentUserId();
             var notifications = await _notificationService.GetUnreadNotificationsAsync(userId, cancellationToken);
-            
+
             return Ok(new
             {
                 count = notifications.Count,
@@ -68,9 +67,9 @@ public class NotificationsController : BaseApiController
     {
         try
         {
-            var userId = GetUserId();
+            var userId = GetCurrentUserId();
             var notifications = await _notificationService.GetUserNotificationsAsync(userId, skip, take, cancellationToken);
-            
+
             return Ok(new
             {
                 count = notifications.Count,
@@ -105,9 +104,9 @@ public class NotificationsController : BaseApiController
     {
         try
         {
-            var userId = GetUserId();
+            var userId = GetCurrentUserId();
             var count = await _notificationService.GetUnreadCountAsync(userId, cancellationToken);
-            
+
             return Ok(new { count });
         }
         catch (Exception ex)
@@ -125,7 +124,8 @@ public class NotificationsController : BaseApiController
     {
         try
         {
-            await _notificationService.MarkAsReadAsync(notificationId, cancellationToken);
+            var userId = GetCurrentUserId();
+            await _notificationService.MarkAsReadAsync(notificationId, userId, cancellationToken);
             return Ok(new { message = "Notification marked as read" });
         }
         catch (Exception ex)
@@ -143,7 +143,7 @@ public class NotificationsController : BaseApiController
     {
         try
         {
-            var userId = GetUserId();
+            var userId = GetCurrentUserId();
             await _notificationService.MarkAllAsReadAsync(userId, cancellationToken);
             return Ok(new { message = "All notifications marked as read" });
         }
@@ -152,18 +152,5 @@ public class NotificationsController : BaseApiController
             _logger.LogError(ex, "Error marking all notifications as read");
             return StatusCode(500, new { error = "Failed to mark all notifications as read" });
         }
-    }
-
-    /// <summary>
-    /// Gets the current user's ID from claims
-    /// </summary>
-    private Guid GetUserId()
-    {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value;
-        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
-        {
-            throw new UnauthorizedAccessException("User ID not found in token");
-        }
-        return userId;
     }
 }

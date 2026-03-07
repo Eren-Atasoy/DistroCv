@@ -64,9 +64,10 @@ public class LinkedInProfileController : BaseApiController
     {
         try
         {
+            var userId = GetCurrentUserId();
             _logger.LogInformation("Getting comparison view for optimization {OptimizationId}", optimizationId);
 
-            var comparisons = await _profileService.GetComparisonViewAsync(optimizationId);
+            var comparisons = await _profileService.GetComparisonViewAsync(optimizationId, userId);
 
             return Ok(new
             {
@@ -77,6 +78,10 @@ public class LinkedInProfileController : BaseApiController
         catch (InvalidOperationException ex)
         {
             return NotFound(new { message = ex.Message });
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Forbid();
         }
         catch (Exception ex)
         {
@@ -126,12 +131,17 @@ public class LinkedInProfileController : BaseApiController
     {
         try
         {
-            var result = await _profileService.GetOptimizationByIdAsync(optimizationId);
+            var userId = GetCurrentUserId();
+            var result = await _profileService.GetOptimizationByIdAsync(optimizationId, userId);
 
             if (result == null)
                 return NotFound(new { message = "Optimization not found" });
 
             return Ok(result);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Forbid();
         }
         catch (Exception ex)
         {

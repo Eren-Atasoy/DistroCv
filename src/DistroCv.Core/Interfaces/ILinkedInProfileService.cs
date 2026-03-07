@@ -12,17 +12,17 @@ public interface ILinkedInProfileService
     /// Task 18.1: Scrape LinkedIn profile data using Playwright
     /// </summary>
     Task<LinkedInProfileData> ScrapeProfileAsync(
-        string linkedInUrl, 
+        string linkedInUrl,
         CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// Task 18.2: Analyze profile using Gemini AI
     /// </summary>
     Task<LinkedInOptimizationResultDto> AnalyzeProfileAsync(
         Guid userId,
-        LinkedInProfileAnalysisRequest request, 
+        LinkedInProfileAnalysisRequest request,
         CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// Task 18.3: Generate SEO and ATS-friendly optimization suggestions
     /// </summary>
@@ -31,14 +31,15 @@ public interface ILinkedInProfileService
         List<string>? targetJobTitles = null,
         List<string>? targetIndustries = null,
         CancellationToken cancellationToken = default);
-    
+
     /// <summary>
-    /// Task 18.4: Get comparison view between original and optimized
+    /// Task 18.4: Get comparison view between original and optimized (with ownership verification)
     /// </summary>
     Task<List<ProfileComparisonDto>> GetComparisonViewAsync(
         Guid optimizationId,
+        Guid userId,
         CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// Task 18.5: Calculate profile score (0-100)
     /// </summary>
@@ -46,21 +47,22 @@ public interface ILinkedInProfileService
         LinkedInProfileData profileData,
         List<string>? targetJobTitles = null,
         CancellationToken cancellationToken = default);
-    
+
     /// <summary>
-    /// Get optimization by ID
+    /// Get optimization by ID (with ownership verification)
     /// </summary>
     Task<LinkedInOptimizationResultDto?> GetOptimizationByIdAsync(
         Guid optimizationId,
+        Guid userId,
         CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// Get optimization history for user
     /// </summary>
     Task<List<ProfileOptimizationHistoryDto>> GetOptimizationHistoryAsync(
         Guid userId,
         CancellationToken cancellationToken = default);
-    
+
     /// <summary>
     /// Delete an optimization record
     /// </summary>

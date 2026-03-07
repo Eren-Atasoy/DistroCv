@@ -34,8 +34,8 @@ public class SkillGapService : ISkillGapService
     /// Task 17.1: Analyze skill gaps between user profile and job posting
     /// </summary>
     public async Task<SkillGapAnalysisResultDto> AnalyzeSkillGapsAsync(
-        Guid userId, 
-        Guid jobMatchId, 
+        Guid userId,
+        Guid jobMatchId,
         CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Analyzing skill gaps for user {UserId} and job match {JobMatchId}", userId, jobMatchId);
@@ -61,8 +61,8 @@ public class SkillGapService : ISkillGapService
 
         // Analyze using Gemini
         var analysisResult = await AnalyzeWithGeminiAsync(
-            digitalTwin, 
-            jobMatch.JobPosting, 
+            digitalTwin,
+            jobMatch.JobPosting,
             cancellationToken);
 
         // Save skill gaps to database
@@ -77,7 +77,7 @@ public class SkillGapService : ISkillGapService
     /// Analyze skill gaps for user's career goals (without specific job)
     /// </summary>
     public async Task<SkillGapAnalysisResultDto> AnalyzeCareerGapsAsync(
-        Guid userId, 
+        Guid userId,
         CancellationToken cancellationToken = default)
     {
         _logger.LogInformation("Analyzing career gaps for user {UserId}", userId);
@@ -100,7 +100,7 @@ public class SkillGapService : ISkillGapService
     }
 
     private async Task<SkillGapAnalysisResultDto> AnalyzeWithGeminiAsync(
-        DigitalTwin digitalTwin, 
+        DigitalTwin digitalTwin,
         JobPosting jobPosting,
         CancellationToken cancellationToken)
     {
@@ -263,8 +263,8 @@ Return ONLY valid JSON.";
                 InProgressGaps: inProgressGaps,
                 OverallReadinessScore: root.TryGetProperty("overallReadinessScore", out var score) ? score.GetDouble() : 50,
                 Summary: root.TryGetProperty("summary", out var summary) ? summary.GetString() ?? "" : "",
-                PriorityRecommendations: root.TryGetProperty("priorityRecommendations", out var recs) 
-                    ? recs.EnumerateArray().Select(r => r.GetString() ?? "").ToList() 
+                PriorityRecommendations: root.TryGetProperty("priorityRecommendations", out var recs)
+                    ? recs.EnumerateArray().Select(r => r.GetString() ?? "").ToList()
                     : new List<string>()
             );
         }
@@ -352,8 +352,8 @@ Return ONLY valid JSON.";
                 Title: project.TryGetProperty("title", out var t) ? t.GetString() ?? "" : "",
                 Description: project.TryGetProperty("description", out var d) ? d.GetString() ?? "" : "",
                 Difficulty: project.TryGetProperty("difficulty", out var diff) ? diff.GetString() ?? "" : "",
-                Technologies: project.TryGetProperty("technologies", out var tech) 
-                    ? tech.EnumerateArray().Select(x => x.GetString() ?? "").ToList() 
+                Technologies: project.TryGetProperty("technologies", out var tech)
+                    ? tech.EnumerateArray().Select(x => x.GetString() ?? "").ToList()
                     : new List<string>(),
                 EstimatedHours: project.TryGetProperty("estimatedHours", out var h) ? h.GetInt32() : 0,
                 GitHubTemplate: project.TryGetProperty("githubTemplate", out var g) ? g.GetString() : null,
@@ -380,8 +380,8 @@ Return ONLY valid JSON.";
                 Cost: cert.TryGetProperty("cost", out var c) && c.ValueKind == JsonValueKind.Number ? (decimal?)c.GetDecimal() : null,
                 ValidityYears: cert.TryGetProperty("validityYears", out var v) && v.ValueKind == JsonValueKind.Number ? (int?)v.GetInt32() : null,
                 Description: cert.TryGetProperty("description", out var d) ? d.GetString() : null,
-                Prerequisites: cert.TryGetProperty("prerequisites", out var pr) 
-                    ? pr.EnumerateArray().Select(x => x.GetString() ?? "").ToList() 
+                Prerequisites: cert.TryGetProperty("prerequisites", out var pr)
+                    ? pr.EnumerateArray().Select(x => x.GetString() ?? "").ToList()
                     : new List<string>()
             ));
         }
@@ -402,9 +402,9 @@ Return ONLY valid JSON.";
     }
 
     private async Task SaveSkillGapsAsync(
-        Guid userId, 
-        Guid? jobMatchId, 
-        SkillGapAnalysisResultDto result, 
+        Guid userId,
+        Guid? jobMatchId,
+        SkillGapAnalysisResultDto result,
         CancellationToken cancellationToken)
     {
         var allGaps = result.TechnicalSkills
@@ -433,7 +433,7 @@ Return ONLY valid JSON.";
         // Don't save duplicates
         var existingSkills = await _skillGapRepository.GetByUserIdAsync(userId, cancellationToken);
         var existingSkillNames = existingSkills.Select(s => s.SkillName.ToLower()).ToHashSet();
-        
+
         var newEntities = entities.Where(e => !existingSkillNames.Contains(e.SkillName.ToLower())).ToList();
 
         if (newEntities.Any())
@@ -443,8 +443,8 @@ Return ONLY valid JSON.";
     }
 
     public async Task<List<SkillGapDto>> GetUserSkillGapsAsync(
-        Guid userId, 
-        SkillGapFilterDto? filter = null, 
+        Guid userId,
+        SkillGapFilterDto? filter = null,
         CancellationToken cancellationToken = default)
     {
         var gaps = await _skillGapRepository.GetFilteredAsync(
@@ -461,18 +461,22 @@ Return ONLY valid JSON.";
     }
 
     public async Task<SkillGapDto?> GetSkillGapByIdAsync(
-        Guid skillGapId, 
+        Guid skillGapId,
+        Guid userId,
         CancellationToken cancellationToken = default)
     {
         var gap = await _skillGapRepository.GetByIdAsync(skillGapId, cancellationToken);
-        return gap != null ? MapToDto(gap) : null;
+        if (gap == null) return null;
+        if (gap.UserId != userId)
+            throw new UnauthorizedAccessException("Skill gap does not belong to this user");
+        return MapToDto(gap);
     }
 
     /// <summary>
     /// Task 17.3: Generate course recommendations
     /// </summary>
     public async Task<List<CourseRecommendationDto>> GetCourseRecommendationsAsync(
-        string skillName, 
+        string skillName,
         string category,
         CancellationToken cancellationToken = default)
     {
@@ -499,7 +503,7 @@ Return in this JSON format:
 Return ONLY valid JSON.";
 
         var response = await _geminiService.GenerateContentAsync(prompt);
-        
+
         try
         {
             var cleaned = CleanJsonResponse(response);
@@ -530,7 +534,7 @@ Return ONLY valid JSON.";
     /// Task 17.4: Generate project suggestions
     /// </summary>
     public async Task<List<ProjectSuggestionDto>> GetProjectSuggestionsAsync(
-        string skillName, 
+        string skillName,
         string category,
         CancellationToken cancellationToken = default)
     {
@@ -556,7 +560,7 @@ Return in this JSON format:
 Return ONLY valid JSON.";
 
         var response = await _geminiService.GenerateContentAsync(prompt);
-        
+
         try
         {
             var cleaned = CleanJsonResponse(response);
@@ -567,8 +571,8 @@ Return ONLY valid JSON.";
                     Title: p.TryGetProperty("title", out var t) ? t.GetString() ?? "" : "",
                     Description: p.TryGetProperty("description", out var d) ? d.GetString() ?? "" : "",
                     Difficulty: p.TryGetProperty("difficulty", out var diff) ? diff.GetString() ?? "" : "",
-                    Technologies: p.TryGetProperty("technologies", out var tech) 
-                        ? tech.EnumerateArray().Select(x => x.GetString() ?? "").ToList() 
+                    Technologies: p.TryGetProperty("technologies", out var tech)
+                        ? tech.EnumerateArray().Select(x => x.GetString() ?? "").ToList()
                         : new List<string>(),
                     EstimatedHours: p.TryGetProperty("estimatedHours", out var h) ? h.GetInt32() : 0,
                     GitHubTemplate: p.TryGetProperty("githubTemplate", out var g) ? g.GetString() : null,
@@ -585,7 +589,7 @@ Return ONLY valid JSON.";
     }
 
     public async Task<List<CertificationRecommendationDto>> GetCertificationRecommendationsAsync(
-        string skillName, 
+        string skillName,
         string category,
         CancellationToken cancellationToken = default)
     {
@@ -610,7 +614,7 @@ Return in this JSON format:
 Return ONLY valid JSON.";
 
         var response = await _geminiService.GenerateContentAsync(prompt);
-        
+
         try
         {
             var cleaned = CleanJsonResponse(response);
@@ -625,8 +629,8 @@ Return ONLY valid JSON.";
                     Cost: c.TryGetProperty("cost", out var co) && co.ValueKind == JsonValueKind.Number ? (decimal?)co.GetDecimal() : null,
                     ValidityYears: c.TryGetProperty("validityYears", out var v) && v.ValueKind == JsonValueKind.Number ? (int?)v.GetInt32() : null,
                     Description: c.TryGetProperty("description", out var d) ? d.GetString() : null,
-                    Prerequisites: c.TryGetProperty("prerequisites", out var pr) 
-                        ? pr.EnumerateArray().Select(x => x.GetString() ?? "").ToList() 
+                    Prerequisites: c.TryGetProperty("prerequisites", out var pr)
+                        ? pr.EnumerateArray().Select(x => x.GetString() ?? "").ToList()
                         : new List<string>()
                 )).ToList();
             }
@@ -643,13 +647,13 @@ Return ONLY valid JSON.";
     /// Task 17.5: Update progress tracking
     /// </summary>
     public async Task<SkillGapDto> UpdateProgressAsync(
-        Guid skillGapId, 
+        Guid skillGapId,
         Guid userId,
-        UpdateSkillGapProgressDto dto, 
+        UpdateSkillGapProgressDto dto,
         CancellationToken cancellationToken = default)
     {
         var skillGap = await _skillGapRepository.GetByIdAsync(skillGapId, cancellationToken);
-        
+
         if (skillGap == null)
             throw new InvalidOperationException($"Skill gap not found: {skillGapId}");
 
@@ -659,10 +663,10 @@ Return ONLY valid JSON.";
         if (!string.IsNullOrEmpty(dto.Status))
         {
             skillGap.Status = dto.Status;
-            
+
             if (dto.Status == "InProgress" && !skillGap.StartedAt.HasValue)
                 skillGap.StartedAt = DateTime.UtcNow;
-            
+
             if (dto.Status == "Completed")
                 skillGap.CompletedAt = DateTime.UtcNow;
         }
@@ -670,7 +674,7 @@ Return ONLY valid JSON.";
         if (dto.ProgressPercentage.HasValue)
         {
             skillGap.ProgressPercentage = Math.Clamp(dto.ProgressPercentage.Value, 0, 100);
-            
+
             if (skillGap.ProgressPercentage == 100 && skillGap.Status != "Completed")
             {
                 skillGap.Status = "Completed";
@@ -687,7 +691,7 @@ Return ONLY valid JSON.";
     }
 
     public async Task<SkillGapDto> MarkAsCompletedAsync(
-        Guid skillGapId, 
+        Guid skillGapId,
         Guid userId,
         CancellationToken cancellationToken = default)
     {
@@ -699,7 +703,7 @@ Return ONLY valid JSON.";
     }
 
     public async Task<SkillDevelopmentProgressDto> GetDevelopmentProgressAsync(
-        Guid userId, 
+        Guid userId,
         CancellationToken cancellationToken = default)
     {
         var statusCounts = await _skillGapRepository.GetStatusCountsAsync(userId, cancellationToken);
@@ -738,12 +742,12 @@ Return ONLY valid JSON.";
     }
 
     public async Task DeleteSkillGapAsync(
-        Guid skillGapId, 
+        Guid skillGapId,
         Guid userId,
         CancellationToken cancellationToken = default)
     {
         var skillGap = await _skillGapRepository.GetByIdAsync(skillGapId, cancellationToken);
-        
+
         if (skillGap == null)
             throw new InvalidOperationException($"Skill gap not found: {skillGapId}");
 
@@ -754,25 +758,25 @@ Return ONLY valid JSON.";
     }
 
     public async Task<decimal> RecalculateMatchScoreAsync(
-        Guid userId, 
-        Guid jobMatchId, 
+        Guid userId,
+        Guid jobMatchId,
         CancellationToken cancellationToken = default)
     {
         // Get skill gaps for this job match
         var skillGaps = await _skillGapRepository.GetByJobMatchIdAsync(jobMatchId, cancellationToken);
-        
+
         if (!skillGaps.Any())
             return 0;
 
         // Calculate completion weighted by importance
         var totalWeight = skillGaps.Sum(g => g.ImportanceLevel);
         var completedWeight = skillGaps.Where(g => g.Status == "Completed").Sum(g => g.ImportanceLevel);
-        
+
         var improvementFactor = totalWeight > 0 ? (decimal)completedWeight / totalWeight : 0;
 
         // Get original match
         var jobMatch = await _dbContext.JobMatches.FindAsync(new object[] { jobMatchId }, cancellationToken);
-        
+
         if (jobMatch == null)
             return 0;
 
@@ -781,7 +785,7 @@ Return ONLY valid JSON.";
         var actualImprovement = potentialImprovement * improvementFactor;
         var newScore = Math.Min(100, jobMatch.MatchScore + actualImprovement);
 
-        _logger.LogInformation("Recalculated match score for {JobMatchId}: {OldScore} -> {NewScore}", 
+        _logger.LogInformation("Recalculated match score for {JobMatchId}: {OldScore} -> {NewScore}",
             jobMatchId, jobMatch.MatchScore, newScore);
 
         return newScore;

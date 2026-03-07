@@ -1,8 +1,6 @@
-using DistroCv.Api.Controllers;
 using DistroCv.Core.Interfaces;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using System.Security.Claims;
 
 namespace DistroCv.Api.Controllers;
 
@@ -31,8 +29,8 @@ public class FeedbackController : BaseApiController
     {
         try
         {
-            var userId = GetUserId();
-            
+            var userId = GetCurrentUserId();
+
             await _feedbackService.SubmitFeedbackAsync(
                 userId,
                 request.JobMatchId,
@@ -40,7 +38,7 @@ public class FeedbackController : BaseApiController
                 request.Reason,
                 request.AdditionalNotes);
 
-            _logger.LogInformation("Feedback submitted for user {UserId}, job match {JobMatchId}", 
+            _logger.LogInformation("Feedback submitted for user {UserId}, job match {JobMatchId}",
                 userId, request.JobMatchId);
 
             return Ok(new { message = "Feedback submitted successfully" });
@@ -60,7 +58,7 @@ public class FeedbackController : BaseApiController
     {
         try
         {
-            var userId = GetUserId();
+            var userId = GetCurrentUserId();
             var analytics = await _feedbackService.GetFeedbackAnalyticsAsync(userId);
 
             return Ok(analytics);
@@ -80,7 +78,7 @@ public class FeedbackController : BaseApiController
     {
         try
         {
-            var userId = GetUserId();
+            var userId = GetCurrentUserId();
             var feedbacks = await _feedbackService.GetUserFeedbackAsync(userId);
 
             return Ok(feedbacks);
@@ -100,12 +98,12 @@ public class FeedbackController : BaseApiController
     {
         try
         {
-            var userId = GetUserId();
+            var userId = GetCurrentUserId();
             var isActive = await _feedbackService.ShouldActivateLearningModelAsync(userId);
             var feedbackCount = await _feedbackService.GetFeedbackCountAsync(userId);
 
-            return Ok(new 
-            { 
+            return Ok(new
+            {
                 isLearningModelActive = isActive,
                 feedbackCount = feedbackCount,
                 threshold = 10
@@ -126,8 +124,8 @@ public class FeedbackController : BaseApiController
     {
         try
         {
-            var userId = GetUserId();
-            
+            var userId = GetCurrentUserId();
+
             var shouldActivate = await _feedbackService.ShouldActivateLearningModelAsync(userId);
             if (!shouldActivate)
             {
@@ -145,19 +143,6 @@ public class FeedbackController : BaseApiController
             _logger.LogError(ex, "Error triggering learning model analysis");
             return StatusCode(500, new { error = "Failed to trigger analysis" });
         }
-    }
-
-    private Guid GetUserId()
-    {
-        var userIdClaim = User.FindFirst(ClaimTypes.NameIdentifier)?.Value 
-                          ?? User.FindFirst("sub")?.Value;
-        
-        if (string.IsNullOrEmpty(userIdClaim) || !Guid.TryParse(userIdClaim, out var userId))
-        {
-            throw new UnauthorizedAccessException("User ID not found in token");
-        }
-
-        return userId;
     }
 }
 

@@ -119,12 +119,17 @@ public class SkillGapController : BaseApiController
     {
         try
         {
-            var gap = await _skillGapService.GetSkillGapByIdAsync(id);
+            var userId = GetCurrentUserId();
+            var gap = await _skillGapService.GetSkillGapByIdAsync(id, userId);
 
             if (gap == null)
                 return NotFound(new { message = "Skill gap not found" });
 
             return Ok(gap);
+        }
+        catch (UnauthorizedAccessException ex)
+        {
+            return Forbid();
         }
         catch (Exception ex)
         {

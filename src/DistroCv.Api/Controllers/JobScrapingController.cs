@@ -10,7 +10,7 @@ namespace DistroCv.Api.Controllers;
 /// </summary>
 [ApiController]
 [Route("api/[controller]")]
-[Authorize]
+[Authorize(Roles = "Admin")]
 public class JobScrapingController : BaseApiController
 {
     private readonly IJobScrapingService _jobScrapingService;
