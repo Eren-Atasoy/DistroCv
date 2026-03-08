@@ -1,5 +1,4 @@
 import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import {
   LightBulbIcon,
   PlusIcon,
@@ -28,7 +27,6 @@ interface FeatureRequest {
 }
 
 const FeatureRequestPage: React.FC = () => {
-  const { t } = useTranslation();
   const [features, setFeatures] = useState<FeatureRequest[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);

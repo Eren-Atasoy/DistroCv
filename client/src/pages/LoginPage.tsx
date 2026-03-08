@@ -11,16 +11,6 @@ function validateEmail(email: string): string | null {
     return null;
 }
 
-function validatePassword(password: string): string | null {
-    if (!password) return 'Şifre zorunludur.';
-    if (password.length < 8) return 'Şifre en az 8 karakter olmalıdır.';
-    if (!/[A-Z]/.test(password)) return 'Şifre en az bir büyük harf içermelidir.';
-    if (!/[a-z]/.test(password)) return 'Şifre en az bir küçük harf içermelidir.';
-    if (!/\d/.test(password)) return 'Şifre en az bir rakam içermelidir.';
-    if (!/[@$!%*?&]/.test(password)) return 'Şifre en az bir özel karakter (@$!%*?&) içermelidir.';
-    return null;
-}
-
 export default function LoginPage() {
     const [email, setEmail] = useState('');
     const [password, setPassword] = useState('');

@@ -1,12 +1,10 @@
 import React, { useState, useEffect } from 'react';
-import { useTranslation } from 'react-i18next';
 import {
   BugAntIcon,
   PlusIcon,
   FunnelIcon,
   CheckCircleIcon,
   ClockIcon,
-  ExclamationTriangleIcon,
   HandThumbUpIcon,
   ChatBubbleLeftIcon,
 } from '@heroicons/react/24/outline';
@@ -29,7 +27,6 @@ interface BugReport {
 }
 
 const BugReportPage: React.FC = () => {
-  const { t } = useTranslation();
   const [bugs, setBugs] = useState<BugReport[]>([]);
   const [isLoading, setIsLoading] = useState(true);
   const [showCreateModal, setShowCreateModal] = useState(false);
