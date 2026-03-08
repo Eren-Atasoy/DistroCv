@@ -222,18 +222,39 @@ var app = builder.Build();
 using (var scope = app.Services.CreateScope())
 {
     var services = scope.ServiceProvider;
+    var logger = services.GetRequiredService<ILogger<Program>>();
     try
     {
         var context = services.GetRequiredService<DistroCvDbContext>();
         if (context.Database.IsRelational())
         {
-            await context.Database.MigrateAsync();
+            var pendingMigrations = await context.Database.GetPendingMigrationsAsync();
+            if (pendingMigrations.Any())
+            {
+                logger.LogInformation("Applying {Count} pending migrations: {Migrations}",
+                    pendingMigrations.Count(), string.Join(", ", pendingMigrations));
+                await context.Database.MigrateAsync();
+                logger.LogInformation("All migrations applied successfully.");
+            }
+            else
+            {
+                logger.LogInformation("Database is up to date, no pending migrations.");
+            }
         }
     }
     catch (Exception ex)
     {
-        var logger = services.GetRequiredService<ILogger<Program>>();
-        logger.LogError(ex, "An error occurred while migrating the database.");
+        logger.LogError(ex, "An error occurred while migrating the database. Attempting EnsureCreated as fallback...");
+        try
+        {
+            var context = services.GetRequiredService<DistroCvDbContext>();
+            await context.Database.EnsureCreatedAsync();
+            logger.LogInformation("Database tables created via EnsureCreated fallback.");
+        }
+        catch (Exception fallbackEx)
+        {
+            logger.LogError(fallbackEx, "EnsureCreated fallback also failed. Database may not be properly configured.");
+        }
     }
 }
 
