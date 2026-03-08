@@ -79,8 +79,8 @@ public class AuthController : BaseApiController
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Login error");
-            return StatusCode(500, new { message = "Giriş sırasında bir hata oluştu." });
+            _logger.LogError(ex, "Login error: {ExType} - {ExMsg}", ex.GetType().Name, ex.Message);
+            return StatusCode(500, new { message = "Giriş sırasında bir hata oluştu.", debug = ex.Message, type = ex.GetType().Name });
         }
     }
 

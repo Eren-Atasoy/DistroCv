@@ -1,5 +1,5 @@
 // API Base URL
-const API_BASE_URL = import.meta.env.VITE_API_URL || ''; // Use relative path in production if on same host
+const API_BASE_URL = import.meta.env.VITE_API_URL || '/api'; // Use /api prefix in production (same host, single container)
 
 // API Client with error handling
 class ApiClient {

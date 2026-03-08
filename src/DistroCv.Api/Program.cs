@@ -244,7 +244,9 @@ using (var scope = app.Services.CreateScope())
     }
     catch (Exception ex)
     {
-        logger.LogError(ex, "An error occurred while migrating the database. Attempting EnsureCreated as fallback...");
+        logger.LogError(ex, "Migration failed: {ExType} - {ExMsg}", ex.GetType().Name, ex.Message);
+        if (ex.InnerException != null)
+            logger.LogError("Inner exception: {Inner}", ex.InnerException.Message);
         try
         {
             var context = services.GetRequiredService<DistroCvDbContext>();
@@ -253,7 +255,7 @@ using (var scope = app.Services.CreateScope())
         }
         catch (Exception fallbackEx)
         {
-            logger.LogError(fallbackEx, "EnsureCreated fallback also failed. Database may not be properly configured.");
+            logger.LogError(fallbackEx, "EnsureCreated fallback also failed: {Msg}", fallbackEx.Message);
         }
     }
 }
